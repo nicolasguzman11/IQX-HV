@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cumplimiento Intervenciones Qx — Hospital Villarrica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#0E2E2B;
+    --teal:#123C39;
+    --teal-2:#1D5750;
+    --paper:#F1F4F2;
+    --paper-2:#FFFFFF;
+    --line:#D8DED9;
+    --good:#2F8F5B;
+    --good-bg:#E4F3EA;
+    --mid:#C98A1E;
+    --mid-bg:#FBEED9;
+    --low:#B5453A;
+    --low-bg:#F8E4E1;
+    --muted:#5B6E69;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .num{font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:-0.01em;}
+  header.top{
+    background:var(--teal);
+    color:#EFF6F3;
+    padding:28px clamp(16px,4vw,48px) 34px;
+    position:relative;
+    overflow:hidden;
+  }
+  header.top::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-60px;
+    width:220px; height:220px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  header.top::before{
+    content:"";
+    position:absolute;
+    right:20px; top:-10px;
+    width:150px; height:150px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .eyebrow{
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    font-size:11px;
+    color:#9FC3BA;
+    font-weight:600;
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(22px,3.2vw,32px);
+    margin:6px 0 4px;
+    font-weight:600;
+  }
+  .sub{color:#BFD9D1;font-size:13.5px;}
+  #status{font-size:12.5px;color:#9FC3BA;margin-top:14px;display:flex;align-items:center;gap:8px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:#65C990;display:inline-block;}
+  .dot.err{background:#E38C82;}
+  #refreshBtn{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    color:#EFF6F3;
+    font-size:12px;
+    padding:5px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  #refreshBtn:hover{background:rgba(255,255,255,0.16);}
+
+  main{padding:26px clamp(16px,4vw,48px) 60px; max-width:1240px; margin:0 auto;}
+
+  .kpis{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:14px;
+    margin-top:-46px;
+    margin-bottom:30px;
+  }
+  .kpi{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    box-shadow:0 8px 20px -14px rgba(14,46,43,0.35);
+  }
+  .kpi .label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
+  .kpi .value{font-size:24px;margin-top:6px;}
+  .kpi .value.good{color:var(--good);}
+  .kpi .sub2{font-size:11.5px;color:var(--muted);margin-top:4px;}
+
+  section{margin-bottom:34px;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .section-head h2{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:17px;
+    margin:0;
+    font-weight:600;
+  }
+  .section-head .hint{font-size:12.5px;color:var(--muted);}
+
+  .card{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px;
+  }
+
+  .lic-row{
+    display:grid;
+    grid-template-columns:150px 1fr 90px;
+    gap:16px;
+    align-items:center;
+    padding:11px 4px;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+  }
+  .lic-row:last-child{border-bottom:none;}
+  .lic-row:hover{background:#FAFBFA;}
+  .lic-row.active{background:var(--good-bg);}
+  .lic-id{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;}
+  .lic-fam{font-size:11.5px;color:var(--muted);display:block;margin-top:2px;font-family:'Inter',sans-serif;font-weight:400;}
+  .bar-track{background:#E7ECE9;border-radius:20px;height:9px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:20px;}
+  .pct{text-align:right;font-size:13.5px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--muted);
+    border-bottom:1px solid var(--line);
+    padding:8px 10px;
+    font-weight:600;
+  }
+  tbody td{padding:9px 10px;border-bottom:1px solid #EBEFEC;vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  .pill{
+    display:inline-block;
+    padding:2px 9px;
+    border-radius:20px;
+    font-size:11.5px;
+    font-weight:600;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  .pill.good{background:var(--good-bg);color:var(--good);}
+  .pill.mid{background:var(--mid-bg);color:var(--mid);}
+  .pill.low{background:var(--low-bg);color:var(--low);}
+
+  .grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  @media (max-width:880px){ .grid-2{grid-template-columns:1fr;} .lic-row{grid-template-columns:110px 1fr 60px;} }
+
+  #detailWrap{margin-top:16px;}
+  #detailTitle{font-size:13px;color:var(--muted);margin-bottom:8px;}
+  #detailTitle b{color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+
+  .msg{padding:40px 20px;text-align:center;color:var(--muted);font-size:13.5px;}
+  .msg.error{color:var(--low);}
+  .msg a{color:var(--teal-2);}
+
+  canvas{max-height:280px;}
+
+  footer{text-align:center;color:var(--muted);font-size:11.5px;padding:0 20px 30px;}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="eyebrow">Hospital Villarrica · Abastecimiento</div>
+  <h1>Cumplimiento de Intervenciones Quirúrgicas</h1>
+  <div class="sub">Convenios por licitación — datos leídos en vivo desde Google Sheets</div>
+  <div id="status"><span class="dot"></span><span id="statusText">Cargando datos…</span><button id="refreshBtn" onclick="loadData()">Actualizar ahora</button></div>
+</header>
+
+<main>
+  <div class="kpis" id="kpis"></div>
+
+  <section>
+    <div class="card grid-2">
+      <div>
+        <div class="section-head"><h2>Avance por licitación</h2><span class="hint">clic en una fila para ver el detalle</span></div>
+        <div id="licList"></div>
+      </div>
+      <div>
+        <div class="section-head"><h2>Ejecución mensual</h2><span class="hint">total cirugías por mes</span></div>
+        <canvas id="monthChart"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section id="detailSection" style="display:none;">
+    <div class="card">
+      <div class="section-head"><h2>Detalle por tipo de cirugía</h2></div>
+      <div id="detailWrap"></div>
+    </div>
+  </section>
+</main>
+
+<footer>Fuente: hoja "Base de Datos IQX" · actualización automática cada 5 minutos</footer>
+
+<script>
+const SHEET_ID = '132kn3ID25LlgmcCYJ7-gbYcqbFEWhwzcQs4O_OF7lXw';
+const GID = '80993582';
+const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&headers=2&_=` + Date.now();
+
+const MONTHS_RE = /^(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)/i;
+let monthChart = null;
+
+function fmtInt(n){ return Math.round(n).toLocaleString('es-CL'); }
+function fmtMoney(n){ return '$' + Math.round(n).toLocaleString('es-CL'); }
+function fmtPct(n){ return (isFinite(n) ? Math.round(n) : 0) + '%'; }
+function bucket(pct){ return pct >= 70 ? 'good' : pct >= 40 ? 'mid' : 'low'; }
+function bucketColor(pct){ return pct >= 70 ? '#2F8F5B' : pct >= 40 ? '#C98A1E' : '#B5453A'; }
+
+function setStatus(text, isError){
+  document.getElementById('statusText').textContent = text;
+  document.querySelector('#status .dot').className = 'dot' + (isError ? ' err' : '');
+}
+
+async function loadData(){
+  setStatus('Actualizando…', false);
+  try{
+    const res = await fetch(GVIZ_URL, {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
+    if(!json.table || !json.table.cols || !json.table.cols.length){
+      throw new Error('Hoja vacía o sin acceso');
+    }
+    render(json.table);
+    const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+    setStatus('Datos en vivo · actualizado a las ' + now, false);
+  }catch(err){
+    console.error(err);
+    setStatus('No se pudo conectar con la hoja', true);
+    document.getElementById('licList').innerHTML =
+      '<div class="msg error">No se pudo cargar la hoja de cálculo.<br>' +
+      'Verifica que esté compartida como "Cualquiera con el enlace puede ver" e inténtalo de nuevo.<br>' +
+      '<a href="javascript:loadData()">Reintentar</a></div>';
+  }
+}
+
+function colIndex(cols, label){
+  return cols.findIndex(c => (c.label || '').trim().toLowerCase() === label.toLowerCase());
+}
+
+function cellNum(row, idx){
+  if(idx < 0) return 0;
+  const c = row.c[idx];
+  if(!c || c.v === null || c.v === undefined) return 0;
+  return typeof c.v === 'number' ? c.v : (parseFloat(c.v) || 0);
+}
+function cellStr(row, idx){
+  if(idx < 0) return '';
+  const c = row.c[idx];
+  if(!c || c.v === null || c.v === undefined) return '';
+  return String(c.v).trim();
+}
+
+function render(table){
+  const cols = table.cols;
+  const idxID = colIndex(cols, 'ID');
+  const idxFamilia = colIndex(cols, 'Familia');
+  const idxTipo = colIndex(cols, 'Tipo cirugia');
+  const idxProgramado = colIndex(cols, 'Cantidad Total Cirugia Programada');
+  const idxEjecutado = colIndex(cols, 'TOTAL CIRUGIAS EJECUTADAS');
+  const idxValEjec = colIndex(cols, 'Valorizado Ejecutado');
+  const idxValProg = colIndex(cols, 'Valorizado Programado');
+  const monthCols = cols
+    .map((c,i)=>({label:(c.label||'').trim(), i}))
+    .filter(o => MONTHS_RE.test(o.label));
+
+  const groups = {};
+  const monthTotals = monthCols.map(()=>0);
+
+  (table.rows || []).forEach(row => {
+    if(!row.c) return;
+    const id = cellStr(row, idxID);
+    if(!id) return;
+    const programado = cellNum(row, idxProgramado);
+    const ejecutado = cellNum(row, idxEjecutado);
+    const valEjec = cellNum(row, idxValEjec);
+    const valProg = cellNum(row, idxValProg);
+    const familia = cellStr(row, idxFamilia);
+    const tipo = cellStr(row, idxTipo);
+
+    if(!groups[id]) groups[id] = { id, programado:0, ejecutado:0, valEjec:0, valProg:0, familias:new Set(), tipos:[] };
+    const g = groups[id];
+    g.programado += programado;
+    g.ejecutado += ejecutado;
+    g.valEjec += valEjec;
+    g.valProg += valProg;
+    if(familia) g.familias.add(familia);
+    g.tipos.push({ familia, tipo, programado, ejecutado, valEjec, valProg,
+      pct: programado ? (ejecutado/programado*100) : 0 });
+
+    monthCols.forEach((mc, mi) => { monthTotals[mi] += cellNum(row, mc.i); });
+  });
+
+  const list = Object.values(groups).map(g => ({
+    ...g,
+    pct: g.programado ? (g.ejecutado/g.programado*100) : 0,
+    pctVal: g.valProg ? (g.valEjec/g.valProg*100) : 0
+  })).sort((a,b) => b.pct - a.pct);
+
+  const totalProgramado = list.reduce((s,g)=>s+g.programado,0);
+  const totalEjecutado = list.reduce((s,g)=>s+g.ejecutado,0);
+  const totalValEjec = list.reduce((s,g)=>s+g.valEjec,0);
+  const totalValProg = list.reduce((s,g)=>s+g.valProg,0);
+  const pctGlobal = totalProgramado ? (totalEjecutado/totalProgramado*100) : 0;
+  const pctValGlobal = totalValProg ? (totalValEjec/totalValProg*100) : 0;
+
+  document.getElementById('kpis').innerHTML = `
+    <div class="kpi"><div class="label">Licitaciones activas</div><div class="value num">${list.length}</div></div>
+    <div class="kpi"><div class="label">Cirugías programadas</div><div class="value num">${fmtInt(totalProgramado)}</div></div>
+    <div class="kpi"><div class="label">Cirugías ejecutadas</div><div class="value num">${fmtInt(totalEjecutado)}</div></div>
+    <div class="kpi"><div class="label">% avance global</div><div class="value num ${pctGlobal>=70?'good':''}">${fmtPct(pctGlobal)}</div></div>
+    <div class="kpi"><div class="label">Valorizado ejecutado</div><div class="value num">${fmtMoney(totalValEjec)}</div><div class="sub2">de ${fmtMoney(totalValProg)} programado (${fmtPct(pctValGlobal)})</div></div>
+  `;
+
+  const licList = document.getElementById('licList');
+  licList.innerHTML = list.map(g => {
+    const famText = [...g.familias].slice(0,2).join(', ') + (g.familias.size > 2 ? '…' : '');
+    return `
+      <div class="lic-row" data-id="${g.id}">
+        <div><span class="lic-id">${g.id}</span><span class="lic-fam">${famText || '&nbsp;'}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(g.pct,100)}%; background:${bucketColor(g.pct)}"></div></div>
+        <div class="pct"><span class="pill ${bucket(g.pct)}">${fmtPct(g.pct)}</span></div>
+      </div>`;
+  }).join('') || '<div class="msg">No hay licitaciones con datos.</div>';
+
+  licList.querySelectorAll('.lic-row').forEach(row => {
+    row.addEventListener('click', () => showDetail(row.dataset.id, groups[row.dataset.id]));
+  });
+
+  if(monthChart) monthChart.destroy();
+  monthChart = new Chart(document.getElementById('monthChart'), {
+    type:'bar',
+    data:{
+      labels: monthCols.map(m => m.label.replace(/\s?\d{4}/,'').slice(0,3)),
+      datasets:[{
+        data: monthTotals,
+        backgroundColor: '#1D5750',
+        borderRadius: 5,
+        maxBarThickness: 34
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{beginAtZero:true, grid:{color:'#E7ECE9'}, ticks:{font:{family:'Inter'}}},
+        x:{grid:{display:false}, ticks:{font:{family:'Inter'}}}
+      }
+    }
+  });
+
+  const active = document.querySelector('.lic-row.active');
+  if(active) showDetail(active.dataset.id, groups[active.dataset.id]);
+}
+
+function showDetail(id, group){
+  document.querySelectorAll('.lic-row').forEach(r => r.classList.toggle('active', r.dataset.id === id));
+  const section = document.getElementById('detailSection');
+  section.style.display = 'block';
+  const rows = [...group.tipos].sort((a,b)=>b.pct-a.pct);
+  document.getElementById('detailWrap').innerHTML = `
+    <div id="detailTitle">Licitación <b>${id}</b> · ${rows.length} tipo(s) de cirugía</div>
+    <table>
+      <thead><tr>
+        <th>Familia</th><th>Tipo de cirugía</th><th>Programado</th><th>Ejecutado</th><th>% Avance</th><th>Valorizado ejecutado</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td>${r.familia || '—'}</td>
+            <td>${r.tipo || '—'}</td>
+            <td class="num">${fmtInt(r.programado)}</td>
+            <td class="num">${fmtInt(r.ejecutado)}</td>
+            <td><span class="pill ${bucket(r.pct)}">${fmtPct(r.pct)}</span></td>
+            <td class="num">${fmtMoney(r.valEjec)}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+  section.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+loadData();
+setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>
