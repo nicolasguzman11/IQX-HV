@@ -3,408 +3,1183 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cumplimiento Intervenciones Qx — Hospital Villarrica</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<title>Cumplimiento por Licitación · Hospital Villarrica</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root{
-    --ink:#0E2E2B;
-    --teal:#123C39;
-    --teal-2:#1D5750;
-    --paper:#F1F4F2;
-    --paper-2:#FFFFFF;
-    --line:#D8DED9;
-    --good:#2F8F5B;
-    --good-bg:#E4F3EA;
-    --mid:#C98A1E;
-    --mid-bg:#FBEED9;
-    --low:#B5453A;
-    --low-bg:#F8E4E1;
-    --muted:#5B6E69;
+    --navy:#0F2438;
+    --navy-2:#16324A;
+    --teal:#1E9C8B;
+    --teal-soft:#DCF0EC;
+    --amber:#E8A33D;
+    --amber-soft:#FBEBD2;
+    --red:#C4573A;
+    --red-soft:#F6DFD7;
+    --paper:#F5F7F7;
+    --card:#FFFFFF;
+    --ink:#1B2A33;
+    --ink-mute:#5C6E76;
+    --line:#E1E7E7;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
   *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+
+  .app-tabs{
+    display:flex; gap:2px; background:var(--navy); padding:0 clamp(16px,4vw,48px);
   }
-  .num{font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:-0.01em;}
-  header.top{
-    background:var(--teal);
-    color:#EFF6F3;
-    padding:28px clamp(16px,4vw,48px) 34px;
+  .app-tab{
+    font-family:var(--mono); font-size:12px; letter-spacing:.03em; text-transform:uppercase;
+    color:#8FAAB0; background:none; border:none; padding:12px 16px; cursor:pointer;
+    border-bottom:2px solid transparent;
+  }
+  .app-tab:hover{color:#EFF4F4;}
+  .app-tab.active{color:#fff; border-bottom-color:var(--teal);}
+
+  header{
+    background:linear-gradient(135deg, var(--navy) 0%, var(--navy-2) 100%);
+    color:#EFF4F4;
+    padding:28px clamp(16px,4vw,48px) 24px;
     position:relative;
     overflow:hidden;
   }
-  header.top::after{
+  header::after{
     content:"";
-    position:absolute;
-    right:-40px; top:-60px;
-    width:220px; height:220px;
-    border-radius:50%;
-    border:1px solid rgba(255,255,255,0.08);
-  }
-  header.top::before{
-    content:"";
-    position:absolute;
-    right:20px; top:-10px;
-    width:150px; height:150px;
-    border-radius:50%;
-    border:1px solid rgba(255,255,255,0.08);
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 48px);
+    pointer-events:none;
   }
   .eyebrow{
-    text-transform:uppercase;
-    letter-spacing:0.14em;
-    font-size:11px;
-    color:#9FC3BA;
-    font-weight:600;
+    font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--teal); display:flex; align-items:center; gap:8px; margin-bottom:10px;
   }
-  h1{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:clamp(22px,3.2vw,32px);
-    margin:6px 0 4px;
-    font-weight:600;
+  .eyebrow::before{
+    content:""; width:7px;height:7px;border-radius:50%; background:var(--teal);
+    box-shadow:0 0 0 3px rgba(30,156,139,.25); animation:pulse 2.2s ease-in-out infinite;
   }
-  .sub{color:#BFD9D1;font-size:13.5px;}
-  #status{font-size:12.5px;color:#9FC3BA;margin-top:14px;display:flex;align-items:center;gap:8px;}
-  .dot{width:7px;height:7px;border-radius:50%;background:#65C990;display:inline-block;}
-  .dot.err{background:#E38C82;}
-  #refreshBtn{
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.18);
-    color:#EFF6F3;
-    font-size:12px;
-    padding:5px 12px;
-    border-radius:20px;
-    cursor:pointer;
-    font-family:'Inter',sans-serif;
-  }
-  #refreshBtn:hover{background:rgba(255,255,255,0.16);}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(30,156,139,.25);}50%{box-shadow:0 0 0 6px rgba(30,156,139,.08);}}
+  .eyebrow-sub{font-family:var(--mono); font-size:11px; color:#8FAAB0; margin-bottom:14px;}
+  h1{font-weight:600; font-size:clamp(22px,3vw,30px); margin:0 0 4px; letter-spacing:-0.01em;}
+  .subtitle{color:#A9C0C4; font-size:14px; margin:0 0 22px;}
 
-  main{padding:26px clamp(16px,4vw,48px) 60px; max-width:1240px; margin:0 auto;}
+  .vitals{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:1px;
+    background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.09);
+    border-radius:10px; overflow:hidden;
+  }
+  .vital{background:rgba(255,255,255,.02); padding:16px 18px; text-align:center;}
+  .vital .label{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#8FAAB0; margin-bottom:8px;}
+  .vital .value{font-family:var(--mono); font-size:30px; font-weight:600; color:#F2F7F7; line-height:1;}
+  .vital .value span{font-size:15px; color:#7FBDB2; font-weight:500;}
 
-  .kpis{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:14px;
-    margin-top:-46px;
-    margin-bottom:30px;
-  }
-  .kpi{
-    background:var(--paper-2);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:16px 18px;
-    box-shadow:0 8px 20px -14px rgba(14,46,43,0.35);
-  }
-  .kpi .label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;}
-  .kpi .value{font-size:24px;margin-top:6px;}
-  .kpi .value.good{color:var(--good);}
-  .kpi .sub2{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  main{max-width:1120px; margin:0 auto; padding:32px clamp(16px,4vw,48px) 60px;}
 
-  section{margin-bottom:34px;}
-  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
-  .section-head h2{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:17px;
-    margin:0;
-    font-weight:600;
-  }
-  .section-head .hint{font-size:12.5px;color:var(--muted);}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; margin:38px 0 16px; flex-wrap:wrap; gap:8px;}
+  .section-head h2{font-size:16px; font-weight:600; margin:0;}
+  .section-head .hint{font-family:var(--mono); font-size:11.5px; color:var(--ink-mute);}
 
-  .card{
-    background:var(--paper-2);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:20px;
-  }
+  .legend{display:flex; gap:16px; flex-wrap:wrap; font-family:var(--mono); font-size:11px; color:var(--ink-mute);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .dot{width:8px;height:8px;border-radius:2px;display:inline-block;}
 
-  .lic-row{
-    display:grid;
-    grid-template-columns:150px 1fr 90px;
-    gap:16px;
-    align-items:center;
-    padding:11px 4px;
-    border-bottom:1px solid var(--line);
-    cursor:pointer;
-  }
-  .lic-row:last-child{border-bottom:none;}
-  .lic-row:hover{background:#FAFBFA;}
-  .lic-row.active{background:var(--good-bg);}
-  .lic-id{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;}
-  .lic-fam{font-size:11.5px;color:var(--muted);display:block;margin-top:2px;font-family:'Inter',sans-serif;font-weight:400;}
-  .bar-track{background:#E7ECE9;border-radius:20px;height:9px;overflow:hidden;}
-  .bar-fill{height:100%;border-radius:20px;}
-  .pct{text-align:right;font-size:13.5px;}
+  .tender{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:12px;}
+  .tender-top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:14px;}
+  .tender-id{font-family:var(--mono); font-size:11px; color:var(--ink-mute); letter-spacing:.03em; margin-bottom:3px;}
+  .tender-name{font-weight:600; font-size:14.5px; color:var(--ink);}
+  .tender-pct{font-family:var(--mono); font-weight:700; font-size:24px; text-align:right; white-space:nowrap;}
+  .tender-pct .of{display:block; font-size:10.5px; font-weight:500; color:var(--ink-mute); text-align:right;}
 
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  thead th{
-    text-align:left;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-    color:var(--muted);
-    border-bottom:1px solid var(--line);
-    padding:8px 10px;
-    font-weight:600;
+  .status-pill{display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; padding:3px 8px; border-radius:20px; margin-top:6px;}
+  .status-aceptable{background:var(--teal-soft); color:#0F6B5C;}
+  .status-critico{background:var(--amber-soft); color:#8C5A11;}
+  .status-riesgoso{background:var(--red-soft); color:#933521;}
+
+  .strip{position:relative; height:34px; background:repeating-linear-gradient(90deg, var(--paper) 0 1px, transparent 1px 24px); background-color:#FAFBFB; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+  .strip-fill{position:absolute; inset:0; width:0%; border-radius:6px 0 0 6px; transition:width 1.1s cubic-bezier(.22,.9,.3,1);}
+  .strip-target{position:absolute; top:0; bottom:0; width:2px; background:var(--navy); opacity:.55; left:70%;}
+  .strip-target::after{content:"70%"; position:absolute; top:-16px; right:-2px; font-family:var(--mono); font-size:8.5px; color:var(--ink-mute); white-space:nowrap;}
+
+  .fill-aceptable{background:linear-gradient(90deg,#1E9C8B,#3DBBA9);}
+  .fill-critico{background:linear-gradient(90deg,#E8A33D,#F0BD6C);}
+  .fill-riesgoso{background:linear-gradient(90deg,#C4573A,#D97D63);}
+
+  .pay-line{
+    cursor:pointer; margin-top:12px; padding:10px 12px; border-radius:8px;
+    background:#FAFBFB; border:1px solid var(--line);
+    transition:border-color .15s, box-shadow .15s, background .15s;
   }
-  tbody td{padding:9px 10px;border-bottom:1px solid #EBEFEC;vertical-align:top;}
+  .pay-line:hover{border-color:var(--teal); box-shadow:0 2px 8px rgba(15,36,56,.06); background:#fff;}
+  .pay-line-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .pay-label{font-family:var(--mono); font-size:10.5px; color:var(--ink-mute); text-transform:uppercase; letter-spacing:.04em; display:flex; align-items:center; gap:5px;}
+  .pay-label::after{content:"›"; font-size:13px; color:var(--ink-mute); opacity:.6;}
+  .pay-value{font-family:var(--mono); font-size:13.5px; font-weight:700;}
+  .pay-value.ok{color:#0F6B5C;}
+  .pay-value.warn{color:#933521;}
+  .pay-strip{position:relative; height:10px; background:#EDF1F1; border-radius:5px; overflow:hidden;}
+  .pay-strip-fill{position:absolute; inset:0; width:0%; border-radius:5px; background:linear-gradient(90deg,#E8A33D,#F0BD6C); transition:width 1.1s cubic-bezier(.22,.9,.3,1);}
+  .pay-strip-fill.ok{background:linear-gradient(90deg,#1E9C8B,#3DBBA9);}
+
+  .resumen-grid{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:12px;
+    margin-bottom:8px;
+  }
+  .resumen-box{
+    border-radius:10px; padding:18px 16px; text-align:center; border:1px solid var(--line);
+    flex:1 1 210px; max-width:240px;
+    box-shadow:0 1px 3px rgba(15,36,56,.05);
+  }
+  .resumen-box .label{font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-mute); margin-bottom:10px; line-height:1.4;}
+  .resumen-box .value{font-family:var(--mono); font-size:21px; font-weight:700; color:var(--ink);}
+  .rb-blue{background:#EAF1FB; border-color:#D3E2F5;}
+  .rb-red{background:#FBEAEA; border-color:#F3D3D3;}
+  .rb-green{background:#E9F7EE; border-color:#CFEEDA;}
+  .rb-orange{background:#FDF1E3; border-color:#F7DDB6;}
+  .rb-pink{background:#FCE9F1; border-color:#F5CFE0;}
+  .rb-purple{background:#F0EAFB; border-color:#DCCFF3;}
+
+  .tender-foot{display:flex; justify-content:space-between; margin-top:8px; font-family:var(--mono); font-size:10.5px; color:var(--ink-mute);}
+
+  .table-wrap{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-mute); background:#FAFBFB; padding:11px 16px; border-bottom:1px solid var(--line);}
+  thead th.num, td.num{text-align:right;}
+  tbody td{padding:12px 16px; border-bottom:1px solid var(--line); vertical-align:middle;}
   tbody tr:last-child td{border-bottom:none;}
-  .pill{
-    display:inline-block;
-    padding:2px 9px;
-    border-radius:20px;
-    font-size:11.5px;
-    font-weight:600;
-    font-family:'IBM Plex Mono',monospace;
+  tbody tr:hover{background:#FAFCFC;}
+  td.num{font-family:var(--mono);}
+  td.name{font-weight:500;}
+  td .sub{color:var(--ink-mute); font-size:11px; font-family:var(--mono);}
+
+  footer{max-width:1120px; margin:0 auto; padding:0 clamp(16px,4vw,48px) 40px; color:var(--ink-mute); font-family:var(--mono); font-size:11px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+
+  .msg{padding:40px 20px; text-align:center; color:var(--ink-mute); font-family:var(--mono); font-size:13px;}
+  .msg.error{color:#933521;}
+
+  .tender{cursor:pointer; transition:border-color .15s, box-shadow .15s;}
+  .tender:hover{border-color:var(--teal); box-shadow:0 2px 10px rgba(15,36,56,.06);}
+  tbody tr.clickable{cursor:pointer;}
+
+  .back-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    font-family:var(--mono); font-size:12px; color:var(--teal);
+    background:none; border:none; cursor:pointer; padding:0; margin-bottom:18px;
   }
-  .pill.good{background:var(--good-bg);color:var(--good);}
-  .pill.mid{background:var(--mid-bg);color:var(--mid);}
-  .pill.low{background:var(--low-bg);color:var(--low);}
+  .back-btn:hover{text-decoration:underline;}
 
-  .grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
-  @media (max-width:880px){ .grid-2{grid-template-columns:1fr;} .lic-row{grid-template-columns:110px 1fr 60px;} }
+  .detail-head{
+    display:flex; flex-direction:column; gap:18px; margin-bottom:22px;
+  }
+  .detail-id{font-family:var(--mono); font-size:11px; color:var(--ink-mute); margin-bottom:4px;}
+  .detail-title{font-size:20px; font-weight:600; margin:0 0 8px;}
+  .detail-summary{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:10px; overflow:hidden;
+    width:100%; margin-top:4px;
+  }
+  .detail-summary > div{
+    background:var(--card); padding:18px 12px 16px; text-align:center;
+  }
+  .detail-summary b{
+    color:var(--navy); font-size:28px; font-weight:700; font-family:var(--mono);
+    display:block; line-height:1; margin-bottom:8px;
+  }
+  .detail-summary > div:nth-child(1) b{color:var(--navy);}
+  .detail-summary > div:nth-child(2) b{color:var(--teal);}
+  .detail-summary > div:nth-child(3) b{color:var(--amber);}
+  .detail-summary > div:nth-child(4) b{color:var(--ink-mute);}
+  .detail-summary > div span:not(.of){
+    font-family:var(--mono); font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-mute);
+  }
 
-  #detailWrap{margin-top:16px;}
-  #detailTitle{font-size:13px;color:var(--muted);margin-bottom:8px;}
-  #detailTitle b{color:var(--ink);font-family:'IBM Plex Mono',monospace;}
+  .month-table{overflow-x:auto;}
+  .month-table table{min-width:760px;}
 
-  .msg{padding:40px 20px;text-align:center;color:var(--muted);font-size:13.5px;}
-  .msg.error{color:var(--low);}
-  .msg a{color:var(--teal-2);}
+  #detail-view{display:none;}
 
-  canvas{max-height:280px;}
-
-  footer{text-align:center;color:var(--muted);font-size:11.5px;padding:0 20px 30px;}
+  @media (prefers-reduced-motion: reduce){.strip-fill{transition:none;} .eyebrow::before{animation:none;}}
 </style>
 </head>
 <body>
 
-<header class="top">
-  <div class="eyebrow">Hospital Villarrica · Abastecimiento</div>
-  <h1>Cumplimiento de Intervenciones Quirúrgicas</h1>
-  <div class="sub">Convenios por licitación — datos leídos en vivo desde Google Sheets</div>
-  <div id="status"><span class="dot"></span><span id="statusText">Cargando datos…</span><button id="refreshBtn" onclick="loadData()">Actualizar ahora</button></div>
+<nav class="app-tabs">
+  <button class="app-tab active" id="tab-iqx" onclick="showApp('iqx')">Licitaciones IQX</button>
+  <button class="app-tab" id="tab-turnos" onclick="showApp('turnos')">Turnos Extras</button>
+</nav>
+
+<div id="app-iqx">
+
+<header>
+  <div class="eyebrow" id="eyebrow">Panel en vivo · conectando a Google Sheets</div>
+  <div class="eyebrow-sub" id="eyebrow-fecha">Última carga: –</div>
+  <h1>Cumplimiento por Licitación</h1>
+  <p class="subtitle">Intervenciones quirúrgicas convenidas vs. realizadas · Hospital Villarrica</p>
+
+  <div class="vitals">
+    <div class="vital"><div class="label">Cumplimiento global ($)</div><div class="value" id="v-global">–<span>%</span></div></div>
+    <div class="vital"><div class="label">Licitaciones activas</div><div class="value" id="v-count">–</div></div>
+    <div class="vital"><div class="label">Riesgosas (&gt;70%)</div><div class="value" id="v-riesgo" style="color:#E39B85;">–</div></div>
+    <div class="vital"><div class="label">Críticas (50-70%)</div><div class="value" id="v-critico" style="color:#F0BD6C;">–</div></div>
+    <div class="vital"><div class="label">Aceptables (&lt;50%)</div><div class="value" id="v-bajo" style="color:#7FE0CE;">–</div></div>
+  </div>
 </header>
 
 <main>
-  <div class="kpis" id="kpis"></div>
 
-  <section>
-    <div class="card grid-2">
-      <div>
-        <div class="section-head"><h2>Avance por licitación</h2><span class="hint">clic en una fila para ver el detalle</span></div>
-        <div id="licList"></div>
-      </div>
-      <div>
-        <div class="section-head"><h2>Ejecución mensual</h2><span class="hint">total cirugías por mes</span></div>
-        <canvas id="monthChart"></canvas>
+  <div id="list-view">
+
+    <div class="section-head">
+      <h2>Resumen general</h2>
+      <span class="hint">cirugías y montos totales</span>
+    </div>
+
+    <div class="resumen-grid" id="resumen-grid">
+      <div class="resumen-box rb-blue"><div class="label">Total planificado</div><div class="value" id="r-total-plan">–</div></div>
+      <div class="resumen-box rb-red"><div class="label">Total ejecutado</div><div class="value" id="r-total-ejec">–</div></div>
+      <div class="resumen-box rb-green"><div class="label">Cumplimiento valorizado</div><div class="value" id="r-cumpl-val">–</div></div>
+      <div class="resumen-box rb-blue"><div class="label">Valorizado planificado</div><div class="value" id="r-val-plan">–</div></div>
+      <div class="resumen-box rb-red"><div class="label">Valorizado ejecutado</div><div class="value" id="r-val-ejec">–</div></div>
+      <div class="resumen-box rb-orange"><div class="label">Valorizado pagado</div><div class="value" id="r-val-pago">–</div></div>
+      <div class="resumen-box rb-pink"><div class="label">% pago general</div><div class="value" id="r-pct-pago">–</div></div>
+    </div>
+
+    <div class="section-head">
+      <h2>Programado vs. Ejecutado ($)</h2>
+      <span class="hint">valorizado por licitación</span>
+    </div>
+
+    <div class="table-wrap" style="padding:20px 20px 8px; margin-bottom:12px;">
+      <div style="height:320px;"><canvas id="main-chart"></canvas></div>
+    </div>
+
+    <div class="section-head">
+      <h2>Detalle por licitación</h2>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--teal);"></span>Aceptable (&lt;50%)</span>
+        <span><span class="dot" style="background:var(--amber);"></span>Crítico (50-70%)</span>
+        <span><span class="dot" style="background:var(--red);"></span>Riesgoso (&gt;70%)</span>
       </div>
     </div>
-  </section>
 
-  <section id="detailSection" style="display:none;">
-    <div class="card">
-      <div class="section-head"><h2>Detalle por tipo de cirugía</h2></div>
-      <div id="detailWrap"></div>
+    <div id="tenders"><div class="msg">Cargando datos desde Google Sheets…</div></div>
+
+    <div class="section-head">
+      <h2>Resumen tabular</h2>
+      <span class="hint">click en una fila para ver el detalle</span>
     </div>
-  </section>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Licitación</th>
+            <th>Especialidad</th>
+            <th class="num">Programado ($)</th>
+            <th class="num">Ejecutado ($)</th>
+            <th class="num">% Avance</th>
+            <th class="num">Pagado ($)</th>
+            <th class="num">% Pago</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="8" class="msg">Cargando…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div id="detail-view">
+    <button class="back-btn" id="back-btn">← Volver al listado</button>
+
+    <div class="detail-head">
+      <div>
+        <div class="detail-id" id="d-id">—</div>
+        <h2 class="detail-title" id="d-title">—</h2>
+        <span class="status-pill" id="d-status">—</span>
+      </div>
+      <div class="detail-summary">
+        <div><b id="d-prog">–</b><span>Convenidas</span></div>
+        <div><b id="d-ejec">–</b><span>Realizadas</span></div>
+        <div><b id="d-pct">–</b><span>Cumplimiento</span></div>
+        <div><b id="d-tipos">–</b><span>Tipos de cirugía</span></div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Desglose por tipo de cirugía</h2>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de cirugía</th>
+            <th>Código Fonasa</th>
+            <th class="num">Valor unitario</th>
+            <th class="num">Convenidas</th>
+            <th class="num">Realizadas</th>
+            <th class="num">% Avance</th>
+          </tr>
+        </thead>
+        <tbody id="detail-tipos-body"></tbody>
+      </table>
+    </div>
+
+    <div class="section-head">
+      <h2>Evolución mensual</h2>
+      <span class="hint">cirugías ejecutadas por mes</span>
+    </div>
+
+    <div class="table-wrap" style="padding:20px 20px 8px; margin-bottom:12px;">
+      <div style="height:260px;"><canvas id="detail-chart"></canvas></div>
+    </div>
+
+    <div class="table-wrap month-table">
+      <table>
+        <thead><tr id="detail-months-head"></tr></thead>
+        <tbody><tr id="detail-months-row"></tr></tbody>
+      </table>
+    </div>
+
+  </div>
+  <div id="pagos-view" style="display:none;">
+    <button class="back-btn" id="back-btn-pagos">← Volver al listado</button>
+
+    <div class="detail-head">
+      <div>
+        <div class="detail-id" id="p-id">—</div>
+        <h2 class="detail-title" id="p-title">Detalle de pagos</h2>
+      </div>
+      <div class="detail-summary">
+        <div><b id="p-ejec">–</b><span>Ejecutado ($)</span></div>
+        <div><b id="p-pagado">–</b><span>Pagado ($)</span></div>
+        <div><b id="p-pct">–</b><span>% Pago</span></div>
+        <div><b id="p-facturas">–</b><span>Registros de pago</span></div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <h2>Registros de pago</h2>
+      <span class="hint">fuente: BASE PAGOS</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Periodo</th>
+            <th>Tipo cirugía</th>
+            <th>N° OC</th>
+            <th>Factura</th>
+            <th class="num">Cant. pagada</th>
+            <th class="num">Monto total</th>
+            <th>Estado</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody id="pagos-body"></tbody>
+      </table>
+    </div>
+  </div>
+
 </main>
 
-<footer>Fuente: hoja "Base de Datos IQX" · actualización automática cada 5 minutos</footer>
+</div><!-- /app-iqx -->
+
+<div id="app-turnos" style="display:none;">
+
+<header>
+  <div class="eyebrow" id="ht-eyebrow">Panel en vivo · conectando a Google Sheets</div>
+  <div class="eyebrow-sub" id="ht-eyebrow-fecha">Última carga: –</div>
+  <h1>Turnos Extras / Horas Médicas</h1>
+  <p class="subtitle">Reemplazos y horas extraordinarias · Hospital Villarrica</p>
+
+  <div class="vitals">
+    <div class="vital"><div class="label">Monto total</div><div class="value" id="ht-v-total" style="font-size:20px;">–</div></div>
+    <div class="vital"><div class="label">Monto pagado</div><div class="value" id="ht-v-pagado" style="font-size:20px;">–</div></div>
+    <div class="vital"><div class="label">% pagado</div><div class="value" id="ht-v-pct">–<span>%</span></div></div>
+    <div class="vital"><div class="label">Turnos registrados</div><div class="value" id="ht-v-turnos">–</div></div>
+    <div class="vital"><div class="label">Horas totales</div><div class="value" id="ht-v-horas">–</div></div>
+  </div>
+</header>
+
+<main>
+
+  <div class="resumen-grid">
+    <div class="resumen-box rb-blue"><div class="label">Monto total</div><div class="value" id="ht-r-total">–</div></div>
+    <div class="resumen-box rb-green"><div class="label">Monto pagado</div><div class="value" id="ht-r-pagado">–</div></div>
+    <div class="resumen-box rb-orange"><div class="label">Monto en proceso</div><div class="value" id="ht-r-proceso">–</div></div>
+    <div class="resumen-box rb-red"><div class="label">Monto pendiente</div><div class="value" id="ht-r-pendiente">–</div></div>
+    <div class="resumen-box rb-purple"><div class="label">% pagado</div><div class="value" id="ht-r-pct">–</div></div>
+  </div>
+
+  <div class="section-head">
+    <h2>Monto por estado</h2>
+    <span class="hint">pagado / en proceso / pendiente</span>
+  </div>
+
+  <div class="table-wrap" style="padding:20px 20px 8px; margin-bottom:12px;">
+    <div style="height:280px;"><canvas id="turnos-estado-chart"></canvas></div>
+  </div>
+
+  <div class="section-head">
+    <h2>Evolución mensual</h2>
+    <span class="hint">monto en turnos extra por mes</span>
+  </div>
+
+  <div class="table-wrap" style="padding:20px 20px 8px; margin-bottom:12px;">
+    <div style="height:280px;"><canvas id="turnos-mes-chart"></canvas></div>
+  </div>
+
+  <div class="section-head">
+    <h2>Consumo por convenio</h2>
+    <span class="hint">contratos que financian los reemplazos</span>
+  </div>
+
+  <div class="table-wrap" style="margin-bottom:28px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Convenio</th>
+          <th class="num">N° turnos</th>
+          <th class="num">Horas</th>
+          <th class="num">Monto total</th>
+          <th class="num">% del total</th>
+        </tr>
+      </thead>
+      <tbody id="ht-convenio-body"></tbody>
+    </table>
+  </div>
+
+  <div class="section-head">
+    <h2>Médicos con mayor monto en turnos extra</h2>
+    <span class="hint">top 15</span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Especialidad</th>
+          <th class="num">N° turnos</th>
+          <th class="num">Horas</th>
+          <th class="num">Monto total</th>
+        </tr>
+      </thead>
+      <tbody id="ht-medicos-body"></tbody>
+    </table>
+  </div>
+
+</main>
+
+</div><!-- /app-turnos -->
+
+<footer>
+  <span>Fuente: Google Sheets · Base de Datos IQX + BASE PAGOS + Horas Médicas (en vivo)</span>
+  <span>Actualización de base: mensual / quincenal</span>
+</footer>
 
 <script>
-const SHEET_ID = '132kn3ID25LlgmcCYJ7-gbYcqbFEWhwzcQs4O_OF7lXw';
-const GID = '80993582';
-const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${GID}&headers=2&_=` + Date.now();
+  // ---- CONFIG: your Google Sheet ----
+  const SHEET_ID = "132kn3ID25LlgmcCYJ7-gbYcqbFEWhwzcQs4O_OF7lXw";
+  const GID = "80993582"; // tab: Base de Datos IQX
+  const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID}`;
 
-const MONTHS_RE = /^(Enero|Febrero|Marzo|Abril|Mayo|Junio|Julio|Agosto|Septiembre|Octubre|Noviembre|Diciembre)/i;
-let monthChart = null;
+  const PAGOS_GID = "964283009"; // tab: BASE PAGOS
+  const PAGOS_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${PAGOS_GID}`;
 
-function fmtInt(n){ return Math.round(n).toLocaleString('es-CL'); }
-function fmtMoney(n){ return '$' + Math.round(n).toLocaleString('es-CL'); }
-function fmtPct(n){ return (isFinite(n) ? Math.round(n) : 0) + '%'; }
-function bucket(pct){ return pct >= 70 ? 'good' : pct >= 40 ? 'mid' : 'low'; }
-function bucketColor(pct){ return pct >= 70 ? '#2F8F5B' : pct >= 40 ? '#C98A1E' : '#B5453A'; }
+  const COL_ID = "ID LICITACON";
+  const COL_FAMILIA = "Familia";
+  const COL_TIPO = "Tipo cirugia";
+  const COL_FONASA = "Codigo Fonasa";
+  const COL_VALOR_UNIT = "Valor Cirugia";
+  const COL_PROGRAMADA = "Cantidad Total Cirugia Programada";
+  const COL_EJECUTADA = "TOTAL CIRUGIAS EJECUTADAS";
+  const COL_VAL_EJEC = "Valorizado Ejecutado";
+  const COL_VAL_PROG = "Valorizado Programado";
+  let MONTH_COLS = [];
+  let MONTH_LABELS = [];
+  const MONTH_ABBR = {
+    enero:"ENE", febrero:"FEB", marzo:"MAR", abril:"ABR", mayo:"MAY", junio:"JUN",
+    julio:"JUL", agosto:"AGO", septiembre:"SEP", octubre:"OCT", noviembre:"NOV", diciembre:"DIC"
+  };
 
-function setStatus(text, isError){
-  document.getElementById('statusText').textContent = text;
-  document.querySelector('#status .dot').className = 'dot' + (isError ? ' err' : '');
-}
-
-async function loadData(){
-  setStatus('Actualizando…', false);
-  try{
-    const res = await fetch(GVIZ_URL, {cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
-    const json = JSON.parse(text.substring(text.indexOf('(') + 1, text.lastIndexOf(')')));
-    if(!json.table || !json.table.cols || !json.table.cols.length){
-      throw new Error('Hoja vacía o sin acceso');
-    }
-    render(json.table);
-    const now = new Date().toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
-    setStatus('Datos en vivo · actualizado a las ' + now, false);
-  }catch(err){
-    console.error(err);
-    setStatus('No se pudo conectar con la hoja', true);
-    document.getElementById('licList').innerHTML =
-      '<div class="msg error">No se pudo cargar la hoja de cálculo.<br>' +
-      'Verifica que esté compartida como "Cualquiera con el enlace puede ver" e inténtalo de nuevo.<br>' +
-      '<a href="javascript:loadData()">Reintentar</a></div>';
+  function isMonthHeader(h){
+    if(!h) return false;
+    const parts = h.trim().toLowerCase().split(/\s+/);
+    return parts.length === 2 && MONTH_ABBR.hasOwnProperty(parts[0]) && /^\d{4}$/.test(parts[1]);
   }
-}
 
-function colIndex(cols, label){
-  return cols.findIndex(c => (c.label || '').trim().toLowerCase() === label.toLowerCase());
-}
+  function detectMonthColumns(headerRow){
+    const cols = headerRow.filter(isMonthHeader);
+    const labels = cols.map(h=>{
+      const [m, y] = h.trim().toLowerCase().split(/\s+/);
+      return MONTH_ABBR[m] + ' ' + y.slice(-2);
+    });
+    return {cols, labels};
+  }
 
-function cellNum(row, idx){
-  if(idx < 0) return 0;
-  const c = row.c[idx];
-  if(!c || c.v === null || c.v === undefined) return 0;
-  return typeof c.v === 'number' ? c.v : (parseFloat(c.v) || 0);
-}
-function cellStr(row, idx){
-  if(idx < 0) return '';
-  const c = row.c[idx];
-  if(!c || c.v === null || c.v === undefined) return '';
-  return String(c.v).trim();
-}
+  const COL_PAGO_ID = "ID LICITACION";
+  const COL_PAGO_MONTO = "MONTO TOTAL";
+  const COL_PAGO_ESTADO = "ESTADO";
 
-function render(table){
-  const cols = table.cols;
-  const idxID = colIndex(cols, 'ID');
-  const idxFamilia = colIndex(cols, 'Familia');
-  const idxTipo = colIndex(cols, 'Tipo cirugia');
-  const idxProgramado = colIndex(cols, 'Cantidad Total Cirugia Programada');
-  const idxEjecutado = colIndex(cols, 'TOTAL CIRUGIAS EJECUTADAS');
-  const idxValEjec = colIndex(cols, 'Valorizado Ejecutado');
-  const idxValProg = colIndex(cols, 'Valorizado Programado');
-  const monthCols = cols
-    .map((c,i)=>({label:(c.label||'').trim(), i}))
-    .filter(o => MONTHS_RE.test(o.label));
+  let RAW_ROWS = []; // kept for drill-down detail view
+  let PAGOS_ROWS = [];
+  let LAST_TENDERS = [];
+  let CHART = null;
+  let DETAIL_CHART = null;
 
-  const groups = {};
-  const monthTotals = monthCols.map(()=>0);
+  function fmtCLP(n){
+    return '$' + Math.round(n).toLocaleString('es-CL');
+  }
 
-  (table.rows || []).forEach(row => {
-    if(!row.c) return;
-    const id = cellStr(row, idxID);
-    if(!id) return;
-    const programado = cellNum(row, idxProgramado);
-    const ejecutado = cellNum(row, idxEjecutado);
-    const valEjec = cellNum(row, idxValEjec);
-    const valProg = cellNum(row, idxValProg);
-    const familia = cellStr(row, idxFamilia);
-    const tipo = cellStr(row, idxTipo);
+  function pagadoPorLicitacion(){
+    const totals = {};
+    PAGOS_ROWS.forEach(r=>{
+      const id = (r[COL_PAGO_ID]||"").trim();
+      if(!id) return;
+      const estado = (r[COL_PAGO_ESTADO]||"").trim().toUpperCase();
+      if(estado !== "PAGADO") return;
+      const monto = parseFloat((r[COL_PAGO_MONTO]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      totals[id] = (totals[id]||0) + monto;
+    });
+    return totals;
+  }
 
-    if(!groups[id]) groups[id] = { id, programado:0, ejecutado:0, valEjec:0, valProg:0, familias:new Set(), tipos:[] };
-    const g = groups[id];
-    g.programado += programado;
-    g.ejecutado += ejecutado;
-    g.valEjec += valEjec;
-    g.valProg += valProg;
-    if(familia) g.familias.add(familia);
-    g.tipos.push({ familia, tipo, programado, ejecutado, valEjec, valProg,
-      pct: programado ? (ejecutado/programado*100) : 0 });
+  function statusFor(pct){
+    // Inverted logic: higher % avance = closer to exhausting the tender's quota = riskier.
+    if(pct > 70) return {cls:"riesgoso", label:"Riesgoso", fill:"fill-riesgoso"};
+    if(pct >= 50) return {cls:"critico", label:"Crítico", fill:"fill-critico"};
+    return {cls:"aceptable", label:"Aceptable", fill:"fill-aceptable"};
+  }
 
-    monthCols.forEach((mc, mi) => { monthTotals[mi] += cellNum(row, mc.i); });
-  });
+  function render(tenders){
+    const container = document.getElementById('tenders');
+    const tbody = document.getElementById('table-body');
 
-  const list = Object.values(groups).map(g => ({
-    ...g,
-    pct: g.programado ? (g.ejecutado/g.programado*100) : 0,
-    pctVal: g.valProg ? (g.valEjec/g.valProg*100) : 0
-  })).sort((a,b) => b.pct - a.pct);
-
-  const totalProgramado = list.reduce((s,g)=>s+g.programado,0);
-  const totalEjecutado = list.reduce((s,g)=>s+g.ejecutado,0);
-  const totalValEjec = list.reduce((s,g)=>s+g.valEjec,0);
-  const totalValProg = list.reduce((s,g)=>s+g.valProg,0);
-  const pctGlobal = totalProgramado ? (totalEjecutado/totalProgramado*100) : 0;
-  const pctValGlobal = totalValProg ? (totalValEjec/totalValProg*100) : 0;
-
-  document.getElementById('kpis').innerHTML = `
-    <div class="kpi"><div class="label">Licitaciones activas</div><div class="value num">${list.length}</div></div>
-    <div class="kpi"><div class="label">Cirugías programadas</div><div class="value num">${fmtInt(totalProgramado)}</div></div>
-    <div class="kpi"><div class="label">Cirugías ejecutadas</div><div class="value num">${fmtInt(totalEjecutado)}</div></div>
-    <div class="kpi"><div class="label">% avance global</div><div class="value num ${pctGlobal>=70?'good':''}">${fmtPct(pctGlobal)}</div></div>
-    <div class="kpi"><div class="label">Valorizado ejecutado</div><div class="value num">${fmtMoney(totalValEjec)}</div><div class="sub2">de ${fmtMoney(totalValProg)} programado (${fmtPct(pctValGlobal)})</div></div>
-  `;
-
-  const licList = document.getElementById('licList');
-  licList.innerHTML = list.map(g => {
-    const famText = [...g.familias].slice(0,2).join(', ') + (g.familias.size > 2 ? '…' : '');
-    return `
-      <div class="lic-row" data-id="${g.id}">
-        <div><span class="lic-id">${g.id}</span><span class="lic-fam">${famText || '&nbsp;'}</span></div>
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(g.pct,100)}%; background:${bucketColor(g.pct)}"></div></div>
-        <div class="pct"><span class="pill ${bucket(g.pct)}">${fmtPct(g.pct)}</span></div>
-      </div>`;
-  }).join('') || '<div class="msg">No hay licitaciones con datos.</div>';
-
-  licList.querySelectorAll('.lic-row').forEach(row => {
-    row.addEventListener('click', () => showDetail(row.dataset.id, groups[row.dataset.id]));
-  });
-
-  if(monthChart) monthChart.destroy();
-  monthChart = new Chart(document.getElementById('monthChart'), {
-    type:'bar',
-    data:{
-      labels: monthCols.map(m => m.label.replace(/\s?\d{4}/,'').slice(0,3)),
-      datasets:[{
-        data: monthTotals,
-        backgroundColor: '#1D5750',
-        borderRadius: 5,
-        maxBarThickness: 34
-      }]
-    },
-    options:{
-      plugins:{legend:{display:false}},
-      scales:{
-        y:{beginAtZero:true, grid:{color:'#E7ECE9'}, ticks:{font:{family:'Inter'}}},
-        x:{grid:{display:false}, ticks:{font:{family:'Inter'}}}
-      }
+    if(tenders.length === 0){
+      container.innerHTML = '<div class="msg error">No se encontraron licitaciones con datos válidos en la hoja.</div>';
+      tbody.innerHTML = '<tr><td colspan="6" class="msg error">Sin datos</td></tr>';
+      return;
     }
+
+    tenders.sort((a,b)=> b.pct - a.pct);
+    LAST_TENDERS = tenders;
+
+    let totalProg = 0, totalEjec = 0, totalValProg = 0, totalValEjec = 0, totalValPago = 0;
+    let riesgosas = 0, criticas = 0, aceptables = 0;
+    let cardsHtml = "", rowsHtml = "";
+
+    tenders.forEach(t=>{
+      totalProg += t.programada;
+      totalEjec += t.ejecutada;
+      totalValProg += t.valProg;
+      totalValEjec += t.valEjec;
+      totalValPago += t.valPago;
+      if(t.pct > 70) riesgosas++;
+      else if(t.pct >= 50) criticas++;
+      else aceptables++;
+      const st = statusFor(t.pct);
+      const pagoCls = t.pctPago >= 90 ? 'ok' : 'warn';
+
+      cardsHtml += `
+        <div class="tender" data-id="${t.id}">
+          <div class="tender-top">
+            <div>
+              <div class="tender-id">${t.id}</div>
+              <div class="tender-name">${t.especialidad}</div>
+              <span class="status-pill status-${st.cls}">${st.label}</span>
+            </div>
+            <div class="tender-pct">${t.pct.toFixed(0)}%<span class="of">${fmtCLP(t.valEjec)} / ${fmtCLP(t.valProg)}</span><span class="of" style="color:var(--ink-mute);">Saldo restante: ${fmtCLP(t.valProg - t.valEjec)}</span></div>
+          </div>
+          <div class="strip">
+            <div class="strip-fill ${st.fill}" data-w="${Math.min(t.pct,100)}"></div>
+            <div class="strip-target"></div>
+          </div>
+          <div class="tender-foot"><span>${t.tipos === 1 ? '1 tipo de cirugía convenida' : t.tipos + ' tipos de cirugía convenidas'}</span><span>${t.ejecutada} / ${t.programada} cirugías</span></div>
+          <div class="pay-line" data-pago-id="${t.id}">
+            <div class="pay-line-top">
+              <span class="pay-label">Ver detalle de pago</span>
+              <span class="pay-value ${pagoCls}">${t.pctPago.toFixed(0)}% pagado · ${fmtCLP(t.valPago)}</span>
+            </div>
+            <div class="pay-strip">
+              <div class="pay-strip-fill ${pagoCls}" data-w="${Math.min(t.pctPago,100)}"></div>
+            </div>
+          </div>
+        </div>`;
+
+      rowsHtml += `
+        <tr class="clickable" data-id="${t.id}">
+          <td class="name">${t.id}</td>
+          <td>${t.especialidad}</td>
+          <td class="num">${fmtCLP(t.valProg)}</td>
+          <td class="num">${fmtCLP(t.valEjec)}</td>
+          <td class="num">${t.pct.toFixed(0)}%</td>
+          <td class="num">${fmtCLP(t.valPago)}</td>
+          <td class="num">${t.pctPago.toFixed(0)}%</td>
+          <td><span class="status-pill status-${st.cls}">${st.label}</span></td>
+        </tr>`;
+    });
+
+    container.innerHTML = cardsHtml;
+    tbody.innerHTML = rowsHtml;
+
+    document.querySelectorAll('.strip-fill, .pay-strip-fill').forEach(el=>{
+      const w = el.getAttribute('data-w');
+      requestAnimationFrame(()=>{ el.style.width = w + '%'; });
+    });
+
+    const globalPct = totalValProg > 0 ? (totalValEjec/totalValProg*100) : 0;
+    const globalPctPago = totalValEjec > 0 ? (totalValPago/totalValEjec*100) : 0;
+
+    document.getElementById('v-global').innerHTML = globalPct.toFixed(0) + '<span>%</span>';
+    document.getElementById('v-count').textContent = tenders.length;
+    document.getElementById('v-riesgo').textContent = riesgosas;
+    document.getElementById('v-critico').textContent = criticas;
+    document.getElementById('v-bajo').textContent = aceptables;
+    document.getElementById('eyebrow-fecha').textContent = 'Última carga: ' + new Date().toLocaleDateString('es-CL', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
+    document.getElementById('eyebrow').textContent = 'Panel en vivo · conectado a Google Sheets';
+
+    document.getElementById('r-total-plan').textContent = totalProg.toLocaleString('es-CL');
+    document.getElementById('r-total-ejec').textContent = totalEjec.toLocaleString('es-CL');
+    document.getElementById('r-cumpl-val').textContent = globalPct.toFixed(0) + '%';
+    document.getElementById('r-val-plan').textContent = fmtCLP(totalValProg);
+    document.getElementById('r-val-ejec').textContent = fmtCLP(totalValEjec);
+    document.getElementById('r-val-pago').textContent = fmtCLP(totalValPago);
+    document.getElementById('r-pct-pago').textContent = globalPctPago.toFixed(0) + '%';
+
+    drawChart(tenders);
+
+    // wire up click-through to detail view
+    document.querySelectorAll('[data-id]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        location.hash = '#/licitacion/' + encodeURIComponent(el.getAttribute('data-id'));
+      });
+    });
+
+    // wire up click-through to payment detail (stop propagation so it doesn't also open the tender detail)
+    document.querySelectorAll('[data-pago-id]').forEach(el=>{
+      el.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        location.hash = '#/pagos/' + encodeURIComponent(el.getAttribute('data-pago-id'));
+      });
+    });
+  }
+
+  function drawChart(tenders){
+    const sorted = [...tenders].sort((a,b)=> b.valProg - a.valProg);
+    const ctx = document.getElementById('main-chart').getContext('2d');
+    if(CHART) CHART.destroy();
+    CHART = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sorted.map(t=>t.id),
+        datasets: [
+          {
+            label: 'Programado ($)',
+            data: sorted.map(t=>t.valProg),
+            backgroundColor: 'rgba(15,36,56,0.15)',
+            borderColor: '#0F2438',
+            borderWidth: 1,
+            borderRadius: 3
+          },
+          {
+            label: 'Ejecutado ($)',
+            data: sorted.map(t=>t.valEjec),
+            backgroundColor: '#1E9C8B',
+            borderRadius: 3
+          },
+          {
+            label: 'Pagado ($)',
+            data: sorted.map(t=>t.valPago),
+            backgroundColor: '#E8A33D',
+            borderRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins:{
+          legend:{ position:'top', labels:{ font:{family:"'IBM Plex Mono', monospace", size:11}, color:'#5C6E76', boxWidth:12 } },
+          tooltip:{ callbacks:{ label: (c)=> c.dataset.label + ': ' + fmtCLP(c.raw) } }
+        },
+        scales:{
+          x:{ ticks:{ font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ display:false } },
+          y:{ ticks:{ callback:(v)=> fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ color:'#E1E7E7' } }
+        }
+      }
+    });
+  }
+
+  function renderDetail(id){
+    const rows = RAW_ROWS.filter(r => (r[COL_ID]||"").trim() === id);
+    if(rows.length === 0){
+      document.getElementById('d-title').textContent = 'No se encontró esa licitación';
+      document.getElementById('detail-tipos-body').innerHTML = '';
+      document.getElementById('detail-months-head').innerHTML = '';
+      document.getElementById('detail-months-row').innerHTML = '';
+      return;
+    }
+
+    let totalProg = 0, totalEjec = 0;
+    const familias = [];
+    const tipoRows = [];
+    const monthTotals = MONTH_COLS.map(()=>0);
+
+    rows.forEach(r=>{
+      const prog = parseFloat((r[COL_PROGRAMADA]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const ejec = parseFloat((r[COL_EJECUTADA]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const fam = (r[COL_FAMILIA]||"").trim();
+      const tipo = (r[COL_TIPO]||"").trim() || "—";
+      const fonasa = (r[COL_FONASA]||"").trim() || "—";
+      const valorUnit = parseFloat((r[COL_VALOR_UNIT]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const pctRow = prog > 0 ? (ejec/prog*100) : 0;
+
+      totalProg += prog;
+      totalEjec += ejec;
+      if(fam && !familias.includes(fam)) familias.push(fam);
+
+      tipoRows.push({tipo, fonasa, valorUnit, prog, ejec, pctRow});
+
+      MONTH_COLS.forEach((mc, i)=>{
+        const v = parseFloat((r[mc]||"0").replace(/[^0-9.-]/g,"")) || 0;
+        monthTotals[i] += v;
+      });
+    });
+
+    tipoRows.sort((a,b)=> b.pctRow - a.pctRow);
+    const tiposHtml = tipoRows.map(tr=> `
+        <tr>
+          <td>${tr.tipo}</td>
+          <td>${tr.fonasa}</td>
+          <td class="num">${fmtCLP(tr.valorUnit)}</td>
+          <td class="num">${tr.prog}</td>
+          <td class="num">${tr.ejec}</td>
+          <td class="num">${tr.pctRow.toFixed(0)}%</td>
+        </tr>`).join('');
+
+    const pct = totalProg > 0 ? (totalEjec/totalProg*100) : 0;
+    const st = statusFor(pct);
+
+    document.getElementById('d-id').textContent = id;
+    document.getElementById('d-title').textContent = familias.join(" / ") || "—";
+    document.getElementById('d-status').textContent = st.label;
+    document.getElementById('d-status').className = 'status-pill status-' + st.cls;
+    document.getElementById('d-prog').textContent = totalProg;
+    document.getElementById('d-ejec').textContent = totalEjec;
+    document.getElementById('d-pct').textContent = pct.toFixed(0) + '%';
+    document.getElementById('d-tipos').textContent = rows.length;
+    document.getElementById('detail-tipos-body').innerHTML = tiposHtml;
+
+    document.getElementById('detail-months-head').innerHTML =
+      '<th>Mes</th>' + MONTH_LABELS.map(m=>`<th class="num">${m}</th>`).join('');
+    document.getElementById('detail-months-row').innerHTML =
+      '<td class="name">Cirugías ejecutadas</td>' + monthTotals.map(v=>`<td class="num">${v}</td>`).join('');
+
+    drawDetailChart(monthTotals);
+  }
+
+  function drawDetailChart(monthTotals){
+    const ctx = document.getElementById('detail-chart').getContext('2d');
+    if(DETAIL_CHART) DETAIL_CHART.destroy();
+    DETAIL_CHART = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: MONTH_LABELS,
+        datasets: [{
+          label: 'Cirugías ejecutadas',
+          data: monthTotals,
+          borderColor: '#1E9C8B',
+          backgroundColor: 'rgba(30,156,139,0.12)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#1E9C8B',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 1.5,
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins:{
+          legend:{ display:false },
+          tooltip:{ callbacks:{ label:(c)=> c.raw + ' cirugías' } }
+        },
+        scales:{
+          x:{ ticks:{ font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ display:false } },
+          y:{ beginAtZero:true, ticks:{ precision:0, font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ color:'#E1E7E7' } }
+        }
+      }
+    });
+  }
+
+  function renderPagos(id){
+    const t = LAST_TENDERS.find(x => x.id === id);
+    const rows = PAGOS_ROWS.filter(r => (r[COL_PAGO_ID]||"").trim() === id);
+
+    document.getElementById('p-id').textContent = id;
+    document.getElementById('p-ejec').textContent = t ? fmtCLP(t.valEjec) : '–';
+    document.getElementById('p-pagado').textContent = t ? fmtCLP(t.valPago) : '–';
+    document.getElementById('p-pct').textContent = t ? t.pctPago.toFixed(0) + '%' : '–';
+    document.getElementById('p-facturas').textContent = rows.length;
+
+    const tbody = document.getElementById('pagos-body');
+    if(rows.length === 0){
+      tbody.innerHTML = '<tr><td colspan="8" class="msg">No hay registros de pago para esta licitación en BASE PAGOS.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = rows.map(r=>{
+      const monto = parseFloat((r["MONTO TOTAL"]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const estado = (r["ESTADO"]||"—").trim();
+      const estadoCls = estado.toUpperCase() === "PAGADO" ? "status-aceptable" : "status-riesgoso";
+      return `
+        <tr>
+          <td>${r["PERIODO (CIRUGIAS)"]||"—"}</td>
+          <td>${r["TIPO CIRUGIA"]||"—"}</td>
+          <td>${r["Nº OC"]||"—"}</td>
+          <td>${r["FACTURA"]||"—"}</td>
+          <td class="num">${r["CANTIDAD CIRUGIAS PAGADAS"]||"0"}</td>
+          <td class="num">${fmtCLP(monto)}</td>
+          <td><span class="status-pill ${estadoCls}">${estado}</span></td>
+          <td>${r["OBSERVACIONES"]||"—"}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  function route(){
+    const hash = location.hash;
+    const matchLic = hash.match(/^#\/licitacion\/(.+)$/);
+    const matchPago = hash.match(/^#\/pagos\/(.+)$/);
+
+    document.getElementById('list-view').style.display = 'none';
+    document.getElementById('detail-view').style.display = 'none';
+    document.getElementById('pagos-view').style.display = 'none';
+
+    if(matchPago){
+      const id = decodeURIComponent(matchPago[1]);
+      document.getElementById('pagos-view').style.display = 'block';
+      renderPagos(id);
+      window.scrollTo(0,0);
+    }else if(matchLic){
+      const id = decodeURIComponent(matchLic[1]);
+      document.getElementById('detail-view').style.display = 'block';
+      renderDetail(id);
+      window.scrollTo(0,0);
+    }else{
+      document.getElementById('list-view').style.display = 'block';
+    }
+  }
+
+  window.addEventListener('hashchange', route);
+  document.getElementById('back-btn').addEventListener('click', ()=>{
+    location.hash = '';
+  });
+  document.getElementById('back-btn-pagos').addEventListener('click', ()=>{
+    location.hash = '';
   });
 
-  const active = document.querySelector('.lic-row.active');
-  if(active) showDetail(active.dataset.id, groups[active.dataset.id]);
-}
+  function parseAndGroup(rows){
+    // rows: array of objects keyed by header row (row index 1 in the sheet)
+    const pagos = pagadoPorLicitacion();
+    const groups = {};
+    rows.forEach(r=>{
+      const id = (r[COL_ID] || "").trim();
+      if(!id) return; // skip blank / summary rows
+      const programada = parseFloat((r[COL_PROGRAMADA]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const ejecutada = parseFloat((r[COL_EJECUTADA]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const valProg = parseFloat((r[COL_VAL_PROG]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const valEjec = parseFloat((r[COL_VAL_EJEC]||"0").replace(/[^0-9.-]/g,"")) || 0;
+      const familia = (r[COL_FAMILIA] || "").trim();
 
-function showDetail(id, group){
-  document.querySelectorAll('.lic-row').forEach(r => r.classList.toggle('active', r.dataset.id === id));
-  const section = document.getElementById('detailSection');
-  section.style.display = 'block';
-  const rows = [...group.tipos].sort((a,b)=>b.pct-a.pct);
-  document.getElementById('detailWrap').innerHTML = `
-    <div id="detailTitle">Licitación <b>${id}</b> · ${rows.length} tipo(s) de cirugía</div>
-    <table>
-      <thead><tr>
-        <th>Familia</th><th>Tipo de cirugía</th><th>Programado</th><th>Ejecutado</th><th>% Avance</th><th>Valorizado ejecutado</th>
-      </tr></thead>
-      <tbody>
-        ${rows.map(r => `
+      if(!groups[id]){
+        groups[id] = {id, programada:0, ejecutada:0, valProg:0, valEjec:0, familias:[], tipos:0};
+      }
+      groups[id].programada += programada;
+      groups[id].ejecutada += ejecutada;
+      groups[id].valProg += valProg;
+      groups[id].valEjec += valEjec;
+      groups[id].tipos += 1;
+      if(familia && !groups[id].familias.includes(familia)) groups[id].familias.push(familia);
+    });
+
+    return Object.values(groups).map(g=>{
+      const especialidad = g.familias.length <= 2
+        ? g.familias.join(" / ")
+        : g.familias.slice(0,2).join(" / ") + ` +${g.familias.length-2} más`;
+      const valPago = pagos[g.id] || 0;
+      return {
+        id: g.id,
+        especialidad: especialidad || "—",
+        programada: g.programada,
+        ejecutada: g.ejecutada,
+        valProg: g.valProg,
+        valEjec: g.valEjec,
+        valPago: valPago,
+        pct: g.valProg > 0 ? (g.valEjec/g.valProg*100) : 0,
+        pctPago: g.valEjec > 0 ? (valPago/g.valEjec*100) : 0,
+        tipos: g.tipos
+      };
+    });
+  }
+
+  function parseCsv(url){
+    return new Promise((resolve, reject)=>{
+      Papa.parse(url, {
+        download: true,
+        header: false,
+        skipEmptyLines: false,
+        complete: (results)=> resolve(results.data),
+        error: (err)=> reject(err)
+      });
+    });
+  }
+
+  function loadData(){
+    Promise.all([ parseCsv(CSV_URL), parseCsv(PAGOS_CSV_URL) ])
+      .then(([iqxData, pagosData])=>{
+        try{
+          // IQX sheet: row index 0 = merged title, row index 1 = real headers
+          const headerRow = iqxData[1].map(h => (h||"").trim());
+          const detected = detectMonthColumns(headerRow);
+          MONTH_COLS = detected.cols;
+          MONTH_LABELS = detected.labels;
+
+          const rows = iqxData.slice(2).map(rowArr=>{
+            const obj = {};
+            headerRow.forEach((h, i)=>{ if(h) obj[h] = rowArr[i]; });
+            return obj;
+          });
+          RAW_ROWS = rows;
+
+          // Pagos sheet: row index 0 = real headers, no merged title row
+          const pagosHeaderRow = pagosData[0].map(h => (h||"").trim());
+          PAGOS_ROWS = pagosData.slice(1).map(rowArr=>{
+            const obj = {};
+            pagosHeaderRow.forEach((h, i)=>{ if(h) obj[h] = rowArr[i]; });
+            return obj;
+          });
+
+          const tenders = parseAndGroup(rows);
+          render(tenders);
+          route();
+        }catch(err){
+          console.error(err);
+          document.getElementById('tenders').innerHTML =
+            '<div class="msg error">Error al procesar los datos de la hoja. Revisa que la estructura de columnas no haya cambiado.</div>';
+          document.getElementById('eyebrow').textContent = 'Error al conectar';
+        }
+      })
+      .catch(err=>{
+        console.error(err);
+        document.getElementById('tenders').innerHTML =
+          '<div class="msg error">No se pudo cargar alguna de las hojas de Google Sheets. Verifica que ambas sean públicas ("Cualquier persona con el enlace puede ver").</div>';
+        document.getElementById('eyebrow').textContent = 'Error al conectar';
+      });
+  }
+
+  loadData();
+
+  // ============================================================
+  // TURNOS EXTRAS / HORAS MÉDICAS (second data source, other Drive)
+  // ============================================================
+  const HM_SHEET_ID = "18ZZWJq-cNAkTFuYD70l8rQl4O3l-2nkkGRan0TOWvPg";
+  const HM_GID = "547212557"; // tab: Horas medicas (raw database)
+  const HM_CSV_URL = `https://docs.google.com/spreadsheets/d/${HM_SHEET_ID}/export?format=csv&gid=${HM_GID}`;
+
+  const MONTH_ORDER = {enero:1,febrero:2,marzo:3,abril:4,mayo:5,junio:6,julio:7,agosto:8,septiembre:9,octubre:10,noviembre:11,diciembre:12};
+
+  let TURNOS_LOADED = false;
+
+  function normHeader(h){
+    return (h||"").replace(/\s+/g,' ').trim().toLowerCase();
+  }
+
+  function findColExact(headerRow, target){
+    const idx = headerRow.findIndex(h => normHeader(h) === target);
+    return idx === -1 ? null : idx;
+  }
+
+  function numFrom(v){
+    return parseFloat((v||"0").toString().replace(/[^0-9.-]/g,"")) || 0;
+  }
+
+  function showApp(name){
+    document.getElementById('app-iqx').style.display = name === 'iqx' ? 'block' : 'none';
+    document.getElementById('app-turnos').style.display = name === 'turnos' ? 'block' : 'none';
+    document.getElementById('tab-iqx').classList.toggle('active', name === 'iqx');
+    document.getElementById('tab-turnos').classList.toggle('active', name === 'turnos');
+    window.scrollTo(0,0);
+    if(name === 'turnos' && !TURNOS_LOADED){
+      TURNOS_LOADED = true;
+      loadTurnos();
+    }
+  }
+
+  let HT_ESTADO_CHART = null, HT_MES_CHART = null;
+
+  function loadTurnos(){
+    parseCsv(HM_CSV_URL).then(data=>{
+      try{
+        const headerRow = data[0].map(h=>h||"");
+        const idxNombre = findColExact(headerRow, "nombre");
+        const idxEspecialidad = findColExact(headerRow, "especialidad");
+        const idxAnio = findColExact(headerRow, "año trabajado");
+        const idxMes = findColExact(headerRow, "mes trabajado");
+        const idxHoras = findColExact(headerRow, "total horas");
+        const idxConvenio = findColExact(headerRow, "convenio");
+        const idxEstado = findColExact(headerRow, "estado");
+        const idxMonto = findColExact(headerRow, "monto");
+
+        const rows = data.slice(1).filter(r => r[idxMonto] && numFrom(r[idxMonto]) > 0);
+
+        let montoTotal=0, montoPagado=0, montoProceso=0, montoPendiente=0, horasTotal=0;
+        const porConvenio = {};
+        const porMedico = {};
+        const porMes = {};
+
+        rows.forEach(r=>{
+          const monto = numFrom(r[idxMonto]);
+          const horas = numFrom(r[idxHoras]);
+          const estado = (r[idxEstado]||"").trim().toUpperCase();
+          const convenio = (r[idxConvenio]||"—").trim() || "—";
+          const nombre = (r[idxNombre]||"—").trim() || "—";
+          const especialidad = (r[idxEspecialidad]||"—").trim() || "—";
+          const mes = (r[idxMes]||"").trim().toLowerCase();
+          const anio = (r[idxAnio]||"").trim();
+
+          montoTotal += monto;
+          horasTotal += horas;
+          if(estado === "PAGADO") montoPagado += monto;
+          else if(estado === "EN PROCESO") montoProceso += monto;
+          else if(estado === "PENDIENTE") montoPendiente += monto;
+
+          if(!porConvenio[convenio]) porConvenio[convenio] = {turnos:0, horas:0, monto:0};
+          porConvenio[convenio].turnos++;
+          porConvenio[convenio].horas += horas;
+          porConvenio[convenio].monto += monto;
+
+          if(!porMedico[nombre]) porMedico[nombre] = {especialidad, turnos:0, horas:0, monto:0};
+          porMedico[nombre].turnos++;
+          porMedico[nombre].horas += horas;
+          porMedico[nombre].monto += monto;
+
+          if(mes && anio && MONTH_ORDER[mes]){
+            const key = anio + '-' + String(MONTH_ORDER[mes]).padStart(2,'0');
+            if(!porMes[key]) porMes[key] = {label: mes.slice(0,3).toUpperCase()+' '+anio.slice(-2), monto:0};
+            porMes[key].monto += monto;
+          }
+        });
+
+        const pct = montoTotal > 0 ? (montoPagado/montoTotal*100) : 0;
+
+        document.getElementById('ht-v-total').textContent = fmtCLP(montoTotal);
+        document.getElementById('ht-v-pagado').textContent = fmtCLP(montoPagado);
+        document.getElementById('ht-v-pct').innerHTML = pct.toFixed(0) + '<span>%</span>';
+        document.getElementById('ht-v-turnos').textContent = rows.length.toLocaleString('es-CL');
+        document.getElementById('ht-v-horas').textContent = horasTotal.toLocaleString('es-CL');
+        document.getElementById('ht-eyebrow').textContent = 'Panel en vivo · conectado a Google Sheets';
+        document.getElementById('ht-eyebrow-fecha').textContent = 'Última carga: ' + new Date().toLocaleDateString('es-CL', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
+
+        document.getElementById('ht-r-total').textContent = fmtCLP(montoTotal);
+        document.getElementById('ht-r-pagado').textContent = fmtCLP(montoPagado);
+        document.getElementById('ht-r-proceso').textContent = fmtCLP(montoProceso);
+        document.getElementById('ht-r-pendiente').textContent = fmtCLP(montoPendiente);
+        document.getElementById('ht-r-pct').textContent = pct.toFixed(0) + '%';
+
+        // Estado chart
+        const ctxEstado = document.getElementById('turnos-estado-chart').getContext('2d');
+        if(HT_ESTADO_CHART) HT_ESTADO_CHART.destroy();
+        HT_ESTADO_CHART = new Chart(ctxEstado, {
+          type: 'bar',
+          data: {
+            labels: ['Pagado','En proceso','Pendiente'],
+            datasets: [{
+              data: [montoPagado, montoProceso, montoPendiente],
+              backgroundColor: ['#1E9C8B','#E8A33D','#C4573A'],
+              borderRadius: 4
+            }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=> fmtCLP(c.raw) } } },
+            scales:{
+              x:{ ticks:{font:{family:"'IBM Plex Mono', monospace", size:11}, color:'#5C6E76'}, grid:{display:false} },
+              y:{ ticks:{ callback:(v)=>fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76'}, grid:{color:'#E1E7E7'} }
+            }
+          }
+        });
+
+        // Monthly chart
+        const mesKeys = Object.keys(porMes).sort();
+        const ctxMes = document.getElementById('turnos-mes-chart').getContext('2d');
+        if(HT_MES_CHART) HT_MES_CHART.destroy();
+        HT_MES_CHART = new Chart(ctxMes, {
+          type: 'line',
+          data: {
+            labels: mesKeys.map(k=>porMes[k].label),
+            datasets: [{
+              label: 'Monto turnos extra',
+              data: mesKeys.map(k=>porMes[k].monto),
+              borderColor: '#1E9C8B',
+              backgroundColor: 'rgba(30,156,139,0.12)',
+              fill: true, tension:0.3, pointRadius:4,
+              pointBackgroundColor:'#1E9C8B', pointBorderColor:'#fff', pointBorderWidth:1.5, borderWidth:2
+            }]
+          },
+          options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=> fmtCLP(c.raw) } } },
+            scales:{
+              x:{ ticks:{font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76'}, grid:{display:false} },
+              y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76'}, grid:{color:'#E1E7E7'} }
+            }
+          }
+        });
+
+        // Consumo por convenio table
+        const convenioRows = Object.entries(porConvenio).map(([id,v])=>({id, ...v}));
+        convenioRows.sort((a,b)=> b.monto - a.monto);
+        document.getElementById('ht-convenio-body').innerHTML = convenioRows.map(c=>`
           <tr>
-            <td>${r.familia || '—'}</td>
-            <td>${r.tipo || '—'}</td>
-            <td class="num">${fmtInt(r.programado)}</td>
-            <td class="num">${fmtInt(r.ejecutado)}</td>
-            <td><span class="pill ${bucket(r.pct)}">${fmtPct(r.pct)}</span></td>
-            <td class="num">${fmtMoney(r.valEjec)}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-  `;
-  section.scrollIntoView({behavior:'smooth', block:'nearest'});
-}
+            <td class="name">${c.id}</td>
+            <td class="num">${c.turnos}</td>
+            <td class="num">${c.horas.toLocaleString('es-CL')}</td>
+            <td class="num">${fmtCLP(c.monto)}</td>
+            <td class="num">${montoTotal>0 ? (c.monto/montoTotal*100).toFixed(1) : '0'}%</td>
+          </tr>`).join('');
 
-loadData();
-setInterval(loadData, 5 * 60 * 1000);
+        // Top médicos table
+        const medicoRows = Object.entries(porMedico).map(([nombre,v])=>({nombre, ...v}));
+        medicoRows.sort((a,b)=> b.monto - a.monto);
+        document.getElementById('ht-medicos-body').innerHTML = medicoRows.slice(0,15).map(m=>`
+          <tr>
+            <td class="name">${m.nombre}</td>
+            <td>${m.especialidad}</td>
+            <td class="num">${m.turnos}</td>
+            <td class="num">${m.horas.toLocaleString('es-CL')}</td>
+            <td class="num">${fmtCLP(m.monto)}</td>
+          </tr>`).join('');
+
+      }catch(err){
+        console.error(err);
+        document.getElementById('ht-eyebrow').textContent = 'Error al conectar';
+      }
+    }).catch(err=>{
+      console.error(err);
+      document.getElementById('ht-eyebrow').textContent = 'Error al conectar';
+    });
+  }
 </script>
+
 </body>
 </html>
