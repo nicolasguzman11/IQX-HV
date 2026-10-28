@@ -1179,6 +1179,12 @@
       document.getElementById('ht-eyebrow').textContent = 'Error al conectar';
     });
   }
+
+  // Allow the cover/menu page to deep-link into a specific tab via ?view=iqx|turnos
+  (function(){
+    const view = new URLSearchParams(location.search).get('view');
+    if(view === 'turnos') showApp('turnos');
+  })();
 </script>
 
 </body>
