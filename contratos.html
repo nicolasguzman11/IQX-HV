@@ -1,4 +1,21 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<style>
+.hv-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px clamp(14px,3vw,32px);background:#08121D;color:#EAF1F5;font-family:'IBM Plex Sans',-apple-system,'Segoe UI',sans-serif;border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:50}
+.hv-bar a{color:inherit;text-decoration:none}
+.hv-brand{display:flex;align-items:center;gap:11px;min-width:0}
+.hv-logo{width:34px;height:34px;border-radius:9px;background:#fff;padding:3px;display:grid;place-items:center;flex:none;overflow:hidden}
+.hv-logo img{max-width:100%;max-height:100%;object-fit:contain}
+.hv-logo.nologo{background:linear-gradient(135deg,#1E9C8B,#3B7BD9);color:#fff;padding:0}
+.hv-logo.nologo svg{width:60%;height:60%}
+.hv-t{font-weight:600;font-size:13.5px;line-height:1.15}
+.hv-s{font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:#3DBBA9;margin-top:2px}
+.hv-nav{display:flex;gap:8px}
+.hv-nav a{font-size:12.5px;padding:7px 12px;border-radius:9px;border:1px solid rgba(255,255,255,.14);color:#B7C7D1;transition:all .15s}
+.hv-nav a:hover{color:#fff;border-color:#3DBBA9}
+@media(max-width:560px){.hv-s{display:none}.hv-nav a.hv-out{display:none}}
+</style>
+<div class="hv-bar"><a class="hv-brand" href="/menu"><span class="hv-logo"><img src="/logo.png" alt="Hospital de Villarrica" onerror="this.parentNode.classList.add('nologo');this.outerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M3 12h4l2-6 4 12 2-6h6&quot;/></svg>'"></span><span><div class="hv-t">Hospital de Villarrica</div><div class="hv-s">Panel Gestión de Contratos</div></span></a><nav class="hv-nav"><a href="/menu">← Menú</a><a class="hv-out" href="/logout">Cerrar sesión</a></nav></div>
+
 <title>Dashboard Gestión de Contratos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
