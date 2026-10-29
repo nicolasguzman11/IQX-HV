@@ -339,8 +339,8 @@ html,body{background:transparent !important;}
 html[data-mode="dark"] .hv-aurora i{opacity:.22 !important;}
 /* tarjetas y gráficos translúcidos (vidrio suave) */
 .vital,.resumen-box,.tender,.table-wrap,.lic,.chart-card,.kpi,.card,.sec-views .view,.m-kp div,.pay-line,.gen-pie{
-  background:rgba(255,255,255,.58) !important;border-color:rgba(255,255,255,.75) !important;
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 4px 18px -8px rgba(15,36,56,.14) !important;}
+  background:linear-gradient(145deg,rgba(255,255,255,.52),rgba(235,246,250,.38)) !important;border-color:rgba(255,255,255,.8) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15);box-shadow:0 4px 18px -8px rgba(15,36,56,.14) !important;}
 .sec-views .view[aria-selected="true"]{background:rgba(227,236,248,.78) !important;border-color:var(--accent) !important;}
 .bar,.tabs,.filters,header.top,.est-filter{background:transparent !important;border-color:transparent !important;}
 .tabs{background:rgba(255,255,255,.45) !important;}
@@ -412,7 +412,7 @@ const SHEET_ID='18ZZWJq-cNAkTFuYD70l8rQl4O3l-2nkkGRan0TOWvPg',GID='1811767707';
 // Licitaciones vigentes (monto total desde la hoja REPORTE). Completar monto de la 89 cuando se conozca.
 const LICS={'1952-86-LP25':{total:291789840,vigente:true},'1952-89-LP25':{total:null,vigente:true}};
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-const COL={'PAGADO':'#2A9D8F','EN PROCESO':'#E8A33D','PENDIENTE':'#C4573A'};
+const COL={'PAGADO':'#5CB8AD','EN PROCESO':'#EAB866','PENDIENTE':'#D9806A'};
 const fmt=n=>'$'+Math.round(n).toLocaleString('es-CL');
 const norm=t=>(t||'').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 function money(t){
@@ -484,7 +484,7 @@ function render(){
   const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:TICKC,font:{size:11}}}},scales:{x:{stacked:true,ticks:{color:TICKC,font:{size:10}},grid:{display:false}},y:{stacked:true,beginAtZero:true,ticks:{color:TICKC,font:{size:10}},grid:{color:GRIDC}}}};
   const o1=JSON.parse(JSON.stringify(base));o1.scales.y.ticks={color:TICKC,font:{size:10}};
   charts.push(new Chart(document.getElementById('c1'),{type:'bar',data:{labels:lab,datasets:Object.keys(COL).map(es=>({label:es[0]+es.slice(1).toLowerCase(),backgroundColor:COL[es],data:keys.map(k=>sum(d.filter(r=>r.yr*100+r.mes===k&&r.est===es),r=>r.monto))}))},options:{...base,plugins:{...base.plugins,tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmt(c.raw)}},title:{display:true,text:'Monto por estado ($)',color:TICKC}},scales:{...base.scales,y:{...base.scales.y,ticks:{color:TICKC,font:{size:10},callback:v=>'$'+(v/1e6).toFixed(1)+'M'}}}}}));
-  charts.push(new Chart(document.getElementById('c2'),{type:'bar',data:{labels:lab,datasets:[['Nueva','Consultas nuevas','#2F5DA8'],['Control','Controles','#D9822B']].map(t=>({label:t[1],backgroundColor:t[2],data:keys.map(k=>sum(d.filter(r=>r.yr*100+r.mes===k&&r.tipo===t[0]),r=>r.cant))}))},options:{...base,plugins:{...base.plugins,title:{display:true,text:'Atenciones por tipo',color:TICKC}}}}));
+  charts.push(new Chart(document.getElementById('c2'),{type:'bar',data:{labels:lab,datasets:[['Nueva','Consultas nuevas','#6C93CF'],['Control','Controles','#E5A767']].map(t=>({label:t[1],backgroundColor:t[2],data:keys.map(k=>sum(d.filter(r=>r.yr*100+r.mes===k&&r.tipo===t[0]),r=>r.cant))}))},options:{...base,plugins:{...base.plugins,title:{display:true,text:'Atenciones por tipo',color:TICKC}}}}));
   // especialidad
   const m={};d.forEach(r=>{const x=m[r.esp]||(m[r.esp]={n:0,c:0,monto:0});if(r.tipo==='Nueva')x.n+=r.cant;else x.c+=r.cant;x.monto+=r.monto;});
   const rows=Object.entries(m).sort((a,b)=>b[1].monto-a[1].monto);

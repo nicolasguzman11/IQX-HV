@@ -16,10 +16,11 @@ html[data-mode="dark"] .hv-spot{background:radial-gradient(520px circle at var(-
 html,body{background:transparent !important;}
 .hv-aurora i{opacity:.34 !important;} .hv-aurora i:nth-child(3){opacity:.28 !important;}
 html[data-mode="dark"] .hv-aurora i{opacity:.22 !important;}
+html[data-mode="light"]:root{--s1:#6C93CF;--s2:#E5A767;--s3:#63BDB1;--s4:#B093CC;--good:#2E9461;--warn:#C0832A;--crit:#C9514A;--grid:rgba(15,36,56,.07);}
 /* tarjetas y gráficos translúcidos (vidrio suave) */
 .vital,.resumen-box,.tender,.table-wrap,.lic,.chart-card,.kpi,.card,.sec-views .view,.m-kp div,.pay-line,.gen-pie{
-  background:rgba(255,255,255,.58) !important;border-color:rgba(255,255,255,.75) !important;
-  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 4px 18px -8px rgba(15,36,56,.14) !important;}
+  background:linear-gradient(145deg,rgba(255,255,255,.52),rgba(235,246,250,.38)) !important;border-color:rgba(255,255,255,.8) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15);box-shadow:0 4px 18px -8px rgba(15,36,56,.14) !important;}
 .sec-views .view[aria-selected="true"]{background:rgba(227,236,248,.78) !important;border-color:var(--accent) !important;}
 .bar,.tabs,.filters,header.top,.est-filter{background:transparent !important;border-color:transparent !important;}
 .tabs{background:rgba(255,255,255,.45) !important;}
