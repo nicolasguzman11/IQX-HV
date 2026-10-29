@@ -240,6 +240,12 @@
   thead th{font-family:var(--mono);font-weight:600;color:var(--ink-2);background:#EEF2F7;}
   .tender:hover,.pay-line:hover{border-color:var(--accent);}
   #app-iqx .vital:nth-child(3) .value{color:#B3261E !important;} #app-iqx .vital:nth-child(4) .value{color:#A86500 !important;} #app-iqx .vital:nth-child(5) .value{color:#1E7F4F !important;}
+  header .eyebrow::before{display:none;}
+  .stat-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 16px;}
+  .s-chip{display:inline-block;font:600 11px var(--mono);padding:3px 10px;border-radius:999px;white-space:nowrap;}
+  .s-chip.good{background:#E2F3EA;color:#1E7F4F;} .s-chip.neu{background:#EEF2F7;color:#4C5A6E;}
+  .s-btn{font:600 12px var(--mono);color:var(--accent);background:transparent;border:1px solid var(--line);border-radius:7px;padding:7px 10px;cursor:pointer;}
+  .s-btn:hover{background:var(--accent-soft);}
   .back-btn{color:var(--accent);}
 </style>
 </head>
@@ -270,10 +276,10 @@
 <div id="app-iqx">
 
 <header>
-  <div class="eyebrow" id="eyebrow">Panel en vivo · conectando a Google Sheets</div>
-  <div class="eyebrow-sub" id="eyebrow-fecha">Última carga: –</div>
-  <h1>Intervenciones Quirúrgicas</h1>
+  <div class="eyebrow">Gestión de Contratos · Licitaciones</div>
+  <h1>Dashboard Intervenciones Quirúrgicas</h1>
   <p class="subtitle">Cumplimiento por licitación · intervenciones convenidas vs. realizadas</p>
+  <div class="stat-row"><span class="s-chip good" id="eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button></div>
 
   <div class="vitals">
     <div class="vital"><div class="label">Cumplimiento global ($)</div><div class="value" id="v-global">–<span>%</span></div></div>
@@ -451,10 +457,10 @@
 <div id="app-turnos" style="display:none;">
 
 <header>
-  <div class="eyebrow" id="ht-eyebrow">Panel en vivo · conectando a Google Sheets</div>
-  <div class="eyebrow-sub" id="ht-eyebrow-fecha">Última carga: –</div>
-  <h1>Horas Médicas</h1>
+  <div class="eyebrow">Gestión de Contratos · Horas médicas</div>
+  <h1>Dashboard Horas Médicas</h1>
   <p class="subtitle">Turnos extras, consultas y controles médicos · horas y montos</p>
+  <div class="stat-row"><span class="s-chip good" id="ht-eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="ht-eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button></div>
 
   <div class="vitals">
     <div class="vital"><div class="label">Monto total</div><div class="value" id="ht-v-total" style="font-size:20px;">–</div></div>
@@ -468,11 +474,11 @@
 <main>
 
   <div class="resumen-grid">
-    <div class="resumen-box rb-blue"><div class="label">Monto total</div><div class="value" id="ht-r-total">–</div></div>
-    <div class="resumen-box rb-green"><div class="label">Monto pagado</div><div class="value" id="ht-r-pagado">–</div></div>
+    <div style="display:none" class="resumen-box rb-blue"><div class="label">Monto total</div><div class="value" id="ht-r-total">–</div></div>
+    <div style="display:none" class="resumen-box rb-green"><div class="label">Monto pagado</div><div class="value" id="ht-r-pagado">–</div></div>
     <div class="resumen-box rb-orange"><div class="label">Monto en proceso</div><div class="value" id="ht-r-proceso">–</div></div>
     <div class="resumen-box rb-red"><div class="label">Monto pendiente</div><div class="value" id="ht-r-pendiente">–</div></div>
-    <div class="resumen-box rb-purple"><div class="label">% pagado</div><div class="value" id="ht-r-pct">–</div></div>
+    <div style="display:none" class="resumen-box rb-purple"><div class="label">% pagado</div><div class="value" id="ht-r-pct">–</div></div>
   </div>
 
   <div class="section-head">
