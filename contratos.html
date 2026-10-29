@@ -1328,7 +1328,7 @@ let busy=false;
 async function load(){ // botón Actualizar datos: lectura directa, sin caché
   const btn=document.getElementById('f-reload');
   if(busy)return;
-  busy=true;btn.disabled=true;btn.textContent='Actualizando…';status('Leyendo la planilla en Google Sheets…','neu');
+  busy=true;btn.disabled=true;btn.textContent='Actualizando…';status('Actualizando…','neu');
   try{const wb=await fetchWorkbook();await applyResult(wb)}
   catch(e){onError(e&&e.code?e:{code:'fetch',message:'No se pudo leer el archivo: '+(e&&e.message||e)})}
   finally{busy=false;btn.disabled=false;btn.textContent='Actualizar datos'}
@@ -1361,7 +1361,7 @@ document.querySelectorAll('.sec-views .view').forEach(v=>v.addEventListener('cli
  new MutationObserver(()=>{paint();render()}).observe(root,{attributes:true,attributeFilter:['data-mode','data-theme']});
  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',paint);paint();})();
 
-showSaved('Conectando con Google Sheets…','neu');
+showSaved('Conectando…','neu');
 load();
 </script>
 </body></html>
