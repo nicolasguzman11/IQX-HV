@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestión de Contratos · Hospital de Villarrica</title>
+<script>try{var _m=localStorage.getItem('mode');if(!_m)_m=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-mode',_m);}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -246,6 +247,27 @@
   .s-chip.good{background:#E2F3EA;color:#1E7F4F;} .s-chip.neu{background:#EEF2F7;color:#4C5A6E;}
   .s-btn{font:600 12px var(--mono);color:var(--accent);background:transparent;border:1px solid var(--line);border-radius:7px;padding:7px 10px;cursor:pointer;}
   .s-btn:hover{background:var(--accent-soft);}
+
+  /* ===== Fondo oscuro ===== */
+  html[data-mode="dark"]{color-scheme:dark;
+    --paper:#0F141B; --card:#171E29; --ink:#E6EBF2; --ink-mute:#8793A5; --ink-2:#B3BECD; --line:#2B3645;
+    --accent:#7FA8E8; --accent-soft:#1D2D45; --teal-soft:#15301F; --amber-soft:#35270F; --red-soft:#3A1A18;}
+  html[data-mode="dark"] header,html[data-mode="dark"] body{background:var(--paper);}
+  html[data-mode="dark"] header .eyebrow{color:var(--accent);}
+  html[data-mode="dark"] .s-chip.good{background:#15301F;color:#5CC592;}
+  html[data-mode="dark"] .s-chip.neu{background:#1E2734;color:#B3BECD;}
+  html[data-mode="dark"] thead th{background:#1E2734;color:#B3BECD;}
+  html[data-mode="dark"] .strip{background-color:#1E2734;background-image:none;}
+  html[data-mode="dark"] .strip-target{background:#E6EBF2;}
+  html[data-mode="dark"] .pay-line{background:#1E2734;}
+  html[data-mode="dark"] .pay-line:hover{background:#243044;}
+  html[data-mode="dark"] .pay-strip{background:#2B3645;}
+  html[data-mode="dark"] tbody tr:hover{background:#1E2734;}
+  html[data-mode="dark"] .status-aceptable{color:#5CC592;} html[data-mode="dark"] .status-critico{color:#F0B35A;} html[data-mode="dark"] .status-riesgoso{color:#F28B82;}
+  html[data-mode="dark"] .pay-value.ok{color:#5CC592;} html[data-mode="dark"] .pay-value.warn{color:#F28B82;}
+  html[data-mode="dark"] .detail-summary b,html[data-mode="dark"] .detail-summary > div:nth-child(1) b{color:#E6EBF2;}
+  html[data-mode="dark"] .msg.error{color:#F28B82;}
+  html[data-mode="dark"] #app-iqx .vital:nth-child(3) .value{color:#F28B82 !important;} html[data-mode="dark"] #app-iqx .vital:nth-child(4) .value{color:#F0B35A !important;} html[data-mode="dark"] #app-iqx .vital:nth-child(5) .value{color:#5CC592 !important;}
   .back-btn{color:var(--accent);}
 </style>
 </head>
@@ -279,7 +301,7 @@
   <div class="eyebrow">Gestión de Contratos · Licitaciones</div>
   <h1>Dashboard Intervenciones Quirúrgicas</h1>
   <p class="subtitle">Cumplimiento por licitación · intervenciones convenidas vs. realizadas</p>
-  <div class="stat-row"><span class="s-chip good" id="eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button></div>
+  <div class="stat-row"><span class="s-chip good" id="eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
 
   <div class="vitals">
     <div class="vital"><div class="label">Cumplimiento global ($)</div><div class="value" id="v-global">–<span>%</span></div></div>
@@ -460,7 +482,7 @@
   <div class="eyebrow">Gestión de Contratos · Horas médicas</div>
   <h1>Dashboard Horas Médicas</h1>
   <p class="subtitle">Turnos extras, consultas y controles médicos · horas y montos</p>
-  <div class="stat-row"><span class="s-chip good" id="ht-eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="ht-eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button></div>
+  <div class="stat-row"><span class="s-chip good" id="ht-eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="ht-eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
 
   <div class="vitals">
     <div class="vital"><div class="label">Monto total</div><div class="value" id="ht-v-total" style="font-size:20px;">–</div></div>
@@ -548,6 +570,7 @@
 </footer>
 
 <script>
+const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TICKC=__DK?'#8793A5':'#5C6E76',GRIDC=__DK?'#2B3645':'#E1E7E7';
   // ---- CONFIG: your Google Sheet ----
   const SHEET_ID = "132kn3ID25LlgmcCYJ7-gbYcqbFEWhwzcQs4O_OF7lXw";
   const GID = "80993582"; // tab: Base de Datos IQX
@@ -769,12 +792,12 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins:{
-          legend:{ position:'top', labels:{ font:{family:"'IBM Plex Mono', monospace", size:11}, color:'#5C6E76', boxWidth:12 } },
+          legend:{ position:'top', labels:{ font:{family:"'IBM Plex Mono', monospace", size:11}, color:TICKC, boxWidth:12 } },
           tooltip:{ callbacks:{ label: (c)=> c.dataset.label + ': ' + fmtCLP(c.raw) } }
         },
         scales:{
-          x:{ ticks:{ font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ display:false } },
-          y:{ ticks:{ callback:(v)=> fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ color:'#E1E7E7' } }
+          x:{ ticks:{ font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC }, grid:{ display:false } },
+          y:{ ticks:{ callback:(v)=> fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC }, grid:{ color:GRIDC } }
         }
       }
     });
@@ -877,8 +900,8 @@
           tooltip:{ callbacks:{ label:(c)=> c.raw + ' cirugías' } }
         },
         scales:{
-          x:{ ticks:{ font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ display:false } },
-          y:{ beginAtZero:true, ticks:{ precision:0, font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76' }, grid:{ color:'#E1E7E7' } }
+          x:{ ticks:{ font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC }, grid:{ display:false } },
+          y:{ beginAtZero:true, ticks:{ precision:0, font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC }, grid:{ color:GRIDC } }
         }
       }
     });
@@ -1175,8 +1198,8 @@
             responsive:true, maintainAspectRatio:false,
             plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=> fmtCLP(c.raw) } } },
             scales:{
-              x:{ ticks:{font:{family:"'IBM Plex Mono', monospace", size:11}, color:'#5C6E76'}, grid:{display:false} },
-              y:{ ticks:{ callback:(v)=>fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76'}, grid:{color:'#E1E7E7'} }
+              x:{ ticks:{font:{family:"'IBM Plex Mono', monospace", size:11}, color:TICKC}, grid:{display:false} },
+              y:{ ticks:{ callback:(v)=>fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC}, grid:{color:GRIDC} }
             }
           }
         });
@@ -1202,8 +1225,8 @@
             responsive:true, maintainAspectRatio:false,
             plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=> fmtCLP(c.raw) } } },
             scales:{
-              x:{ ticks:{font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76'}, grid:{display:false} },
-              y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:'#5C6E76'}, grid:{color:'#E1E7E7'} }
+              x:{ ticks:{font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC}, grid:{display:false} },
+              y:{ beginAtZero:true, ticks:{ callback:(v)=>fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC}, grid:{color:GRIDC} }
             }
           }
         });
@@ -1252,6 +1275,17 @@
     const view = new URLSearchParams(location.search).get('view');
     if(view === 'turnos') showApp('turnos');
   })();
+
+(function(){
+  var root=document.documentElement;
+  function paint(){var d=root.getAttribute('data-mode')==='dark';document.querySelectorAll('.mode-toggle').forEach(function(b){b.textContent=d?'Fondo claro':'Fondo oscuro';});}
+  document.querySelectorAll('.mode-toggle').forEach(function(b){b.addEventListener('click',function(){
+    var m=root.getAttribute('data-mode')==='dark'?'light':'dark';
+    try{localStorage.setItem('mode',m);}catch(e){}
+    root.setAttribute('data-mode',m);location.reload();
+  });});
+  paint();
+})();
 </script>
 
 </body>
