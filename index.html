@@ -268,6 +268,14 @@
   html[data-mode="dark"] .detail-summary b,html[data-mode="dark"] .detail-summary > div:nth-child(1) b{color:#E6EBF2;}
   html[data-mode="dark"] .msg.error{color:#F28B82;}
   html[data-mode="dark"] #app-iqx .vital:nth-child(3) .value{color:#F28B82 !important;} html[data-mode="dark"] #app-iqx .vital:nth-child(4) .value{color:#F0B35A !important;} html[data-mode="dark"] #app-iqx .vital:nth-child(5) .value{color:#5CC592 !important;}
+  #app-iqx .vitals{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+  #app-iqx .vital{flex-direction:row;min-height:0;padding:6px 14px;gap:8px;border-radius:999px;}
+  #app-iqx .vital .label{font-size:12px;}
+  #app-iqx .vital .value{font-size:18px;}
+  #app-iqx .resumen-grid{justify-content:flex-start;}
+  #app-iqx .resumen-box{flex:1 1 190px;max-width:none;}
+  .est-filter{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;}
+  .est-filter .s-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
   .back-btn{color:var(--accent);}
 </style>
 </head>
@@ -304,7 +312,7 @@
   <div class="stat-row"><span class="s-chip good" id="eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
 
   <div class="vitals">
-    <div class="vital"><div class="label">Cumplimiento global ($)</div><div class="value" id="v-global">–<span>%</span></div></div>
+    <div class="vital" style="display:none"><div class="label">Cumplimiento global ($)</div><div class="value" id="v-global">–<span>%</span></div></div>
     <div class="vital"><div class="label">Licitaciones activas</div><div class="value" id="v-count">–</div></div>
     <div class="vital"><div class="label">Riesgosas (&gt;70%)</div><div class="value" id="v-riesgo" style="color:#E39B85;">–</div></div>
     <div class="vital"><div class="label">Críticas (50-70%)</div><div class="value" id="v-critico" style="color:#F0BD6C;">–</div></div>
@@ -318,26 +326,17 @@
 
     <div class="section-head">
       <h2>Resumen general</h2>
-      <span class="hint">cirugías y montos totales</span>
+      <span class="hint">montos y avance de todas las licitaciones</span>
     </div>
 
     <div class="resumen-grid" id="resumen-grid">
-      <div class="resumen-box rb-blue"><div class="label">Total planificado</div><div class="value" id="r-total-plan">–</div></div>
-      <div class="resumen-box rb-red"><div class="label">Total ejecutado</div><div class="value" id="r-total-ejec">–</div></div>
+      <div class="resumen-box rb-blue" style="display:none"><div class="label">Total planificado</div><div class="value" id="r-total-plan">–</div></div>
+      <div class="resumen-box rb-red" style="display:none"><div class="label">Total ejecutado</div><div class="value" id="r-total-ejec">–</div></div>
       <div class="resumen-box rb-green"><div class="label">Cumplimiento valorizado</div><div class="value" id="r-cumpl-val">–</div></div>
       <div class="resumen-box rb-blue"><div class="label">Valorizado planificado</div><div class="value" id="r-val-plan">–</div></div>
       <div class="resumen-box rb-red"><div class="label">Valorizado ejecutado</div><div class="value" id="r-val-ejec">–</div></div>
       <div class="resumen-box rb-orange"><div class="label">Valorizado pagado</div><div class="value" id="r-val-pago">–</div></div>
       <div class="resumen-box rb-pink"><div class="label">% pago general</div><div class="value" id="r-pct-pago">–</div></div>
-    </div>
-
-    <div class="section-head">
-      <h2>Programado vs. Ejecutado ($)</h2>
-      <span class="hint">valorizado por licitación</span>
-    </div>
-
-    <div class="table-wrap" style="padding:20px 20px 8px; margin-bottom:12px;">
-      <div style="height:320px;"><canvas id="main-chart"></canvas></div>
     </div>
 
     <div class="section-head">
@@ -349,7 +348,23 @@
       </div>
     </div>
 
+    <div class="est-filter" id="est-filter">
+      <button class="s-btn on" data-f="">Todas</button>
+      <button class="s-btn" data-f="riesgoso">Riesgosas</button>
+      <button class="s-btn" data-f="critico">Críticas</button>
+      <button class="s-btn" data-f="aceptable">Aceptables</button>
+    </div>
     <div id="tenders"><div class="msg">Cargando datos desde Google Sheets…</div></div>
+
+    <div class="section-head">
+      <h2>Programado vs. Ejecutado ($)</h2>
+      <span class="hint">valorizado por licitación</span>
+    </div>
+
+    <div class="table-wrap" style="padding:20px 20px 8px; margin-bottom:12px;">
+      <div style="height:320px;"><canvas id="main-chart"></canvas></div>
+    </div>
+
 
     <div class="section-head">
       <h2>Resumen tabular</h2>
@@ -1285,6 +1300,17 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
     root.setAttribute('data-mode',m);location.reload();
   });});
   paint();
+})();
+
+(function(){
+  var box=document.getElementById('est-filter'); if(!box) return;
+  function apply(f){
+    document.querySelectorAll('#tenders .tender').forEach(function(t){
+      var p=t.querySelector('.status-pill'); var ok=!f||(p&&p.classList.contains('status-'+f));
+      t.style.display=ok?'':'none';});
+    box.querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.f===f);});
+  }
+  box.addEventListener('click',function(e){var b=e.target.closest('button');if(b)apply(b.dataset.f);});
 })();
 </script>
 
