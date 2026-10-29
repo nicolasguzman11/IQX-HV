@@ -297,6 +297,26 @@
   .note{font-size:12px;color:var(--ink-mute);margin-top:8px;}
   html[data-mode="dark"] .pill{background:#15301F;color:#5CC592;} html[data-mode="dark"] .pill.old{background:#1E2734;color:#B3BECD;}
   html[data-mode="dark"] .pbar{background:#2B3645;}
+
+  .lic{cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;}
+  .lic:hover{border-color:var(--accent);box-shadow:0 6px 18px rgba(15,36,56,.10);transform:translateY(-2px);}
+  .lic .more{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font:600 12px var(--mono);color:var(--accent);display:flex;justify-content:space-between;}
+  .modal{position:fixed;inset:0;z-index:100;background:rgba(10,16,26,.5);display:none;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto;}
+  .modal.open{display:flex;}
+  .m-box{background:var(--paper);border:1px solid var(--line);border-radius:12px;width:min(1100px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden;}
+  .m-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 20px;background:var(--card);border-bottom:1px solid var(--line);}
+  .m-head h2{font-family:var(--fd);font-size:24px;margin:0;}
+  .m-head p{margin:2px 0 0;color:var(--ink-mute);font-size:12.5px;}
+  .m-x{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:8px;padding:6px 12px;font:600 12px var(--mono);cursor:pointer;}
+  .m-body{padding:16px 20px 20px;}
+  .m-kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+  .m-kp div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-align:center;}
+  .m-kp b{display:block;font-family:var(--fd);font-size:22px;}
+  .m-kp span{font-size:11.5px;color:var(--ink-mute);}
+  .est-pill{display:inline-block;font:600 10.5px var(--mono);padding:2px 8px;border-radius:999px;text-transform:uppercase;}
+  .e-PAGADO{background:#E2F3EA;color:#1E7F4F;} .e-EN-PROCESO{background:#FDF0DA;color:#A86500;} .e-PENDIENTE{background:#FBE5E3;color:#B3261E;}
+  .mes-tag{display:inline-block;margin:1px 3px 1px 0;padding:1px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent);font:600 11.5px var(--mono);}
+  html[data-mode="dark"] .e-PAGADO{background:#15301F;color:#5CC592;} html[data-mode="dark"] .e-EN-PROCESO{background:#35270F;color:#F0B35A;} html[data-mode="dark"] .e-PENDIENTE{background:#3A1A18;color:#F28B82;}
 </style>
 </head>
 <body>
@@ -339,6 +359,7 @@
   <div class="table-wrap"><table><thead><tr><th>Especialidad</th><th class="num">Consultas nuevas</th><th class="num">Controles</th><th class="num">Atenciones</th><th class="num">Monto</th><th class="num">% del total</th></tr></thead><tbody id="esp"></tbody></table></div>
   <div class="note" id="note"></div>
 </main>
+<div class="modal" id="modal"><div class="m-box"><div class="m-head"><div><h2 id="m-t"></h2><p id="m-s"></p></div><button class="m-x" id="m-x" type="button">Cerrar ✕</button></div><div class="m-body"><div class="m-kp" id="m-kp"></div><div class="table-wrap" style="overflow:auto"><table><thead><tr><th>Orden de compra</th><th>Mes(es) que paga</th><th class="num">Atenciones</th><th class="num">Monto OC</th><th>Factura</th><th>Estado</th></tr></thead><tbody id="m-rows"></tbody></table></div><div class="note">El mes corresponde a las atenciones (consultas y controles) que cubre cada orden de compra. Las atenciones sin orden de compra aparecen como “Sin OC”.</div></div></div></div>
 <footer><span>Fuente: Google Sheets · hoja “Consultas Medicas”</span><span>Hospital de Villarrica · uso institucional</span></footer>
 <script>
 const __DK=document.documentElement.getAttribute('data-mode')==='dark';
@@ -368,7 +389,7 @@ function load(){
         const mesN=MESES.indexOf(norm(r['mes'])); const yr=parseInt(r['ano'],10)||0;
         let est=(r['estado']||'').toString().trim().toUpperCase(); if(!COL[est]) est='PENDIENTE';
         return {lic:(r['licitacion']||'').toString().trim()||'(sin licitación)',esp:((r['especialidad']||'').toString().trim().replace(/^especialista en\s+/i,'').replace(/^./,c=>c.toUpperCase()).replace(/\s+y$/i,''))||'—',
-          tipo:/control/i.test(r['tipo consulta']||'')?'Control':'Nueva',cant,monto:cant*valor,est,yr,mes:mesN};
+          tipo:/control/i.test(r['tipo consulta']||'')?'Control':'Nueva',cant,monto:cant*valor,est,yr,mes:mesN,oc:(r['orden de compra']||'').toString().trim(),fac:(r['factura']||'').toString().trim()};
       }).filter(r=>r.cant>0);
       init(); document.getElementById('st').textContent='Panel en vivo · conectado a Google Sheets';
       document.getElementById('st2').textContent='Última carga: '+new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
@@ -406,12 +427,13 @@ function render(){
     const tot=sum(rs,r=>r.monto), p=sum(rs.filter(r=>r.est==='PAGADO'),r=>r.monto), ep=sum(rs.filter(r=>r.est==='EN PROCESO'),r=>r.monto), pe=sum(rs.filter(r=>r.est==='PENDIENTE'),r=>r.monto);
     const base=cfg.total||0, pct=base?tot/base*100:null, den=base||tot||1;
     const w=v=>(v/den*100).toFixed(2)+'%';
-    return `<div class="lic ${cfg.vigente?'':'old'}"><h3>${id} <span class="pill ${cfg.vigente?'':'old'}">${cfg.vigente?'Vigente':'Anterior'}</span></h3>
+    return `<div class="lic ${cfg.vigente?'':'old'}" data-lic="${id}" tabindex="0" role="button"><h3>${id} <span class="pill ${cfg.vigente?'':'old'}">${cfg.vigente?'Vigente':'Anterior'}</span></h3>
     <div class="sub2">${sum(rs,r=>r.cant).toLocaleString('es-CL')} atenciones · ${base?'monto licitación '+fmt(base):'monto de la licitación no registrado'}</div>
     <div class="big"><b>${pct==null?fmt(tot):pct.toFixed(1)+'%'}</b><span>${pct==null?'valorizado':fmt(tot)+' utilizado'}</span></div>
     <div class="pbar"><i style="width:${w(p)};background:${COL.PAGADO}"></i><i style="width:${w(ep)};background:${COL['EN PROCESO']}"></i><i style="width:${w(pe)};background:${COL.PENDIENTE}"></i></div>
-    <div class="legend2"><span><i class="dot2" style="background:${COL.PAGADO}"></i>Pagado <em>${fmt(p)}</em></span><span><i class="dot2" style="background:${COL['EN PROCESO']}"></i>En proceso <em>${fmt(ep)}</em></span><span><i class="dot2" style="background:${COL.PENDIENTE}"></i>Pendiente <em>${fmt(pe)}</em></span></div></div>`;
+    <div class="legend2"><span><i class="dot2" style="background:${COL.PAGADO}"></i>Pagado <em>${fmt(p)}</em></span><span><i class="dot2" style="background:${COL['EN PROCESO']}"></i>En proceso <em>${fmt(ep)}</em></span><span><i class="dot2" style="background:${COL.PENDIENTE}"></i>Pendiente <em>${fmt(pe)}</em></span></div><div class="more"><span>Ver órdenes de compra y meses</span><span>›</span></div></div>`;
   }).join('')||'<div class="msg">Sin datos para este filtro</div>';
+  document.querySelectorAll('.lic[data-lic]').forEach(el=>{const go=()=>openLic(el.dataset.lic);el.addEventListener('click',go);el.addEventListener('keydown',ev=>{if(ev.key==='Enter')go();});});
   // charts
   const keys=[...new Set(d.filter(r=>r.mes>=0&&r.yr).map(r=>r.yr*100+r.mes))].sort((a,b)=>a-b);
   const lab=keys.map(k=>MESES[k%100].slice(0,3).replace(/^./,c=>c.toUpperCase())+' '+String(Math.floor(k/100)).slice(2));
@@ -426,6 +448,30 @@ function render(){
   document.getElementById('note').textContent='Monto valorizado = pacientes × valor de la consulta, sumando todos los estados. Registros sin estado se cuentan como pendientes.';
 }
 (function(){var root=document.documentElement;document.querySelectorAll('.mode-toggle').forEach(function(b){b.textContent=root.getAttribute('data-mode')==='dark'?'Fondo claro':'Fondo oscuro';b.addEventListener('click',function(){var m=root.getAttribute('data-mode')==='dark'?'light':'dark';try{localStorage.setItem('mode',m);}catch(e){}root.setAttribute('data-mode',m);location.reload();});});})();
+
+const MES_ABR=m=>MESES[m].slice(0,3).replace(/^./,c=>c.toUpperCase());
+function openLic(id){
+  const rs=filtered().filter(r=>r.lic===id);
+  const g={};
+  rs.forEach(r=>{const k=r.oc||'Sin OC';const x=g[k]||(g[k]={oc:k,cant:0,monto:0,meses:new Map(),fac:new Set(),est:new Set()});
+    x.cant+=r.cant;x.monto+=r.monto;if(r.mes>=0&&r.yr)x.meses.set(r.yr*100+r.mes,1);if(r.fac)x.fac.add(r.fac);x.est.add(r.est);});
+  const rows=Object.values(g).sort((a,b)=>{const ka=Math.min(...(a.meses.size?a.meses.keys():[9e9])),kb=Math.min(...(b.meses.size?b.meses.keys():[9e9]));return kb-ka;});
+  const ord=['PENDIENTE','EN PROCESO','PAGADO'];
+  const pill=e=>`<span class="est-pill e-${e.replace(' ','-')}">${e[0]+e.slice(1).toLowerCase()}</span>`;
+  document.getElementById('m-t').textContent=id;
+  document.getElementById('m-s').textContent=rows.length+' órdenes de compra · '+sum(rs,r=>r.cant).toLocaleString('es-CL')+' atenciones'+((LICS[id]||{}).vigente?' · licitación vigente':'');
+  const p=sum(rs.filter(r=>r.est==='PAGADO'),r=>r.monto), tot=sum(rs,r=>r.monto);
+  document.getElementById('m-kp').innerHTML=[['Órdenes de compra',rows.length],['Monto valorizado',fmt(tot)],['Pagado',fmt(p)],['Por pagar',fmt(tot-p)]].map(x=>`<div><b>${x[1]}</b><span>${x[0]}</span></div>`).join('');
+  document.getElementById('m-rows').innerHTML=rows.map(x=>{
+    const ks=[...x.meses.keys()].sort((a,b)=>a-b);
+    const ms=ks.length?ks.map(k=>`<span class="mes-tag">${MES_ABR(k%100)} ${Math.floor(k/100)}</span>`).join(''):'—';
+    const es=ord.filter(e=>x.est.has(e));
+    return `<tr><td class="name">${x.oc}</td><td>${ms}</td><td class="num">${x.cant.toLocaleString('es-CL')}</td><td class="num">${fmt(x.monto)}</td><td>${x.fac.size?[...x.fac].join(', '):'—'}</td><td>${es.map(pill).join(' ')}</td></tr>`;}).join('');
+  document.getElementById('modal').classList.add('open');
+}
+document.getElementById('m-x').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modal').classList.remove('open');});
 load();
 </script>
 </body>
