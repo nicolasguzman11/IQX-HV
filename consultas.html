@@ -385,7 +385,7 @@ header{background:transparent !important;}
   <div class="eyebrow">Gestión de Contratos · Consultas médicas</div>
   <h1>Dashboard Consultas y Controles</h1>
   <p class="subtitle">Consultas nuevas y controles médicos · avance por licitación vigente</p>
-  <div class="stat-row"><span class="s-chip good" id="st">Conectando a Google Sheets…</span><span class="s-chip neu" id="st2">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button">Fondo oscuro</button></div>
+  <div class="stat-row"><span class="s-chip good" id="st">Conectando…</span><span class="s-chip neu" id="st2">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button">Fondo oscuro</button></div>
   <div class="filters-row">
     <label>Licitación<select id="f-lic"></select></label>
     <label>Estado<select id="f-est"><option value="">Todos</option><option>PAGADO</option><option>EN PROCESO</option><option>PENDIENTE</option></select></label>
@@ -435,7 +435,7 @@ function load(){
         return {lic:(r['licitacion']||'').toString().trim()||'(sin licitación)',esp:((r['especialidad']||'').toString().trim().replace(/^especialista en\s+/i,'').replace(/^./,c=>c.toUpperCase()).replace(/\s+y$/i,''))||'—',
           tipo:/control/i.test(r['tipo consulta']||'')?'Control':'Nueva',cant,monto:cant*valor,est,yr,mes:mesN,oc:(r['orden de compra']||'').toString().trim(),fac:(r['factura']||'').toString().trim()};
       }).filter(r=>r.cant>0);
-      init(); document.getElementById('st').textContent='Panel en vivo · conectado a Google Sheets';
+      init(); document.getElementById('st').textContent='Panel en vivo';
       document.getElementById('st2').textContent='Última carga: '+new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
       }catch(e){console.error(e);document.getElementById('st').textContent='Error al procesar datos';}
     },

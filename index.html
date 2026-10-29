@@ -353,7 +353,7 @@ header{background:transparent !important;}
   <div class="eyebrow">Gestión de Contratos · Licitaciones</div>
   <h1>Dashboard Intervenciones Quirúrgicas</h1>
   <p class="subtitle">Cumplimiento por licitación · intervenciones convenidas vs. realizadas</p>
-  <div class="stat-row"><span class="s-chip good" id="eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
+  <div class="stat-row"><span class="s-chip good" id="eyebrow">Conectando…</span><span class="s-chip neu" id="eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
 
   <div class="vitals">
     <div class="vital" style="display:none"><div class="label">Cumplimiento global ($)</div><div class="value" id="v-global">–<span>%</span></div></div>
@@ -541,7 +541,7 @@ header{background:transparent !important;}
   <div class="eyebrow">Gestión de Contratos · Horas médicas</div>
   <h1>Dashboard Horas Médicas</h1>
   <p class="subtitle">Turnos extras, consultas y controles médicos · horas y montos</p>
-  <div class="stat-row"><span class="s-chip good" id="ht-eyebrow">Panel en vivo · conectando a Google Sheets</span><span class="s-chip neu" id="ht-eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
+  <div class="stat-row"><span class="s-chip good" id="ht-eyebrow">Conectando…</span><span class="s-chip neu" id="ht-eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
 
   <div class="vitals">
     <div class="vital"><div class="label">Monto total</div><div class="value" id="ht-v-total" style="font-size:20px;">–</div></div>
@@ -788,7 +788,7 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
     document.getElementById('v-critico').textContent = criticas;
     document.getElementById('v-bajo').textContent = aceptables;
     document.getElementById('eyebrow-fecha').textContent = 'Última carga: ' + new Date().toLocaleDateString('es-CL', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
-    document.getElementById('eyebrow').textContent = 'Panel en vivo · conectado a Google Sheets';
+    document.getElementById('eyebrow').textContent = 'Panel en vivo';
 
     document.getElementById('r-total-plan').textContent = totalProg.toLocaleString('es-CL');
     document.getElementById('r-total-ejec').textContent = totalEjec.toLocaleString('es-CL');
@@ -1231,7 +1231,7 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
         document.getElementById('ht-v-pct').innerHTML = pct.toFixed(0) + '<span>%</span>';
         document.getElementById('ht-v-turnos').textContent = rows.length.toLocaleString('es-CL');
         document.getElementById('ht-v-horas').textContent = horasTotal.toLocaleString('es-CL');
-        document.getElementById('ht-eyebrow').textContent = 'Panel en vivo · conectado a Google Sheets';
+        document.getElementById('ht-eyebrow').textContent = 'Panel en vivo';
         document.getElementById('ht-eyebrow-fecha').textContent = 'Última carga: ' + new Date().toLocaleDateString('es-CL', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
 
         document.getElementById('ht-r-total').textContent = fmtCLP(montoTotal);

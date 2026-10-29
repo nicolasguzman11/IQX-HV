@@ -1323,7 +1323,7 @@ function onError(err){
 let LASTRES=null;
 async function applyResult(wb){
   HOY=hoyChile();LASTRES=wb;const rows=parseWorkbook(wb);liveOK=true;
-  boot(rows,HOY,{txt:'● En vivo desde Google Sheets · '+rows.length+' procesos · leído a las '+new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}),cls:'good'})}
+  boot(rows,HOY,{txt:'● Panel en vivo',cls:'good'})}
 let busy=false;
 async function load(){ // botón Actualizar datos: lectura directa, sin caché
   const btn=document.getElementById('f-reload');
