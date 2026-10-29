@@ -17,6 +17,8 @@ html,body{background:transparent !important;}
 .hv-aurora i{opacity:.34 !important;} .hv-aurora i:nth-child(3){opacity:.28 !important;}
 html[data-mode="dark"] .hv-aurora i{opacity:.22 !important;}
 html[data-mode="light"]:root{--s1:#6C93CF;--s2:#E5A767;--s3:#63BDB1;--s4:#B093CC;--good:#2E9461;--warn:#C0832A;--crit:#C9514A;--grid:rgba(15,36,56,.07);}
+#contr-lbl,#kpi-contr{display:none !important;}
+#p-contr #kpi-venc{margin-top:0;}
 /* tarjetas y gráficos translúcidos (vidrio suave) */
 .vital,.resumen-box,.tender,.table-wrap,.lic,.chart-card,.kpi,.card,.sec-views .view,.m-kp div,.pay-line,.gen-pie{
   background:linear-gradient(145deg,rgba(255,255,255,.52),rgba(235,246,250,.38)) !important;border-color:rgba(255,255,255,.8) !important;
@@ -433,8 +435,8 @@ tr.total td{font-weight:600;background:var(--surface-2)}
   <div class="sec-label" style="margin-top:18px">Licitaciones vigentes por plazo de vencimiento <span>· clic en una tarjeta para ver el detalle</span></div>
   <div class="kpis" id="kpi-venc"></div>
   <div class="grid">
-    <div class="card">
-      <div class="card-head"><div><h3><button type="button" class="c-name" aria-expanded="false" aria-controls="sum-ctr">Vencimientos por plazo<svg class="k-i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></h3><div class="c-pop" id="sum-ctr" role="note" hidden></div><div class="hint">Licitaciones según días al término de su contrato más próximo a vencer, con y sin aviso · clic en una barra para ver el detalle por proveedor</div></div></div>
+    <div class="card w12">
+      <div class="card-head"><div><h3><button type="button" class="c-name" aria-expanded="false" aria-controls="sum-ctr">Cuándo vencen las licitaciones vigentes<svg class="k-i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></h3><div class="c-pop" id="sum-ctr" role="note" hidden></div><div class="hint">Licitaciones según días al término de su contrato más próximo a vencer, con y sin aviso · clic en una barra para ver el detalle por proveedor</div></div></div>
       <div class="legend" id="lg-ctr"></div>
       <div class="chart tall"><canvas id="c-ctr"></canvas></div>
     </div>
@@ -1222,8 +1224,12 @@ function renderContratos(){
   document.querySelectorAll('#p-contr .kpi-click').forEach(el=>{const go=k=>{const d=window.CDRILL[k];if(d)openContrDetail(d[0],d[1])};el.addEventListener('click',e=>{if(e.target.closest('.k-name,.k-pop'))return;const s=e.target.closest('[data-sub]');go(s?s.dataset.sub:el.dataset.drill)});el.addEventListener('keydown',e=>{if(e.key==='Enter'){const s=e.target.closest('[data-sub]');go(s?s.dataset.sub:el.dataset.drill)}})});
   // gráfico tramos con/sin aviso
   legend('lg-ctr',[['Con aviso',T.s3],['Sin aviso',T.crit]]);
-  DRILL['c-ctr']=i=>{openContrDetail(`Licitaciones que vencen en ${TRAMOS[i][2].toLowerCase()}`,rowsV(TR[i]));return null};
-  mk('c-ctr',{type:'bar',data:{labels:TRAMOS.map(t=>t[2]),datasets:[{label:'Con aviso',data:TR.map(x=>x.length-sa(x)),backgroundColor:T.s3,...BAR,borderRadius:0},{label:'Sin aviso',data:TR.map(sa),backgroundColor:T.crit,...BAR}]},
+  const NM=12,mlab=i=>{const d=new Date(HOY.getFullYear(),HOY.getMonth()+i,1);return ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()]+' '+String(d.getFullYear()).slice(2)};
+  const MB=Array.from({length:NM+1},()=>[]);
+  LV.forEach(l=>{const d=new Date(HOY.getTime()+l.dias*864e5);let k=(d.getFullYear()-HOY.getFullYear())*12+d.getMonth()-HOY.getMonth();if(k<0)k=0;if(k>NM)k=NM;MB[k].push(l)});
+  const MLAB=MB.map((x,i)=>i===NM?'Después':mlab(i));
+  DRILL['c-ctr']=i=>{openContrDetail(i===NM?'Licitaciones que vencen después de 12 meses':`Licitaciones que vencen en ${MLAB[i]}`,rowsV(MB[i]));return null};
+  mk('c-ctr',{type:'bar',data:{labels:MLAB,datasets:[{label:'Con aviso',data:MB.map(x=>x.length-sa(x)),backgroundColor:T.s3,...BAR,borderRadius:0},{label:'Sin aviso',data:MB.map(sa),backgroundColor:T.crit,...BAR}]},
     options:{scales:axes(T,{stacked:true}),plugins:{tooltip:{mode:'index',callbacks:{label:c=>` ${c.dataset.label}: ${c.raw}`,footer:it=>'Total: '+it.reduce((s,c)=>s+c.raw,0)+' licitaciones'}}}}});
   // estados (por licitación: el más grave entre sus proveedores)
   const EST=EST_ORD;
