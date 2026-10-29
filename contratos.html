@@ -19,8 +19,15 @@ html[data-mode="dark"] .hv-aurora i{opacity:.22 !important;}
 html[data-mode="light"]:root{--s1:#6C93CF;--s2:#E5A767;--s3:#63BDB1;--s4:#B093CC;--good:#2E9461;--warn:#C0832A;--crit:#C9514A;--grid:rgba(15,36,56,.07);}
 #contr-lbl,#kpi-contr{display:none !important;}
 #p-contr #kpi-venc{margin-top:0;}
+.gen-pie{background:transparent !important;border:0 !important;box-shadow:none !important;}
+#p-contr .card:has(#c-cdona){display:flex;flex-direction:column;}
+#p-contr .card:has(#c-cdona) .gen-pie{flex:1;align-items:center;align-content:center;padding:6px 6px 14px;}
+.pie-lg button{background:rgba(255,255,255,.42) !important;border-color:rgba(255,255,255,.75) !important;box-shadow:none;transition:background .15s,transform .15s;}
+.pie-lg button:hover{background:rgba(255,255,255,.75) !important;transform:translateX(2px);}
+html[data-mode="dark"] .pie-lg button{background:rgba(255,255,255,.06) !important;border-color:rgba(255,255,255,.1) !important;}
+html[data-mode="dark"] .pie-lg button:hover{background:rgba(255,255,255,.12) !important;}
 /* tarjetas y gráficos translúcidos (vidrio suave) */
-.vital,.resumen-box,.tender,.table-wrap,.lic,.chart-card,.kpi,.card,.sec-views .view,.m-kp div,.pay-line,.gen-pie{
+.vital,.resumen-box,.tender,.table-wrap,.lic,.chart-card,.kpi,.card,.sec-views .view,.m-kp div,.pay-line{
   background:linear-gradient(145deg,rgba(255,255,255,.52),rgba(235,246,250,.38)) !important;border-color:rgba(255,255,255,.8) !important;
   -webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15);box-shadow:0 4px 18px -8px rgba(15,36,56,.14) !important;}
 .sec-views .view[aria-selected="true"]{background:rgba(227,236,248,.78) !important;border-color:var(--accent) !important;}
@@ -31,7 +38,7 @@ html[data-mode="light"]:root{--s1:#6C93CF;--s2:#E5A767;--s3:#63BDB1;--s4:#B093CC
 .s-btn.on{background:var(--accent) !important;}
 .pbar{background:rgba(15,36,56,.08) !important;} .pay-strip{background:rgba(15,36,56,.08) !important;}
 thead th{background:rgba(238,242,247,.7) !important;}
-html[data-mode="dark"] .vital,html[data-mode="dark"] .resumen-box,html[data-mode="dark"] .tender,html[data-mode="dark"] .table-wrap,html[data-mode="dark"] .lic,html[data-mode="dark"] .chart-card,html[data-mode="dark"] .kpi,html[data-mode="dark"] .card,html[data-mode="dark"] .sec-views .view,html[data-mode="dark"] .m-kp div,html[data-mode="dark"] .pay-line,html[data-mode="dark"] .gen-pie{
+html[data-mode="dark"] .vital,html[data-mode="dark"] .resumen-box,html[data-mode="dark"] .tender,html[data-mode="dark"] .table-wrap,html[data-mode="dark"] .lic,html[data-mode="dark"] .chart-card,html[data-mode="dark"] .kpi,html[data-mode="dark"] .card,html[data-mode="dark"] .sec-views .view,html[data-mode="dark"] .m-kp div,html[data-mode="dark"] .pay-line{
   background:rgba(23,30,41,.58) !important;border-color:rgba(255,255,255,.09) !important;box-shadow:0 4px 18px -8px rgba(0,0,0,.5) !important;}
 html[data-mode="dark"] .sec-views .view[aria-selected="true"]{background:rgba(29,45,69,.8) !important;}
 html[data-mode="dark"] .tabs{background:rgba(255,255,255,.06) !important;}
