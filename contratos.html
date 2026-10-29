@@ -444,6 +444,10 @@ tr.total td{font-weight:600;background:var(--surface-2)}
       <div class="card-head"><div><h3><button type="button" class="c-name" aria-expanded="false" aria-controls="sum-cest">Licitaciones vigentes por estado<svg class="k-i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></h3><div class="c-pop" id="sum-cest" role="note" hidden></div><div class="hint">Estado más grave entre sus proveedores (días al término y saldo) · clic en una barra para ver el detalle</div></div></div>
       <div class="chart tall"><canvas id="c-cest"></canvas></div>
     </div>
+    <div class="card">
+      <div class="card-head"><div><h3>Nivel de riesgo de las licitaciones vigentes</h3><div class="hint">Crítico, seguimiento y OK · clic en un sector para ver el detalle</div></div></div>
+      <div class="gen-pie"><div class="chart"><canvas id="c-cdona"></canvas></div><div class="pie-lg" id="lg-cdona"></div></div>
+    </div>
     <div class="card w12" hidden data-reservado="etapa-renovacion">
       <div class="card-head"><div><h3><button type="button" class="c-name" aria-expanded="false" aria-controls="sum-cetapa">Etapa de renovación (vencen en ≤ 120 días)<svg class="k-i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></h3><div class="c-pop" id="sum-cetapa" role="note" hidden></div><div class="hint">Licitaciones según la última etapa registrada en INFO CONTRATOS · clic en una barra para ver el detalle</div></div></div>
       <div class="chart"><canvas id="c-cetapa"></canvas></div>
@@ -607,8 +611,8 @@ function mk(id,cfg){regPositioners();if(charts[id])charts[id].destroy();const T=
   cfg.options=Object.assign({responsive:true,maintainAspectRatio:false,animation:{duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:350}},o,
     {plugins:Object.assign({},pl,{legend:{display:false},tooltip:Object.assign({backgroundColor:T.surface,titleColor:T.ink,bodyColor:T.ink2,borderColor:css('--line'),borderWidth:1,padding:10,boxPadding:4,usePointStyle:true},pl.tooltip||{})})});
   if(cfg.type==='bar'){const tp=cfg.options.plugins.tooltip,side=(id==='c-etapas'||id==='c-etapasmes');tp.position=side?'side':'above';tp.caretSize=side?6:0;
-    const L=cfg.options.layout=cfg.options.layout||{};L.padding=Object.assign({},L.padding||{});if(side){L.padding.right=Math.max(L.padding.right||0,340);const ds=cfg.data.datasets,n=cfg.data.labels.length;let mx=0;for(let k=0;k<n;k++)mx=Math.max(mx,ds.reduce((s,d)=>s+(d.data[k]||0),0));if(mx>0){cfg.options.scales.x.max=Math.ceil(mx)}}else L.padding.top=Math.max(L.padding.top||0,96);
-    const box=document.getElementById(id).parentElement;if(!side&&!box.dataset.grown){box.dataset.grown=1;box.style.height=(box.getBoundingClientRect().height||parseFloat(getComputedStyle(box).height)||250)+86+'px'}}
+    const L=cfg.options.layout=cfg.options.layout||{};L.padding=Object.assign({},L.padding||{});if(side){L.padding.right=Math.max(L.padding.right||0,340);const ds=cfg.data.datasets,n=cfg.data.labels.length;let mx=0;for(let k=0;k<n;k++)mx=Math.max(mx,ds.reduce((s,d)=>s+(d.data[k]||0),0));if(mx>0){cfg.options.scales.x.max=Math.ceil(mx)}}else L.padding.top=Math.max(L.padding.top||0,cfg.options.indexAxis==='y'?36:96);
+    const box=document.getElementById(id).parentElement;if(!side&&!box.dataset.grown){box.dataset.grown=1;box.style.height=(box.getBoundingClientRect().height||parseFloat(getComputedStyle(box).height)||250)+(cfg.options.indexAxis==='y'?26:86)+'px'}}
   if(DRILL[id]){cfg.options.onClick=(e,els,ch)=>{if(!els.length)return;const d=DRILL[id](els[0].index,els[0].datasetIndex,ch);if(d)openDetail(d.title,d.rows)};
     cfg.options.onHover=(e,els)=>{const c=e.native&&e.native.target;if(c)c.style.cursor=els.length?'pointer':'default'}}
   charts[id]=new Chart(document.getElementById(id),cfg)}
@@ -1237,6 +1241,12 @@ function renderContratos(){
   DRILL['c-cest']=i=>{openContrDetail(`Licitaciones en estado «${EST[i].charAt(0)+EST[i].slice(1).toLowerCase()}»`,rowsV(LV.filter(l=>l.estado===EST[i])));return null};
   mk('c-cest',{type:'bar',data:{labels:EST.map(e=>e.charAt(0)+e.slice(1).toLowerCase()),datasets:[{data:ec,backgroundColor:cc,...BAR,maxBarThickness:20}]},
     options:{indexAxis:'y',layout:{padding:{right:40}},scales:axes(T,{horizontal:true}),plugins:{labels:{on:true},tooltip:{callbacks:{label:c=>' '+c.raw+' licitaciones'}}}}});
+  // dona: nivel de riesgo (crítico / seguimiento / OK)
+  const NIV=[['Crítico',LV.filter(l=>estadoFinal(l.estado)==='CRITICO'),T.crit],['Seguimiento',LV.filter(l=>estadoFinal(l.estado)==='SEGUIMIENTO'),T.warn],['OK',LV.filter(l=>estadoFinal(l.estado)==='OK'),T.good]];
+  DRILL['c-cdona']=i=>{openContrDetail(`Licitaciones en nivel «${NIV[i][0]}»`,rowsV(NIV[i][1]));return null};
+  document.getElementById('lg-cdona').innerHTML=NIV.map((n,i)=>`<button type="button" data-i="${i}"><i style="background:${n[2]}"></i><span>${n[0]}</span><span class="pv">${n[1].length}</span><span class="pp">${LV.length?Math.round(n[1].length/LV.length*100):0}%</span></button>`).join('');
+  document.querySelectorAll('#lg-cdona button').forEach(b=>b.addEventListener('click',()=>DRILL['c-cdona'](+b.dataset.i)));
+  mk('c-cdona',{type:'doughnut',data:{labels:NIV.map(n=>n[0]),datasets:[{data:NIV.map(n=>n[1].length),backgroundColor:NIV.map(n=>n[2]),borderColor:T.surface,borderWidth:2,hoverOffset:6}]},options:{cutout:'62%',plugins:{tooltip:{callbacks:{label:c=>' '+c.raw+' licitaciones'}}}}});
   // etapas de renovación para las que vencen en ≤120 días
   const near=LV.filter(l=>l.dias<=120),ET=['Sin gestión','Aviso registrado',...ETAPAS.map(e=>e[2])];
   const en=ET.map(e=>near.filter(l=>l.etapa===e).length);
