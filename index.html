@@ -281,6 +281,27 @@
 </head>
 <body>
 <style>
+.hv-aurora{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;background:linear-gradient(160deg,#F6F9FC,#EAF2F8);}
+.hv-aurora i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.5;will-change:transform;}
+.hv-aurora i:nth-child(1){width:46vmax;height:46vmax;left:-12vmax;top:-14vmax;background:#7FD8CB;animation:hvf1 18s ease-in-out infinite alternate;}
+.hv-aurora i:nth-child(2){width:40vmax;height:40vmax;right:-10vmax;top:10vh;background:#8DB6F0;animation:hvf2 22s ease-in-out infinite alternate;}
+.hv-aurora i:nth-child(3){width:34vmax;height:34vmax;left:25vw;bottom:-18vmax;background:#F6D58E;opacity:.45;animation:hvf3 26s ease-in-out infinite alternate;}
+@keyframes hvf1{to{transform:translate(12vmax,8vmax) scale(1.15);}}
+@keyframes hvf2{to{transform:translate(-10vmax,10vmax) scale(.9);}}
+@keyframes hvf3{to{transform:translate(-14vmax,-6vmax) scale(1.2);}}
+.hv-spot{position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(520px circle at var(--hvx,50%) var(--hvy,25%),rgba(255,255,255,.7),transparent 60%);}
+html[data-mode="dark"] .hv-aurora{background:linear-gradient(160deg,#08121D,#0E2236);}
+html[data-mode="dark"] .hv-aurora i{opacity:.28;}
+html[data-mode="dark"] .hv-aurora i:nth-child(1){background:#1E9C8B;} html[data-mode="dark"] .hv-aurora i:nth-child(2){background:#3B7BD9;} html[data-mode="dark"] .hv-aurora i:nth-child(3){background:#B58A2E;opacity:.18;}
+html[data-mode="dark"] .hv-spot{background:radial-gradient(520px circle at var(--hvx,50%) var(--hvy,25%),rgba(120,170,220,.10),transparent 60%);}
+html,body{background:transparent !important;}
+header{background:transparent !important;}
+@media (prefers-reduced-motion:reduce){.hv-aurora i{animation:none;}}
+</style>
+<div class="hv-aurora"><i></i><i></i><i></i></div><div class="hv-spot"></div>
+<script>addEventListener('pointermove',function(e){var r=document.documentElement.style;r.setProperty('--hvx',e.clientX+'px');r.setProperty('--hvy',e.clientY+'px');},{passive:true});</script>
+
+<style>
 .hv-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px clamp(14px,3vw,32px);background:#08121D;color:#EAF1F5;font-family:'IBM Plex Sans',-apple-system,'Segoe UI',sans-serif;border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:50}
 .hv-bar a{color:inherit;text-decoration:none}
 .hv-brand{display:flex;align-items:center;gap:11px;min-width:0}
