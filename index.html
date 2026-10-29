@@ -295,6 +295,29 @@ html[data-mode="dark"] .hv-aurora i{opacity:.28;}
 html[data-mode="dark"] .hv-aurora i:nth-child(1){background:#1E9C8B;} html[data-mode="dark"] .hv-aurora i:nth-child(2){background:#3B7BD9;} html[data-mode="dark"] .hv-aurora i:nth-child(3){background:#B58A2E;opacity:.18;}
 html[data-mode="dark"] .hv-spot{background:radial-gradient(520px circle at var(--hvx,50%) var(--hvy,25%),rgba(120,170,220,.10),transparent 60%);}
 html,body{background:transparent !important;}
+.hv-aurora i{opacity:.34 !important;} .hv-aurora i:nth-child(3){opacity:.28 !important;}
+html[data-mode="dark"] .hv-aurora i{opacity:.22 !important;}
+/* tarjetas y gráficos translúcidos (vidrio suave) */
+.vital,.resumen-box,.tender,.table-wrap,.lic,.chart-card,.kpi,.card,.sec-views .view,.m-kp div,.pay-line,.gen-pie{
+  background:rgba(255,255,255,.58) !important;border-color:rgba(255,255,255,.75) !important;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 4px 18px -8px rgba(15,36,56,.14) !important;}
+.sec-views .view[aria-selected="true"]{background:rgba(227,236,248,.78) !important;border-color:var(--accent) !important;}
+.bar,.tabs,.filters,header.top,.est-filter{background:transparent !important;border-color:transparent !important;}
+.tabs{background:rgba(255,255,255,.45) !important;}
+.tab[aria-selected="true"]{background:rgba(255,255,255,.9) !important;}
+.s-chip.neu,.s-btn,.btn,select,input[type=search]{background:rgba(255,255,255,.7) !important;}
+.s-btn.on{background:var(--accent) !important;}
+.pbar{background:rgba(15,36,56,.08) !important;} .pay-strip{background:rgba(15,36,56,.08) !important;}
+thead th{background:rgba(238,242,247,.7) !important;}
+html[data-mode="dark"] .vital,html[data-mode="dark"] .resumen-box,html[data-mode="dark"] .tender,html[data-mode="dark"] .table-wrap,html[data-mode="dark"] .lic,html[data-mode="dark"] .chart-card,html[data-mode="dark"] .kpi,html[data-mode="dark"] .card,html[data-mode="dark"] .sec-views .view,html[data-mode="dark"] .m-kp div,html[data-mode="dark"] .pay-line,html[data-mode="dark"] .gen-pie{
+  background:rgba(23,30,41,.58) !important;border-color:rgba(255,255,255,.09) !important;box-shadow:0 4px 18px -8px rgba(0,0,0,.5) !important;}
+html[data-mode="dark"] .sec-views .view[aria-selected="true"]{background:rgba(29,45,69,.8) !important;}
+html[data-mode="dark"] .tabs{background:rgba(255,255,255,.06) !important;}
+html[data-mode="dark"] .tab[aria-selected="true"]{background:rgba(255,255,255,.14) !important;}
+html[data-mode="dark"] .s-chip.neu,html[data-mode="dark"] .s-btn,html[data-mode="dark"] .btn,html[data-mode="dark"] select,html[data-mode="dark"] input[type=search]{background:rgba(255,255,255,.07) !important;}
+html[data-mode="dark"] .s-btn.on{background:var(--accent) !important;color:#0F141B !important;}
+html[data-mode="dark"] .pbar,html[data-mode="dark"] .pay-strip{background:rgba(255,255,255,.1) !important;}
+html[data-mode="dark"] thead th{background:rgba(30,39,52,.75) !important;}
 header{background:transparent !important;}
 @media (prefers-reduced-motion:reduce){.hv-aurora i{animation:none;}}
 </style>
