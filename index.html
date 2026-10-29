@@ -474,15 +474,14 @@
   </div>
 
   <div class="section-head">
-    <h2>Médicos con mayor monto en turnos extra</h2>
-    <span class="hint">top 15</span>
+    <h2>Turnos por especialidad</h2>
+    <span class="hint">por monto</span>
   </div>
 
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
-          <th>Nombre</th>
           <th>Especialidad</th>
           <th class="num">N° turnos</th>
           <th class="num">Horas</th>
@@ -1175,13 +1174,18 @@
             <td class="num">${montoTotal>0 ? (c.monto/montoTotal*100).toFixed(1) : '0'}%</td>
           </tr>`).join('');
 
-        // Top médicos table
-        const medicoRows = Object.entries(porMedico).map(([nombre,v])=>({nombre, ...v}));
-        medicoRows.sort((a,b)=> b.monto - a.monto);
-        document.getElementById('ht-medicos-body').innerHTML = medicoRows.slice(0,15).map(m=>`
+        // Turnos por especialidad (sin nombres de profesionales)
+        const espMap = {};
+        Object.values(porMedico).forEach(v=>{
+          const k = v.especialidad || '—';
+          if(!espMap[k]) espMap[k] = {turnos:0, horas:0, monto:0};
+          espMap[k].turnos += v.turnos; espMap[k].horas += v.horas; espMap[k].monto += v.monto;
+        });
+        const espRows = Object.entries(espMap).map(([esp,v])=>({esp, ...v}));
+        espRows.sort((a,b)=> b.monto - a.monto);
+        document.getElementById('ht-medicos-body').innerHTML = espRows.map(m=>`
           <tr>
-            <td class="name">${m.nombre}</td>
-            <td>${m.especialidad}</td>
+            <td class="name">${m.esp}</td>
             <td class="num">${m.turnos}</td>
             <td class="num">${m.horas.toLocaleString('es-CL')}</td>
             <td class="num">${fmtCLP(m.monto)}</td>
