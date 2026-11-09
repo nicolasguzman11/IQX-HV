@@ -1337,6 +1337,11 @@ document.getElementById('f-reload').addEventListener('click',()=>load());
 // al cambiar el día en Chile (medianoche) se recalculan días al término, plazos y estados sin recargar la página
 function checkDia(){const h=hoyChile();if(h.getTime()===HOY.getTime())return;HOY=h;if(LASTRES&&!busy){try{applyResult(LASTRES)}catch(e){}}}
 setInterval(checkDia,60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkDia()});
+// relectura automática de las hojas cada 5 min (solo con la pestaña visible y sin ventana de detalle abierta)
+const AUTO_MS=5*60*1000;let lastAuto=Date.now();
+function autoRefresh(){if(document.hidden||busy)return;const d=document.getElementById('detail');if(d&&!d.hidden)return;if(Date.now()-lastAuto<AUTO_MS)return;lastAuto=Date.now();load()}
+setInterval(autoRefresh,60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)autoRefresh()});
+document.getElementById('f-reload').addEventListener('click',()=>{lastAuto=Date.now()});
 // ---- fórmula al hacer clic en el título de cada indicador
 document.addEventListener('click',e=>{const b=e.target.closest('.k-name,.c-name');if(e.target.closest('.k-pop,.c-pop'))return;
   document.querySelectorAll('.k-name[aria-expanded="true"],.c-name[aria-expanded="true"]').forEach(x=>{if(x!==b){x.setAttribute('aria-expanded','false');document.getElementById(x.getAttribute('aria-controls')).hidden=true}});
