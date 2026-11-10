@@ -160,6 +160,20 @@
   .ht-leg-row .n{font-weight:600; font-size:14px; color:var(--ink);}
   .ht-leg-row .p{font-family:var(--mono); font-size:22px; font-weight:700; color:var(--ink); text-align:right;}
   .ht-leg-row .m{grid-column:2 / 4; font-family:var(--mono); font-size:11.5px; color:var(--ink-mute);}
+  .conv-row{cursor:pointer;}
+  .conv-row:hover td{background:rgba(127,140,160,.08);}
+  .conv-chev{display:inline-block; width:16px; color:var(--ink-mute); font-size:16px; transition:transform .2s; transform-origin:50% 55%;}
+  .conv-row.open .conv-chev{transform:rotate(90deg);}
+  .conv-det td{padding:0 !important; background:rgba(127,140,160,.06);}
+  .oc-box{padding:14px 18px 18px 34px;}
+  .oc-title{font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-mute); margin-bottom:8px;}
+  .oc-tbl{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .oc-box .oc-tbl th{padding:6px 14px 6px 12px !important; font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-mute); text-align:left; padding:6px 16px 6px 10px; border-bottom:1px solid var(--line); font-weight:600;}
+  .oc-box .oc-tbl td{padding:7px 14px 7px 12px !important; border-bottom:1px solid var(--line); color:var(--ink);}
+  .oc-tbl .num{text-align:right;} .oc-tbl th.num{text-align:right;}
+  .oc-chip{display:inline-block; padding:2px 9px; border-radius:99px; font-size:11px; font-weight:600;}
+  .oc-chip.ok{background:rgba(30,156,139,.16); color:#16786b;} .oc-chip.warn{background:rgba(232,163,61,.2); color:#9a6408;} .oc-chip.bad{background:rgba(196,87,58,.16); color:#a8452b;} .oc-chip.mix,.oc-chip.neu{background:rgba(127,140,160,.18); color:var(--ink-mute);}
+  @media (max-width:720px){.oc-box{padding-left:12px; overflow-x:auto;} .oc-tbl{min-width:560px;}}
   .table-wrap{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
   table{width:100%; border-collapse:collapse; font-size:13px;}
   thead th{text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-mute); background:#FAFBFB; padding:11px 16px; border-bottom:1px solid var(--line);}
@@ -600,7 +614,7 @@ header{background:transparent !important;}
 
   <div class="section-head">
     <h2>Consumo por convenio</h2>
-    <span class="hint">contratos que financian los reemplazos</span>
+    <span class="hint">clic en un convenio para ver sus órdenes de compra</span>
   </div>
 
   <div class="table-wrap" style="margin-bottom:28px;">
@@ -1224,11 +1238,14 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
         const idxConvenio = findColExact(headerRow, "convenio");
         const idxEstado = findColExact(headerRow, "estado");
         const idxMonto = findColExact(headerRow, "monto");
+        const idxOC = findColExact(headerRow, "oc");
+        const idxFactura = findColExact(headerRow, "factura");
 
         const rows = data.slice(1).filter(r => r[idxMonto] && numFrom(r[idxMonto]) > 0);
 
         let montoTotal=0, montoPagado=0, montoProceso=0, montoPendiente=0, horasTotal=0;
         const porConvenio = {};
+        const porConvOC = {};
         const porMedico = {};
         const porMes = {};
 
@@ -1248,6 +1265,17 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
           else if(estado === "EN PROCESO") montoProceso += monto;
           else if(estado === "PENDIENTE") montoPendiente += monto;
 
+          {
+            const oc = (idxOC!=null ? (r[idxOC]||"").trim() : "") || "Sin OC asignada";
+            const fac = idxFactura!=null ? (r[idxFactura]||"").toString().replace(/\.0+$/,"").trim() : "";
+            const per = (mes && anio && MONTH_ORDER[mes]) ? {k: anio+'-'+String(MONTH_ORDER[mes]).padStart(2,'0'), l: mes.slice(0,3).toUpperCase()+' '+anio.replace(/\.0+$/,'').slice(-2)} : null;
+            if(!porConvOC[convenio]) porConvOC[convenio] = {};
+            const o = porConvOC[convenio][oc] || (porConvOC[convenio][oc] = {turnos:0, horas:0, monto:0, per:{}, fac:new Set(), est:new Set()});
+            o.turnos++; o.horas += horas; o.monto += monto;
+            if(per) o.per[per.k] = per.l;
+            if(fac) o.fac.add(fac);
+            if(estado) o.est.add(estado);
+          }
           if(!porConvenio[convenio]) porConvenio[convenio] = {turnos:0, horas:0, monto:0};
           porConvenio[convenio].turnos++;
           porConvenio[convenio].horas += horas;
@@ -1345,14 +1373,28 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
         // Consumo por convenio table
         const convenioRows = Object.entries(porConvenio).map(([id,v])=>({id, ...v}));
         convenioRows.sort((a,b)=> b.monto - a.monto);
-        document.getElementById('ht-convenio-body').innerHTML = convenioRows.map(c=>`
-          <tr>
-            <td class="name">${c.id}</td>
+        const escH = x => String(x==null?'':x).replace(/[&<>"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+        const estChip = set => { const a=[...set]; if(!a.length) return '<span class="oc-chip neu">—</span>'; if(a.length>1) return '<span class="oc-chip mix">Mixto</span>'; const e=a[0]; const cl = e==='PAGADO'?'ok':(e==='EN PROCESO'?'warn':'bad'); return '<span class="oc-chip '+cl+'">'+escH(e.charAt(0)+e.slice(1).toLowerCase())+'</span>'; };
+        const ocDetail = (conv) => {
+          const list = Object.entries(porConvOC[conv]||{}).map(([oc,v])=>({oc,...v}));
+          list.sort((a,b)=> (a.oc.startsWith('Sin OC')?1:0)-(b.oc.startsWith('Sin OC')?1:0) || b.monto-a.monto);
+          return '<div class="oc-box"><div class="oc-title">Órdenes de compra asociadas · '+list.length+'</div><table class="oc-tbl"><thead><tr><th>Orden de compra</th><th>Período trabajado</th><th class="num">N° turnos</th><th class="num">Horas</th><th class="num">Monto</th><th>Factura</th><th>Estado</th></tr></thead><tbody>'
+            + list.map(o=>{ const ks=Object.keys(o.per).sort(); const per = ks.length ? (ks.length>3 ? o.per[ks[0]]+' – '+o.per[ks[ks.length-1]] : ks.map(k=>o.per[k]).join(', ')) : '—'; const fac=[...o.fac]; return '<tr><td class="name">'+escH(o.oc)+'</td><td>'+escH(per)+'</td><td class="num">'+o.turnos+'</td><td class="num">'+o.horas.toLocaleString('es-CL')+'</td><td class="num">'+fmtCLP(o.monto)+'</td><td>'+(fac.length?escH(fac.length>2 ? fac.slice(0,2).join(', ')+' +'+(fac.length-2) : fac.join(', ')):'—')+'</td><td>'+estChip(o.est)+'</td></tr>'; }).join('')
+            + '</tbody></table></div>';
+        };
+        document.getElementById('ht-convenio-body').innerHTML = convenioRows.map((c,i)=>`
+          <tr class="conv-row" data-ci="${i}" tabindex="0" role="button" aria-expanded="false" title="Clic para ver las órdenes de compra">
+            <td class="name"><span class="conv-chev">›</span>${escH(c.id)}</td>
             <td class="num">${c.turnos}</td>
             <td class="num">${c.horas.toLocaleString('es-CL')}</td>
             <td class="num">${fmtCLP(c.monto)}</td>
             <td class="num">${montoTotal>0 ? (c.monto/montoTotal*100).toFixed(1) : '0'}%</td>
-          </tr>`).join('');
+          </tr>
+          <tr class="conv-det" id="conv-det-${i}" hidden><td colspan="5">${ocDetail(c.id)}</td></tr>`).join('');
+        const cbody = document.getElementById('ht-convenio-body');
+        const toggleConv = (tr)=>{ const det = document.getElementById('conv-det-'+tr.getAttribute('data-ci')); const open = det.hidden; det.hidden = !open; tr.classList.toggle('open', open); tr.setAttribute('aria-expanded', open?'true':'false'); };
+        cbody.onclick = e=>{ const tr = e.target.closest('tr.conv-row'); if(tr) toggleConv(tr); };
+        cbody.onkeydown = e=>{ if(e.key==='Enter' || e.key===' '){ const tr = e.target.closest('tr.conv-row'); if(tr){ e.preventDefault(); toggleConv(tr); } } };
 
         // Turnos por especialidad (sin nombres de profesionales)
         const espMap = {};
