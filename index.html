@@ -149,6 +149,17 @@
   .av-wrap{padding:22px 22px 12px; margin-bottom:12px;}
   .av-note{margin-top:10px; font-family:var(--mono); font-size:10.5px; color:var(--ink-mute); line-height:1.5;}
   .av-note b{color:var(--ink);}
+  .ht-donut-wrap{display:flex; align-items:center; justify-content:center; gap:48px; flex-wrap:wrap; padding:26px 28px; margin-bottom:12px;}
+  .ht-donut{position:relative; width:290px; height:290px; flex:0 0 auto;}
+  .ht-donut-c{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; pointer-events:none;}
+  .ht-donut-c b{font-family:var(--mono); font-size:34px; font-weight:700; color:var(--ink); line-height:1;}
+  .ht-donut-c span{font-family:var(--mono); font-size:11px; color:var(--ink-mute); text-transform:uppercase; letter-spacing:.08em; margin-top:6px;}
+  .ht-leg{display:flex; flex-direction:column; gap:12px; min-width:260px; flex:0 1 380px;}
+  .ht-leg-row{display:grid; grid-template-columns:14px 1fr auto; align-items:center; gap:6px 12px; padding:12px 14px; border:1px solid var(--line); border-radius:10px; background:rgba(127,140,160,.06);}
+  .ht-leg-row i{width:14px; height:14px; border-radius:4px;}
+  .ht-leg-row .n{font-weight:600; font-size:14px; color:var(--ink);}
+  .ht-leg-row .p{font-family:var(--mono); font-size:22px; font-weight:700; color:var(--ink); text-align:right;}
+  .ht-leg-row .m{grid-column:2 / 4; font-family:var(--mono); font-size:11.5px; color:var(--ink-mute);}
   .table-wrap{background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden;}
   table{width:100%; border-collapse:collapse; font-size:13px;}
   thead th{text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-mute); background:#FAFBFB; padding:11px 16px; border-bottom:1px solid var(--line);}
@@ -553,14 +564,14 @@ header{background:transparent !important;}
     <div class="vital"><div class="label">Monto total</div><div class="value" id="ht-v-total" style="font-size:20px;">–</div></div>
     <div class="vital"><div class="label">Monto pagado</div><div class="value" id="ht-v-pagado" style="font-size:20px;">–</div></div>
     <div class="vital"><div class="label">% pagado</div><div class="value" id="ht-v-pct">–<span>%</span></div></div>
-    <div class="vital"><div class="label">Turnos registrados</div><div class="value" id="ht-v-turnos">–</div></div>
-    <div class="vital"><div class="label">Horas totales</div><div class="value" id="ht-v-horas">–</div></div>
+    <div class="vital"><div class="label">Monto en proceso</div><div class="value" id="ht-v-proceso" style="font-size:20px;">–</div></div>
+    <div class="vital"><div class="label">Monto pendiente</div><div class="value" id="ht-v-pendiente" style="font-size:20px;">–</div></div>
   </div>
 </header>
 
 <main>
 
-  <div class="resumen-grid">
+  <div class="resumen-grid" style="display:none">
     <div style="display:none" class="resumen-box rb-blue"><div class="label">Monto total</div><div class="value" id="ht-r-total">–</div></div>
     <div style="display:none" class="resumen-box rb-green"><div class="label">Monto pagado</div><div class="value" id="ht-r-pagado">–</div></div>
     <div class="resumen-box rb-orange"><div class="label">Monto en proceso</div><div class="value" id="ht-r-proceso">–</div></div>
@@ -570,11 +581,12 @@ header{background:transparent !important;}
 
   <div class="section-head">
     <h2>Monto por estado</h2>
-    <span class="hint">pagado / en proceso / pendiente</span>
+    <span class="hint">distribución del monto total · pagado / en proceso / pendiente</span>
   </div>
 
-  <div class="table-wrap" style="padding:20px 20px 8px; margin-bottom:12px;">
-    <div style="height:280px;"><canvas id="turnos-estado-chart"></canvas></div>
+  <div class="table-wrap ht-donut-wrap">
+    <div class="ht-donut"><canvas id="turnos-estado-chart"></canvas><div class="ht-donut-c"><b id="ht-donut-pct">–</b><span>pagado</span></div></div>
+    <div class="ht-leg" id="ht-leg"></div>
   </div>
 
   <div class="section-head">
@@ -1258,8 +1270,8 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
         document.getElementById('ht-v-total').textContent = fmtCLP(montoTotal);
         document.getElementById('ht-v-pagado').textContent = fmtCLP(montoPagado);
         document.getElementById('ht-v-pct').innerHTML = pct.toFixed(0) + '<span>%</span>';
-        document.getElementById('ht-v-turnos').textContent = rows.length.toLocaleString('es-CL');
-        document.getElementById('ht-v-horas').textContent = horasTotal.toLocaleString('es-CL');
+        document.getElementById('ht-v-proceso').textContent = fmtCLP(montoProceso);
+        document.getElementById('ht-v-pendiente').textContent = fmtCLP(montoPendiente);
         document.getElementById('ht-eyebrow').textContent = 'Panel en vivo';
         document.getElementById('ht-eyebrow-fecha').textContent = 'Última carga: ' + new Date().toLocaleDateString('es-CL', {day:'2-digit', month:'short', year:'numeric'}).toUpperCase();
 
@@ -1269,27 +1281,38 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
         document.getElementById('ht-r-pendiente').textContent = fmtCLP(montoPendiente);
         document.getElementById('ht-r-pct').textContent = pct.toFixed(0) + '%';
 
-        // Estado chart
+        // Estado chart (circular, en porcentajes)
         const ctxEstado = document.getElementById('turnos-estado-chart').getContext('2d');
         if(HT_ESTADO_CHART) HT_ESTADO_CHART.destroy();
+        const EST = [['Pagado',montoPagado,'#1E9C8B'],['En proceso',montoProceso,'#E8A33D'],['Pendiente',montoPendiente,'#C4573A']];
+        const sumEst = EST.reduce((a,e)=>a+e[1],0) || 1;
+        const pc1 = v => (v/sumEst*100).toLocaleString('es-CL',{minimumFractionDigits:1, maximumFractionDigits:1}) + '%';
+        document.getElementById('ht-donut-pct').textContent = Math.round(montoPagado/sumEst*100) + '%';
+        document.getElementById('ht-leg').innerHTML = EST.map(e=>`<div class="ht-leg-row"><i style="background:${e[2]}"></i><span class="n">${e[0]}</span><span class="p">${pc1(e[1])}</span><span class="m">${fmtCLP(e[1])}</span></div>`).join('');
+        const sliceLabels = {
+          id:'sliceLabels',
+          afterDatasetsDraw(ch){
+            const {ctx} = ch; const meta = ch.getDatasetMeta(0); ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
+            meta.data.forEach((arc,i)=>{
+              const v = EST[i][1]/sumEst; if(v < 0.05) return;
+              const pos = arc.tooltipPosition();
+              ctx.font = "700 14px 'IBM Plex Mono', monospace"; ctx.fillStyle = '#fff';
+              ctx.fillText(Math.round(v*100)+'%', pos.x, pos.y);
+            });
+            ctx.restore();
+          }
+        };
         HT_ESTADO_CHART = new Chart(ctxEstado, {
-          type: 'bar',
+          type: 'doughnut',
           data: {
-            labels: ['Pagado','En proceso','Pendiente'],
-            datasets: [{
-              data: [montoPagado, montoProceso, montoPendiente],
-              backgroundColor: ['#1E9C8B','#E8A33D','#C4573A'],
-              borderRadius: 4
-            }]
+            labels: EST.map(e=>e[0]),
+            datasets: [{ data: EST.map(e=>e[1]), backgroundColor: EST.map(e=>e[2]), borderWidth: 3, borderColor: (typeof __DK!=='undefined' && __DK) ? '#1B2433' : 'rgba(255,255,255,.9)', hoverOffset: 6 }]
           },
           options: {
-            responsive:true, maintainAspectRatio:false,
-            plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=> fmtCLP(c.raw) } } },
-            scales:{
-              x:{ ticks:{font:{family:"'IBM Plex Mono', monospace", size:11}, color:TICKC}, grid:{display:false} },
-              y:{ ticks:{ callback:(v)=>fmtCLP(v), font:{family:"'IBM Plex Mono', monospace", size:10}, color:TICKC}, grid:{color:GRIDC} }
-            }
-          }
+            responsive:true, maintainAspectRatio:false, cutout:'62%',
+            plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:(c)=> c.label + ': ' + pc1(c.raw) + ' · ' + fmtCLP(c.raw) } } }
+          },
+          plugins:[sliceLabels]
         });
 
         // Monthly chart
