@@ -273,6 +273,30 @@ table.vg tr.nov .vg-id b::after{content:' · ' attr(data-etq);font-weight:500;co
 .cal-m .cs{font-size:11.5px;opacity:.85}
 .cal-m .ca{margin-top:auto;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;align-self:flex-start;background:var(--crit-bg);color:var(--crit)}
 .cal-m .ca.ok{background:var(--good-bg);color:var(--good)}
+.cal-chart-card{margin-top:12px;padding:16px 14px 10px}
+.cal-ct{font-family:var(--fd);font-weight:600;font-size:14px;margin-bottom:10px}.cal-ct span{font-weight:500;font-size:12px;color:var(--muted)}
+.cal-chart{display:flex;align-items:flex-end;gap:6px;height:230px;overflow-x:auto;padding-top:22px}
+.cal-b{all:unset;box-sizing:border-box;flex:1 0 46px;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;cursor:pointer;position:relative}
+.cal-b:disabled{cursor:default;opacity:.5}
+.cal-b .bn{font-weight:700;font-size:13px;margin-bottom:3px}
+.cal-b .bs{width:100%;max-width:44px;display:flex;flex-direction:column;border-radius:8px 8px 3px 3px;overflow:hidden;transition:filter .12s,transform .12s}
+.cal-b:not(:disabled):hover .bs,.cal-b:focus-visible .bs{filter:brightness(1.1);transform:scaleX(1.08)}
+.cal-b .bs i{display:block;width:100%}.cal-b .bs .ok{background:#2E9E6B}.cal-b .bs .no{background:#D9534F}
+.cal-b .bl{font-size:10.5px;margin-top:6px;color:var(--muted);font-weight:600;white-space:nowrap}
+.cal-b.now .bl{color:var(--accent)}
+.cal-b.sep{border-left:1px dashed var(--line);padding-left:6px;margin-left:2px}
+.cal-m{position:relative;overflow:hidden}
+.cal-m .cd{font-size:11px;opacity:.9}
+.cal-m .cbar{height:6px;border-radius:99px;background:rgba(214,60,60,.35);overflow:hidden;margin-top:2px}.cal-m .cbar b{display:block;height:100%;background:#2E9E6B}
+.cal-m.u1{background:linear-gradient(160deg,#FFE1DC,#FFC9C0);border-color:#F2A89E;color:#5B1A12}
+.cal-m.u2{background:linear-gradient(160deg,#FFF0D6,#FFDFA8);border-color:#F0C57A;color:#5B3A06}
+.cal-m.u3{background:linear-gradient(160deg,#E4F1FB,#CFE5F7);border-color:#A9CDEA;color:#12385B}
+.cal-m.u4{background:linear-gradient(160deg,#E6F5EC,#D2EDDC);border-color:#B1DBC2;color:#14432A}
+:root[data-mode="dark"] .cal-m.u1,:root[data-mode="dark"] .cal-m.u2,:root[data-mode="dark"] .cal-m.u3,:root[data-mode="dark"] .cal-m.u4{color:#F1F1F1}
+:root[data-mode="dark"] .cal-m.u1{background:linear-gradient(160deg,#4A1F1B,#6A2A24);border-color:#8A3A32}
+:root[data-mode="dark"] .cal-m.u2{background:linear-gradient(160deg,#47360F,#63491A);border-color:#7F5F26}
+:root[data-mode="dark"] .cal-m.u3{background:linear-gradient(160deg,#17324D,#1F4468);border-color:#2D5D8C}
+:root[data-mode="dark"] .cal-m.u4{background:linear-gradient(160deg,#15382A,#1C4C37);border-color:#2A6A4C}
 .sec-label{font-family:var(--fd);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:18px 0 8px}
 .sec-label:first-child{margin-top:0}.sec-label span{text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;font-family:var(--fb);font-size:12.5px}
 .people{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
@@ -466,6 +490,7 @@ tr.total td{font-weight:600;background:var(--surface-2)}
 <section class="panel" id="p-vg" hidden>
   <div class="sec-label">Visión general <span>· licitaciones y contratos que vencen cada mes · clic en un mes para ver el detalle</span></div>
   <div class="kpis" id="kpi-cal"></div>
+  <div class="card cal-chart-card"><div class="cal-ct">Licitaciones que vencen por mes <span>· verde: con aviso · rojo: sin aviso · clic en una barra para ver el detalle</span></div><div class="cal-chart" id="cal-chart"></div></div>
   <div class="cal-grid" id="cal-grid"></div>
   <div class="vg-leg" id="cal-leg"></div>
   <p class="note">Cada mes cuenta las licitaciones vigentes cuyo contrato (por proveedor) tiene su término actual en ese mes, según BD CONTRATOS. «Sin aviso» = sin aviso de término registrado en INFO CONTRATOS ni en el registro anterior.</p>
@@ -1223,17 +1248,24 @@ function renderCal(){
   if(B.now)items.push(['now','Vencen este mes',MN[HOY.getMonth()]+' '+String(HOY.getFullYear()).slice(2)+' · mes en curso',B.now]);
   const tl=[];for(let k=start;k<=end;k++)items.push([k,MN[k%12]+' '+String(Math.floor(k/12)).slice(2),MF[k%12]+' '+Math.floor(k/12),B[k]||[]]);
   if(B.post)items.push(['post','Después','desde ene 2028',B.post]);
-  const mx=Math.max(1,...items.filter(i=>typeof i[0]==='number').map(i=>stats(i[3]).n));
+  const mxB=Math.max(1,...items.filter(i=>i[0]!=='post').map(i=>stats(i[3]).n));
   window.CALD={};
-  box.innerHTML=items.map(([k,lab,full,a])=>{const s=stats(a);const lv=s.n===0?0:(typeof k!=='number'?1:s.n/mx>.66?3:s.n/mx>.4?2:1);window.CALD[k]=[`Licitaciones que vencen — ${full}`,a];
-    return `<button class="cal-m c${lv}${k==='now'?' now':''}" data-k="${k}" ${s.n?'':'disabled'} title="${full}"><span class="cm">${lab}</span><span class="cn">${s.n}</span><span class="cs">${s.n===1?'licitación':'licitaciones'}${s.c!==s.n?' · '+s.c+' contratos':''}</span>${s.n?`<span class="ca${s.sa?'':' ok'}">${s.sa?s.sa+' sin aviso':'todas con aviso'}</span>`:''}</button>`}).join('');
+  const urg=(k,a)=>{if(k==='post')return 4;const d=a.length?Math.min(...a.map(c=>c.dias)):(k==='now'?0:(k-cur)*30);return d<=30?1:d<=90?2:d<=180?3:4};
+  const UL=['','vence pronto (≤ 30 días)','próximos 90 días','próximos 6 meses','más adelante'];
+  items.forEach(([k,lab,full,a])=>{window.CALD[k]=[`Licitaciones que vencen — ${full}`,a]});
+  box.innerHTML=items.map(([k,lab,full,a])=>{const s=stats(a),u=urg(k,a),dmin=a.length?Math.min(...a.map(c=>c.dias)):null,pct=s.n?Math.round((s.n-s.sa)/s.n*100):0;
+    return `<button class="cal-m u${u}${k==='now'?' now':''}" data-k="${k}" ${s.n?'':'disabled'} title="${full} · ${UL[u]}"><span class="cm">${lab}</span><span class="cn">${s.n}</span><span class="cs">${s.n===1?'licitación':'licitaciones'}${s.c!==s.n?' · '+s.c+' contratos':''}</span>${s.n?`<span class="cd">${dmin<=0?'ya vence':'primero en '+dmin+' días'}</span><span class="cbar" title="${pct}% con aviso"><b style="width:${pct}%"></b></span><span class="ca${s.sa?'':' ok'}">${s.sa?s.sa+' sin aviso':'todas con aviso'}</span>`:''}</button>`}).join('');
   box.querySelectorAll('.cal-m:not([disabled])').forEach(b=>b.onclick=()=>{const d=window.CALD[b.dataset.k];openContrDetail(d[0],d[1])});
+  const ch=document.getElementById('cal-chart'),H=170;
+  ch.innerHTML=items.map(([k,lab,full,a],i)=>{const s=stats(a),h=Math.min(H,Math.round(s.n/mxB*H)),hs=s.n?Math.round(h*s.sa/s.n):0;
+    return `<button class="cal-b${k==='now'?' now':''}${k==='post'?' sep':''}" data-k="${k}" ${s.n?'':'disabled'} title="${full}: ${s.n} licitaciones (${s.sa} sin aviso)"><span class="bn">${s.n}</span><span class="bs" style="height:${Math.max(h,s.n?6:2)}px"><i class="no" style="height:${hs}px"></i><i class="ok" style="flex:1"></i></span><span class="bl">${k==='now'?'Este mes':lab}</span></button>`}).join('');
+  ch.querySelectorAll('.cal-b:not([disabled])').forEach(b=>b.onclick=()=>{const d=window.CALD[b.dataset.k];openContrDetail(d[0],d[1])});
   const win=items.filter(i=>typeof i[0]==='number').flatMap(i=>i[3]);const w=stats(win),n90=stats(LV.flatMap(l=>l.vig).filter(c=>c.dias!=null&&c.dias<=90)),n27=stats(win.filter(c=>c.ter.getFullYear()===2027));
   const kp=(k,t,v,f,rows)=>{window.CALD[k]=[t,rows];return `<div class="kpi kpi-click" role="button" tabindex="0" data-cal="${k}"><div class="k-name">${t}</div><div class="k-val">${v}</div><div class="k-foot">${f}</div></div>`};
   const v90=LV.flatMap(l=>l.vig).filter(c=>c.dias!=null&&c.dias<=90),v27=win.filter(c=>c.ter.getFullYear()===2027);
   document.getElementById('kpi-cal').innerHTML=kp('k90','Vencen en 90 días',n90.n,`${n90.sa} sin aviso`,v90)+kp('k27','Vencen en 2027',stats(v27).n,`${stats(v27).sa} sin aviso`,v27)+kp('kw','Dic 2026 – Dic 2027',w.n,`${w.c} contratos · ${w.sa} sin aviso`,win);
   document.querySelectorAll('#kpi-cal .kpi-click').forEach(el=>{const go=()=>{const d=window.CALD[el.dataset.cal];openContrDetail(d[0],d[1])};el.onclick=go;el.onkeydown=e=>{if(e.key==='Enter')go()}});
-  document.getElementById('cal-leg').innerHTML='<span><i style="background:var(--vg1)"></i>pocas</span><span><i style="background:var(--vg2)"></i>varias</span><span><i style="background:var(--vg3)"></i>mayor concentración</span><span><b style="color:var(--crit)">•</b> hay licitaciones sin aviso</span>';
+  document.getElementById('cal-leg').innerHTML='<span><i style="background:#F2A89E"></i>vence en ≤ 30 días</span><span><i style="background:#F0C57A"></i>≤ 90 días</span><span><i style="background:#A9CDEA"></i>≤ 6 meses</span><span><i style="background:#B1DBC2"></i>más adelante</span><span>barra de la tarjeta: % con aviso</span>';
 }
 function renderVG(){
   const procs=ROWS.map(r=>({r,id:cId(r.lic),ms:mesesDoc(r.mesdoc,r.rec||r.firma||r.oc),noc:(r.noc||'').trim()})).filter(p=>p.id);
