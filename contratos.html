@@ -1407,8 +1407,12 @@ function fetchSheetRows(id,name){
 }
 async function fetchWorkbook(){
   const results=await Promise.all(SHEET_NAMES.map(name=>fetchSheetRows(SHEET_ID,name)));
+  // si alguna hoja falla (error transitorio de Google), se reintenta una vez
+  for(let i=0;i<SHEET_NAMES.length;i++){if(!results[i]||results[i].length<2){await new Promise(r=>setTimeout(r,1500));results[i]=await fetchSheetRows(SHEET_ID,SHEET_NAMES[i])}}
   const sheets={};
-  SHEET_NAMES.forEach((name,i)=>{ if(results[i]&&results[i].length) sheets[name]=results[i]; });
+  SHEET_NAMES.forEach((name,i)=>{ if(results[i]&&results[i].length>1) sheets[name]=results[i];
+    // si sigue sin leerse, se conserva la última lectura buena para no dejar el panel vacío
+    else if(LASTRES&&LASTRES.__snap&&LASTRES.__snap[name]) sheets[name]=LASTRES.__snap[name]; });
   if(!sheets['VALIDACION Y OC']) throw {code:'fetch',message:'No se pudo leer la hoja VALIDACION Y OC desde Google Sheets'};
   return {SheetNames:Object.keys(sheets), __snap:sheets};
 }
