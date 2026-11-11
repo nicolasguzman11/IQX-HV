@@ -263,6 +263,16 @@ table.vg tr.nov .vg-id b::after{content:' · ' attr(data-etq);font-weight:500;co
 .est-sec .e-body{padding:0 14px 14px}.est-sec td:nth-child(2),.est-sec td:nth-child(5){white-space:nowrap}.est-sec table{font-size:12.5px}.est-sec td.cnom{min-width:200px;max-width:300px;color:var(--ink-2);white-space:normal}.est-sec td.prov{white-space:normal;min-width:180px}
 #t-contr{font-size:12.5px}#t-contr th{position:sticky;top:0;background:var(--surface);z-index:1}#t-contr td{vertical-align:middle}#t-contr td.cnom{min-width:220px;max-width:320px;color:var(--ink-2);font-size:12px}
 #contr-empty{padding:28px;text-align:center;color:var(--ink-2);line-height:1.6}
+.cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.cal-m{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:var(--surface);min-height:118px;transition:transform .12s,box-shadow .12s}
+.cal-m:hover,.cal-m:focus-visible{transform:translateY(-2px);box-shadow:0 8px 20px -10px rgba(0,0,0,.3);outline:2px solid var(--accent)}
+.cal-m.c0{opacity:.6;cursor:default}.cal-m.c1{background:var(--vg1)}.cal-m.c2{background:var(--vg2)}.cal-m.c3{background:var(--vg3);color:#fff}
+.cal-m.now{border:2px solid var(--accent)}
+.cal-m .cm{font-family:var(--fd);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.cal-m .cn{font-family:var(--fd);font-size:34px;font-weight:700;line-height:1}
+.cal-m .cs{font-size:11.5px;opacity:.85}
+.cal-m .ca{margin-top:auto;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;align-self:flex-start;background:var(--crit-bg);color:var(--crit)}
+.cal-m .ca.ok{background:var(--good-bg);color:var(--good)}
 .sec-label{font-family:var(--fd);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:18px 0 8px}
 .sec-label:first-child{margin-top:0}.sec-label span{text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;font-family:var(--fb);font-size:12.5px}
 .people{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
@@ -331,9 +341,9 @@ tr.total td{font-weight:600;background:var(--surface-2)}
     <h1 class="ed-title">Dashboard Gestión de Contratos</h1>
     <div class="ed-desc">Resultados globales de Gestión de Contratos</div>
     <div class="views sec-views" role="tablist" aria-label="Área">
-      <button class="view" role="tab" data-s="vg" aria-selected="true"><span class="v-t">Visión general</span><span class="v-d">Órdenes de compra por convenio y mes</span></button>
+      <button class="view" role="tab" data-s="vg" aria-selected="true"><span class="v-t">Visión general</span><span class="v-d">Calendario de vencimientos por mes</span></button>
       <button class="view" role="tab" data-s="contr" aria-selected="false"><span class="v-t">Contratos</span><span class="v-d">Estado, vencimientos y avisos</span></button>
-      <button class="view" role="tab" data-s="val" aria-selected="false"><span class="v-t">Validación y órdenes de compra</span><span class="v-d">Tiempos, devoluciones, pendientes</span></button>
+      <button class="view" role="tab" data-s="val" aria-selected="false"><span class="v-t">Validación y órdenes de compra</span><span class="v-d">Tiempos, devoluciones, órdenes por convenio</span></button>
     </div>
     <div class="sub" id="sub-wrap"><span id="sub"></span></div>
     <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip neu" id="src"></span><button class="btn" id="f-reload" style="align-self:auto">Actualizar datos</button><button class="btn mode-btn" id="f-mode" style="align-self:auto" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Fondo oscuro</span></button></div>
@@ -344,6 +354,7 @@ tr.total td{font-weight:600;background:var(--surface-2)}
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tab-ind" aria-selected="true" data-p="ind">Indicadores base</button>
     <button class="tab" role="tab" id="tab-comp2" aria-selected="false" data-p="comp2">Indicadores complementarios</button>
+    <button class="tab" role="tab" id="tab-ocm" aria-selected="false" data-p="ocm">Órdenes por convenio y mes</button>
     <button class="tab" role="tab" id="tab-pend" aria-selected="false" data-p="pend">Pendientes</button>
     <button class="tab" role="tab" id="tab-def" aria-selected="false" data-p="def">Definiciones</button>
   </div>
@@ -453,7 +464,14 @@ tr.total td{font-weight:600;background:var(--surface-2)}
   </div>
 </div>
 <section class="panel" id="p-vg" hidden>
-  <div class="sec-label">Visión general <span>· órdenes de compra emitidas por convenio y mes de documentación · clic en una celda para ver los procesos</span></div>
+  <div class="sec-label">Visión general <span>· licitaciones y contratos que vencen cada mes · clic en un mes para ver el detalle</span></div>
+  <div class="kpis" id="kpi-cal"></div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="vg-leg" id="cal-leg"></div>
+  <p class="note">Cada mes cuenta las licitaciones vigentes cuyo contrato (por proveedor) tiene su término actual en ese mes, según BD CONTRATOS. «Sin aviso» = sin aviso de término registrado en INFO CONTRATOS ni en el registro anterior.</p>
+</section>
+<section class="panel" id="p-ocm" hidden>
+  <div class="sec-label">Órdenes por convenio y mes <span>· órdenes de compra emitidas por convenio y mes de documentación · clic en una celda para ver los procesos</span></div>
   <div class="kpis" id="kpi-vg"></div>
   <div class="card" style="margin-top:12px">
     <div class="vg-tools">
@@ -589,11 +607,11 @@ document.getElementById('f-reset').addEventListener('click',()=>{F.resp=F.mes=F.
 const EDITION='unidad';let VIEW=EDITION;
 const curTab=()=>document.querySelector('.tab[aria-selected="true"]').dataset.p;
 let SECTION='vg';try{const s=localStorage.getItem('section2');if(s==='val'||s==='contr'||s==='vg')SECTION=s}catch(e){}
-const curPanel=()=>{if(SECTION==='contr')return 'contr';if(SECTION==='vg')return 'vg';const t=curTab();if(t==='comp2')return VIEW==='interno'?'comp':'ucomp';return t==='ind'?(VIEW==='interno'?'comp':'base'):t};
+const curPanel=()=>{if(SECTION==='contr')return 'contr';if(SECTION==='vg')return 'vg';const t=curTab();if(t==='ocm')return 'ocm';if(t==='comp2')return VIEW==='interno'?'comp':'ucomp';return t==='ind'?(VIEW==='interno'?'comp':'base'):t};
 function showPanels(){const a=curPanel();document.querySelectorAll('section.panel').forEach(p=>p.hidden=p.id!=='p-'+a);
   document.querySelectorAll('.view[data-v]').forEach(v=>v.setAttribute('aria-selected',v.dataset.v===VIEW));
   document.getElementById('f-resp').closest('label').hidden=(VIEW==='unidad');
-  document.querySelector('.filters').hidden=(a==='contr'||a==='def'||a==='vg');
+  document.querySelector('.filters').hidden=(a==='contr'||a==='def'||a==='vg'||a==='ocm');
   document.querySelector('.bar').hidden=(SECTION!=='val');document.getElementById('sub-wrap').hidden=(SECTION!=='val');
   document.querySelectorAll('.sec-views .view').forEach(v=>v.setAttribute('aria-selected',v.dataset.s===SECTION));
   const c2=document.getElementById('tab-comp2');c2.hidden=(VIEW==='interno');
@@ -868,7 +886,8 @@ function render(){
     DRILL['c-devresp']=(i,di,ch)=>{const l=ch.data.labels[i],x=allR2.filter(r=>r.resp===l);return di===0?{title:`Devoluciones a referente — ${l}`,rows:x.filter(r=>r.dev)}:di===1?{title:`Pendientes — ${l}`,rows:x.filter(r=>r.pend)}:{title:`Pendientes con más de 15 días — ${l}`,rows:x.filter(r=>r.pend&&r.age>15)}};
   }
   if(active==='contr') renderContratos();
-  if(active==='vg') renderVG();
+  if(active==='vg') renderCal();
+  if(active==='ocm') renderVG();
   if(active==='pend') renderPend(rs);
 }
 // stacked labels: centered inside segments
@@ -1192,6 +1211,30 @@ function mesesDoc(txt,ref){const s=normH(txt).replace(/\bY(?=(ENE|FEB|MAR|ABR|MA
 const mesK=k=>MES_CORTO[k%100]+' '+String(Math.floor(k/100)).slice(2);
 const addMes=(k,n)=>{let y=Math.floor(k/100),m=k%100+n;while(m>12){m-=12;y++}while(m<1){m+=12;y--}return y*100+m};
 let VG={per:'u12',filt:'todos',q:'',sk:'tot',sd:-1};
+function renderCal(){
+  const box=document.getElementById('cal-grid');
+  if(!CONTR){document.getElementById('kpi-cal').innerHTML='';box.innerHTML='<p class="note">Los contratos se leen en vivo desde Google Drive. '+(CONTR_ERR?esc(CONTR_ERR)+'.':'')+'</p>';return}
+  const LV=licitaciones().filter(l=>l.vig.length),MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],MF=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const cur=HOY.getFullYear()*12+HOY.getMonth(),start=2026*12+11,end=2027*12+11;
+  const B={};const put=(k,c)=>{(B[k]=B[k]||[]).push(c)};
+  LV.forEach(l=>l.vig.forEach(c=>{if(!c.ter)return;const k=c.ter.getFullYear()*12+c.ter.getMonth();put(k<start?(k<=cur?'now':'pre'):k>end?'post':k,c)}));
+  const stats=a=>{const ids=new Set(a.map(c=>c.id));const sa=new Set(a.filter(c=>!c.ult).map(c=>c.id));return{n:ids.size,c:a.length,sa:sa.size}};
+  const items=[];
+  if(B.now)items.push(['now','Vencen este mes',MN[HOY.getMonth()]+' '+String(HOY.getFullYear()).slice(2)+' · mes en curso',B.now]);
+  const tl=[];for(let k=start;k<=end;k++)items.push([k,MN[k%12]+' '+String(Math.floor(k/12)).slice(2),MF[k%12]+' '+Math.floor(k/12),B[k]||[]]);
+  if(B.post)items.push(['post','Después','desde ene 2028',B.post]);
+  const mx=Math.max(1,...items.filter(i=>typeof i[0]==='number').map(i=>stats(i[3]).n));
+  window.CALD={};
+  box.innerHTML=items.map(([k,lab,full,a])=>{const s=stats(a);const lv=s.n===0?0:(typeof k!=='number'?1:s.n/mx>.66?3:s.n/mx>.4?2:1);window.CALD[k]=[`Licitaciones que vencen — ${full}`,a];
+    return `<button class="cal-m c${lv}${k==='now'?' now':''}" data-k="${k}" ${s.n?'':'disabled'} title="${full}"><span class="cm">${lab}</span><span class="cn">${s.n}</span><span class="cs">${s.n===1?'licitación':'licitaciones'}${s.c!==s.n?' · '+s.c+' contratos':''}</span>${s.n?`<span class="ca${s.sa?'':' ok'}">${s.sa?s.sa+' sin aviso':'todas con aviso'}</span>`:''}</button>`}).join('');
+  box.querySelectorAll('.cal-m:not([disabled])').forEach(b=>b.onclick=()=>{const d=window.CALD[b.dataset.k];openContrDetail(d[0],d[1])});
+  const win=items.filter(i=>typeof i[0]==='number').flatMap(i=>i[3]);const w=stats(win),n90=stats(LV.flatMap(l=>l.vig).filter(c=>c.dias!=null&&c.dias<=90)),n27=stats(win.filter(c=>c.ter.getFullYear()===2027));
+  const kp=(k,t,v,f,rows)=>{window.CALD[k]=[t,rows];return `<div class="kpi kpi-click" role="button" tabindex="0" data-cal="${k}"><div class="k-name">${t}</div><div class="k-val">${v}</div><div class="k-foot">${f}</div></div>`};
+  const v90=LV.flatMap(l=>l.vig).filter(c=>c.dias!=null&&c.dias<=90),v27=win.filter(c=>c.ter.getFullYear()===2027);
+  document.getElementById('kpi-cal').innerHTML=kp('k90','Vencen en 90 días',n90.n,`${n90.sa} sin aviso`,v90)+kp('k27','Vencen en 2027',stats(v27).n,`${stats(v27).sa} sin aviso`,v27)+kp('kw','Dic 2026 – Dic 2027',w.n,`${w.c} contratos · ${w.sa} sin aviso`,win);
+  document.querySelectorAll('#kpi-cal .kpi-click').forEach(el=>{const go=()=>{const d=window.CALD[el.dataset.cal];openContrDetail(d[0],d[1])};el.onclick=go;el.onkeydown=e=>{if(e.key==='Enter')go()}});
+  document.getElementById('cal-leg').innerHTML='<span><i style="background:var(--vg1)"></i>pocas</span><span><i style="background:var(--vg2)"></i>varias</span><span><i style="background:var(--vg3)"></i>mayor concentración</span><span><b style="color:var(--crit)">•</b> hay licitaciones sin aviso</span>';
+}
 function renderVG(){
   const procs=ROWS.map(r=>({r,id:cId(r.lic),ms:mesesDoc(r.mesdoc,r.rec||r.firma||r.oc),noc:(r.noc||'').trim()})).filter(p=>p.id);
   const cur=HOY.getFullYear()*100+HOY.getMonth()+1;
