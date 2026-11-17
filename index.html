@@ -451,11 +451,11 @@ html[data-tema="contratos"][data-mode="dark"] .hv-aurora i:nth-child(3){backgrou
         <span><span class="dot" style="background:var(--teal);"></span>Aceptable (&lt;50%)</span>
         <span><span class="dot" style="background:var(--amber);"></span>Crítico (50-70%)</span>
         <span><span class="dot" style="background:var(--red);"></span>Riesgoso (&gt;70%)</span>
-        <span><span class="dot" style="background:#E8A33D;"></span>% pagado</span>
+        <span><span class="dot" style="background:#5B6FD6;"></span>% pagado</span>
       </div>
     </div>
 
-    <div class="table-wrap av-wrap"><div style="height:400px;"><canvas id="main-chart"></canvas></div><div class="av-note">Barra de color: <b>% de avance</b> (cirugías ejecutadas sobre las convenidas). Barra naranja: <b>% pagado</b> de lo ejecutado. Líneas punteadas: umbrales 50% y 70%.</div></div>
+    <div class="table-wrap av-wrap"><div style="height:400px;"><canvas id="main-chart"></canvas></div><div class="av-note">Barra de color: <b>% de avance</b> (cirugías ejecutadas sobre las convenidas). Barra azul: <b>% pagado</b> de lo ejecutado. Líneas punteadas: umbrales 50% y 70%.</div></div>
 
     <div class="section-head">
       <h2>Detalle por licitación</h2>
@@ -908,7 +908,7 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
           meta.data.forEach((bar,j)=>{
             const v = ds.data[j]; if(v==null) return;
             ctx.font = (i===0 ? '700 13px ' : '600 11px ') + MONO;
-            ctx.fillStyle = i===0 ? (ds.backgroundColor[j]||TICKC) : '#C98512';
+            ctx.fillStyle = i===0 ? (ds.backgroundColor[j]||TICKC) : '#4455B8';
             ctx.fillText(Math.round(v)+'%', bar.x, bar.y-6);
           });
         });
@@ -920,7 +920,7 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';const TIC
       type:'bar',
       data:{ labels, datasets:[
         { label:'Avance (% ejecutado del programado)', data:ejec, backgroundColor:colors, borderRadius:6, barPercentage:.82, categoryPercentage:.78 },
-        { label:'Pagado (% de lo ejecutado)', data:pago, backgroundColor:'#E8A33D', borderRadius:6, barPercentage:.82, categoryPercentage:.78 }
+        { label:'Pagado (% de lo ejecutado)', data:pago, backgroundColor:'#5B6FD6', borderRadius:6, barPercentage:.82, categoryPercentage:.78 }
       ]},
       options:{
         responsive:true, maintainAspectRatio:false,
