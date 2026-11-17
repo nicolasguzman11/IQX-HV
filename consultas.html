@@ -280,6 +280,7 @@
   .lic .sub2{color:var(--ink-mute);font-size:12px;margin-bottom:12px;}
   .pill{font:600 10.5px var(--mono);text-transform:uppercase;letter-spacing:.05em;padding:2px 8px;border-radius:999px;background:#E2F3EA;color:#1E7F4F;}
   .pill.old{background:#EEF2F7;color:#4C5A6E;}
+  .pill.renov{background:#FFF0D6;color:#9A5B06;}
   .big{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px;}
   .big b{font-family:var(--fd);font-size:30px;line-height:1;}
   .big span{color:var(--ink-mute);font-size:12px;}
@@ -295,7 +296,7 @@
   .chart-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;height:330px;position:relative;}
   .two{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:12px;}
   .note{font-size:12px;color:var(--ink-mute);margin-top:8px;}
-  html[data-mode="dark"] .pill{background:#15301F;color:#5CC592;} html[data-mode="dark"] .pill.old{background:#1E2734;color:#B3BECD;}
+  html[data-mode="dark"] .pill{background:#15301F;color:#5CC592;} html[data-mode="dark"] .pill.old{background:#1E2734;color:#B3BECD;} html[data-mode="dark"] .pill.renov{background:#3A2A0C;color:#F0BE6A;}
   html[data-mode="dark"] .pbar{background:#2B3645;}
 
   .lic{cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;}
@@ -444,7 +445,7 @@ const __DK=document.documentElement.getAttribute('data-mode')==='dark';
 const TICKC=__DK?'#8793A5':'#5C6E76',GRIDC=__DK?'#2B3645':'#E1E7E7';
 const SHEET_ID='18ZZWJq-cNAkTFuYD70l8rQl4O3l-2nkkGRan0TOWvPg',GID='1811767707';
 // Licitaciones vigentes (monto total desde la hoja REPORTE). Completar monto de la 89 cuando se conozca.
-const LICS={'1952-86-LP25':{total:291789840,vigente:true},'1952-89-LP25':{total:89969000,vigente:true}};
+const LICS={'1952-86-LP25':{total:291789840,vigente:true,termino:'05-01-2027',renov:true},'1952-89-LP25':{total:89969000,vigente:true,termino:'05-03-2027'}};
 const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
 const COL={'PAGADO':'#5CB8AD','EN PROCESO':'#EAB866','PENDIENTE':'#D9806A'};
 const fmt=n=>'$'+Math.round(n).toLocaleString('es-CL');
@@ -505,8 +506,8 @@ function render(){
     const tot=sum(rs,r=>r.monto), p=sum(rs.filter(r=>r.est==='PAGADO'),r=>r.monto), ep=sum(rs.filter(r=>r.est==='EN PROCESO'),r=>r.monto), pe=sum(rs.filter(r=>r.est==='PENDIENTE'),r=>r.monto);
     const base=cfg.total||0, pct=base?tot/base*100:null, den=base||tot||1;
     const w=v=>(v/den*100).toFixed(2)+'%';
-    return `<div class="lic ${cfg.vigente?'':'old'}" data-lic="${id}" tabindex="0" role="button"><h3>${id} <span class="pill ${cfg.vigente?'':'old'}">${cfg.vigente?'Vigente':'Anterior'}</span></h3>
-    <div class="sub2">${sum(rs,r=>r.cant).toLocaleString('es-CL')} atenciones · ${base?'monto licitación '+fmt(base):'monto de la licitación no registrado'}</div>
+    return `<div class="lic ${cfg.vigente?'':'old'}" data-lic="${id}" tabindex="0" role="button"><h3>${id} <span class="pill ${cfg.renov?'renov':cfg.vigente?'':'old'}">${cfg.renov?'En proceso de renovación':cfg.vigente?'Vigente':'Anterior'}</span></h3>
+    <div class="sub2">${sum(rs,r=>r.cant).toLocaleString('es-CL')} atenciones · ${base?'monto licitación '+fmt(base):'monto de la licitación no registrado'}${cfg.termino?' · término '+cfg.termino:''}</div>
     <div class="big"><b>${pct==null?fmt(tot):pct.toFixed(1)+'%'}</b><span>${pct==null?'valorizado':fmt(tot)+' utilizado'}</span></div>
     <div class="pbar"><i style="width:${w(p)};background:${COL.PAGADO}"></i><i style="width:${w(ep)};background:${COL['EN PROCESO']}"></i><i style="width:${w(pe)};background:${COL.PENDIENTE}"></i></div>
     <div class="legend2"><span><i class="dot2" style="background:${COL.PAGADO}"></i>Pagado <em>${fmt(p)}</em></span><span><i class="dot2" style="background:${COL['EN PROCESO']}"></i>En proceso <em>${fmt(ep)}</em></span><span><i class="dot2" style="background:${COL.PENDIENTE}"></i>Pendiente <em>${fmt(pe)}</em></span></div><div class="more"><span>Ver órdenes de compra y meses</span><span>›</span></div></div>`;
@@ -537,7 +538,7 @@ function openLic(id){
   const ord=['PENDIENTE','EN PROCESO','PAGADO'];
   const pill=e=>`<span class="est-pill e-${e.replace(' ','-')}">${e[0]+e.slice(1).toLowerCase()}</span>`;
   document.getElementById('m-t').textContent=id;
-  document.getElementById('m-s').textContent=rows.length+' órdenes de compra · '+sum(rs,r=>r.cant).toLocaleString('es-CL')+' atenciones'+((LICS[id]||{}).vigente?' · licitación vigente':'');
+  document.getElementById('m-s').textContent=rows.length+' órdenes de compra · '+sum(rs,r=>r.cant).toLocaleString('es-CL')+' atenciones'+((LICS[id]||{}).vigente?' · licitación vigente'+((LICS[id]||{}).termino?' · término '+LICS[id].termino:''):'');
   const p=sum(rs.filter(r=>r.est==='PAGADO'),r=>r.monto), tot=sum(rs,r=>r.monto);
   document.getElementById('m-kp').innerHTML=[['Órdenes de compra',rows.length],['Monto valorizado',fmt(tot)],['Pagado',fmt(p)],['Por pagar',fmt(tot-p)]].map(x=>`<div><b>${x[1]}</b><span>${x[0]}</span></div>`).join('');
   document.getElementById('m-rows').innerHTML=rows.map(x=>{
