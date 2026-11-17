@@ -441,13 +441,13 @@ html[data-tema="contratos"][data-mode="dark"] .hv-aurora i:nth-child(3){backgrou
   </div>
 </header>
 <main>
-  <div class="section-head"><h2>Resumen</h2><span class="hint" id="h-sum"></span></div>
+  <div class="section-head"><h2>Resumen</h2></div>
   <div class="kp-grid" id="kpis"></div>
-  <div class="section-head"><h2>Avance por licitación</h2><span class="hint">monto valorizado vs. monto de la licitación</span></div>
+  <div class="section-head"><h2>Avance por licitación</h2></div>
   <div class="lic-grid" id="lics"></div>
-  <div class="section-head"><h2>Evolución mensual</h2><span class="hint">monto por estado · atenciones por tipo</span></div>
+  <div class="section-head"><h2>Evolución mensual</h2></div>
   <div class="two"><div class="chart-card"><canvas id="c1"></canvas></div><div class="chart-card"><canvas id="c2"></canvas></div></div>
-  <div class="section-head"><h2>Atenciones por especialidad</h2><span class="hint">ordenado por monto</span></div>
+  <div class="section-head"><h2>Atenciones por especialidad</h2></div>
   <div class="table-wrap"><table><thead><tr><th>Especialidad</th><th class="num">Consultas nuevas</th><th class="num">Controles</th><th class="num">Atenciones</th><th class="num">Monto</th><th class="num">% del total</th></tr></thead><tbody id="esp"></tbody></table></div>
   <div class="note" id="note"></div>
 </main>
@@ -508,7 +508,6 @@ function render(){
   charts.forEach(c=>c.destroy());charts=[];
   const d=filtered(), nuevas=sum(d.filter(r=>r.tipo==='Nueva'),r=>r.cant), ctrl=sum(d.filter(r=>r.tipo==='Control'),r=>r.cant);
   const monto=sum(d,r=>r.monto), pag=sum(d.filter(r=>r.est==='PAGADO'),r=>r.monto);
-  document.getElementById('h-sum').textContent=d.length+' registros';
   const tot=nuevas+ctrl,P=(x,y)=>y?Math.round(x/y*100):0,pp=P(pag,monto);
   const K=(l,v,c,sub,bar)=>`<div class="vital" style="--kc:${c}"><div class="label">${l}</div><div class="value">${v}</div>${sub?`<div class="kp-sub">${sub}</div>`:''}${bar||''}</div>`;
   const B1=w=>`<div class="kp-bar"><i style="width:${w}%"></i></div>`;
