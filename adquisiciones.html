@@ -482,16 +482,19 @@ td.pr{max-width:360px;}
 .pr-row{display:grid;grid-template-columns:120px 1fr 60px;gap:10px;align-items:center;padding:5px 6px;font-size:12.5px;}
 .pr-row .st2{display:flex;height:14px;border-radius:99px;overflow:hidden;background:rgba(120,130,150,.2);}
 .pr-row .st2 i{display:block;height:100%;}
+.kp-grid{margin-bottom:14px;}#kpis0{margin-bottom:14px;}
 .dn{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
-.dsvg{width:190px;height:190px;flex:none;}
+.dsvg{width:210px;height:210px;flex:none;}
 .dseg{cursor:pointer;transition:stroke-width .15s;}.dseg:hover{stroke-width:20;}
-.dc1{font:700 17px var(--mono);fill:var(--ink);}.dc2{font:500 6.5px var(--mono);fill:var(--ink-2);}
+.dc1{font:700 19px var(--mono);fill:var(--ink);}.dc2{font:500 6.5px var(--mono);fill:var(--ink-2);}
 .lgdw{flex:1;min-width:210px;display:flex;flex-direction:column;gap:2px;}
 .lgd{display:grid;grid-template-columns:12px 1fr auto 74px;gap:9px;align-items:center;padding:5px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--ink-2);}
 .lgd:hover,.lgd.on{background:rgba(232,163,61,.14);}
 .lgd i{width:11px;height:11px;border-radius:4px;display:block;}
 .lgd .nm{color:var(--ink);font-weight:500;}
 .lgd .vl{font:600 12px var(--mono);color:var(--ink);text-align:right;}.lgd .vl em{font-style:normal;color:var(--ink-2);font-weight:500;}
+.lgh{display:grid;grid-template-columns:12px 1fr auto 74px;gap:9px;padding:0 8px;font:600 10px var(--mono);color:var(--ink-2);text-align:right;text-transform:uppercase;}
+.mini{display:flex;align-items:center;gap:10px;margin-top:10px;}.mini .kp-bar{flex:1;height:9px;}.mini b{font:700 13px var(--mono);color:#3B7BD9;}
 .lgd .vl2{font:500 11.5px var(--mono);color:var(--ink-2);text-align:right;}
 @media(max-width:560px){.hb{grid-template-columns:110px 1fr 64px}.g2{grid-template-columns:1fr}}
 </style>
@@ -500,7 +503,7 @@ td.pr{max-width:360px;}
 <header>
   <div class="eyebrow">Subdirección Administrativa · Adquisiciones</div>
   <h1>Panel de Adquisiciones</h1>
-  <p class="subtitle">Estado de compra y recepción · fármacos, insumos médicos e insumos generales</p>
+  <p class="subtitle">Órdenes de compra y productos · fármacos, insumos médicos e insumos generales</p>
   <div class="stat-row"><span class="s-chip good" id="st">Conectando…</span><span class="s-chip neu" id="st2">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button"></button></div>
   <div class="ad-tabs" id="tabs"></div>
   <div class="filters-row">
@@ -511,22 +514,15 @@ td.pr{max-width:360px;}
 </header>
 <main>
   <div id="v-res">
-    <div class="section-head"><h2>Resumen del mes</h2></div>
     <div class="kp-grid" id="kpis0"></div>
-    <div class="section-head"><h2>Por área</h2></div>
     <div class="ad-sub" id="areas"></div>
-    <div class="section-head"><h2>Top 10 productos con más compras ágiles</h2></div>
     <div class="pn" id="p-top0" style="margin-bottom:12px"></div>
   </div>
   <div id="v-area">
-    <div class="section-head"><h2>Resumen</h2></div>
     <div class="kp-grid" id="kpis"></div>
-    <div class="section-head"><h2>Avance de la compra</h2></div>
     <div class="g2"><div class="pn" id="p-oc"></div><div class="pn" id="p-rec"></div></div>
-    <div class="section-head"><h2>Evolución mensual</h2></div>
     <div class="pn" id="p-ev" style="margin-bottom:12px"></div>
     <div class="pn" id="p-pv" style="margin-bottom:12px"></div>
-    <div class="section-head"><h2>Top 10 productos con más compras ágiles</h2></div>
     <div class="pn" id="p-top" style="margin-bottom:12px"></div>
     <div class="section-head"><h2>Detalle de productos</h2></div>
     <div class="tb-top"><input class="srch" id="q" type="search" placeholder="Buscar producto o proveedor"><span class="s-chip neu" id="cnt"></span></div>
@@ -633,11 +629,11 @@ function render(){
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
-  document.getElementById('kpis0').innerHTML=K('Productos programados',s.n.toLocaleString('es-CL'),'#3B7BD9','programadas en el período')+
+  document.getElementById('kpis0').innerHTML=K('Productos programados',s.n.toLocaleString('es-CL'),'#3B7BD9','')+
     K('Con OC enviada a proveedor',pc(s.env,s.n)+'%','#2E9E6B',s.env.toLocaleString('es-CL')+' de '+s.n.toLocaleString('es-CL'),pc(s.env,s.n))+
-    K('Mecanismo principal',topMec(rows0),'#1E8F8F',topMecSub(rows0),topMecPct(rows0))+
-    K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','en tramitación')+
-    K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A',pc(s.sin,s.n)+'% del total',pc(s.sin,s.n))+
+    K('Mecanismo principal',topMec(rows0),'#1E8F8F','',topMecPct(rows0))+
+    K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','')+
+    K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A','',pc(s.sin,s.n))+
     K('Valor estimado',fmt(s.val),'#E8A33D','fármacos e insumos médicos');
   document.getElementById('areas').innerHTML=AREAS.map(a=>{const r=rowsOf(a.k),t=stats(r);
     return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${a.col.val>=0?' · '+fmt(t.val):''}</div>
@@ -649,11 +645,11 @@ function renderRes(){
 function renderArea(){
   const a=AREAS.find(x=>x.k===TAB),rows=rowsOf(a.k),s=stats(rows);
   document.getElementById('kpis').innerHTML=K('Productos programados',s.n.toLocaleString('es-CL'),a.c,MES===''?'todos los meses':MNAME(+MES))+
-    K('Con OC enviada a proveedor',pc(s.env,s.n)+'%','#2E9E6B',s.env.toLocaleString('es-CL')+' productos',pc(s.env,s.n))+
-    K('Mecanismo principal',topMec(rows),'#1E8F8F',topMecSub(rows),topMecPct(rows))+
-    K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','en tramitación')+
-    K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A',pc(s.sin,s.n)+'% del total',pc(s.sin,s.n))+
-    (a.col.val>=0?K('Valor estimado',fmt(s.val),'#E8A33D','compra programada'):K('Pendientes de emitir OC',(s.sin+s.firm).toLocaleString('es-CL'),'#E8A33D','productos sin OC emitida'));
+    K('Con OC enviada',pc(s.env,s.n)+'%','#2E9E6B','',pc(s.env,s.n))+
+    K('Mecanismo principal',topMec(rows),'#1E8F8F','',topMecPct(rows))+
+    K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','')+
+    K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A','',pc(s.sin,s.n))+
+    (a.col.val>=0?K('Valor estimado',fmt(s.val),'#E8A33D',''):K('Sin emitir OC',(s.sin+s.firm).toLocaleString('es-CL'),'#E8A33D',''));
   renderPanels(a,rows);
   topAG('p-top',DATA[a.k]||[],false);
   const hasP=a.col.prio>=0,hasV=a.col.val>=0;
@@ -664,8 +660,8 @@ function renderArea(){
 function donutBlock(items,attr,cur,center,sub,withProd){
   const tot=items.reduce((a,i)=>a+(withProd?i.n:i.n),0)||1,R=42,C=2*Math.PI*R;let cum=0;
   const segs=items.filter(i=>i.n>0).map(i=>{const len=i.n/tot*C,s=`<circle class="dseg${cur===i.k?' on':''}" data-${attr}="${i.k}" cx="60" cy="60" r="${R}" fill="none" stroke="${i.c}" stroke-width="${cur===i.k?20:16}" stroke-dasharray="${Math.max(len-1.2,0.5)} ${C-Math.max(len-1.2,0.5)}" stroke-dashoffset="${-cum}"><title>${i.k}: ${i.n}</title></circle>`;cum+=len;return s;}).join('');
-  const rows=items.map(i=>`<div class="lgd${cur===i.k?' on':''}" data-${attr}="${i.k}"><i style="background:${i.c}"></i><span class="nm">${i.k}</span>${withProd?`<span class="vl">${i.n?i.n.toLocaleString('es-CL')+'<em> OC</em>':'<em>sin OC aún</em>'}</span><span class="vl2">${i.prod.toLocaleString('es-CL')} prod.</span>`:`<span class="vl">${i.n.toLocaleString('es-CL')}</span><span class="vl2">${pc(i.n,tot)}%</span>`}</div>`).join('');
-  return `<div class="dn"><svg viewBox="0 0 120 120" class="dsvg"><circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(120,130,150,.18)" stroke-width="16"/><g transform="rotate(-90 60 60)">${segs}</g><text x="60" y="58" text-anchor="middle" class="dc1">${center}</text><text x="60" y="73" text-anchor="middle" class="dc2">${sub}</text></svg><div class="lgdw">${rows||'<div class="kp-sub">Sin datos</div>'}</div></div>`;
+  const rows=items.map(i=>`<div class="lgd${cur===i.k?' on':''}" data-${attr}="${i.k}"><i style="background:${i.c}"></i><span class="nm">${i.k}</span>${withProd?`<span class="vl" style="color:${i.c}">${i.n?i.n.toLocaleString('es-CL'):'–'}</span><span class="vl2">${i.prod.toLocaleString('es-CL')}</span>`:`<span class="vl" style="color:${i.c}">${i.n.toLocaleString('es-CL')}</span><span class="vl2">${pc(i.n,tot)}%</span>`}</div>`).join('');
+  return `<div class="dn"><svg viewBox="0 0 120 120" class="dsvg"><circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(120,130,150,.18)" stroke-width="16"/><g transform="rotate(-90 60 60)">${segs}</g><text x="60" y="58" text-anchor="middle" class="dc1">${center}</text><text x="60" y="73" text-anchor="middle" class="dc2">${sub}</text></svg><div class="lgdw">${withProd?'<div class="lgh"><span></span><span></span><span>OC</span><span>Prod.</span></div>':''}${rows||'<div class="kp-sub">Sin datos</div>'}</div></div>`;
 }
 function hbars(items,total,attr,cur){const mx=Math.max(1,...items.map(i=>i.n));
   return items.map(i=>`<div class="hb${cur===i.k?' on':''}" data-${attr}="${i.k.replace(/"/g,'&quot;')}"><span class="nm">${i.k}</span><span class="tr"><i style="width:${i.n/mx*100}%;background:${i.c}"></i></span><span class="vl">${i.n.toLocaleString('es-CL')} <em>${pc(i.n,total)}%</em></span></div>`).join('')||'<div class="kp-sub">Sin datos</div>';}
@@ -673,20 +669,20 @@ function renderPanels(a,rows){
   const ocNow=document.getElementById('f-est').value;
   const base=rowsOf(a.k,{noEst:true}),n=base.length;
   const oi=Object.keys(OCC).map(k=>({k,n:base.filter(x=>x.oc===k).length,c:OCC[k][1]})).filter(x=>x.n);
-  document.getElementById('p-oc').innerHTML=`<h3>Estado de compra <small>productos · clic para filtrar</small></h3>`+donutBlock(oi,'oc',ocNow,n.toLocaleString('es-CL'),'productos',null);
+  document.getElementById('p-oc').innerHTML=`<h3 title="productos · clic para filtrar">Estado de compra</h3>`+donutBlock(oi,'oc',ocNow,n.toLocaleString('es-CL'),'productos',null);
   const mecNow=document.getElementById('f-mec').value;
   const mi=Object.keys(MECC).map(k=>{const r=base.filter(x=>x.mec===k);return {k,n:(k==='Cotización'?0:new Set(r.filter(x=>x.ocn).map(x=>x.ocn)).size),prod:r.length,c:MECC[k][1]};}).filter(x=>x.prod);
   const totOC=new Set(base.filter(x=>x.mec!=='Sin OC'&&x.mec!=='Cotización'&&x.ocn).map(x=>x.ocn)).size,wo=base.filter(x=>x.mec!=='Sin OC').length;
-  document.getElementById('p-rec').innerHTML=`<h3>Mecanismo de compra <small>órdenes de compra · clic para filtrar</small></h3>`+donutBlock(mi,'mec',mecNow,totOC.toLocaleString('es-CL'),'órdenes de compra',true)+`<div class="kp-sub" style="margin-top:8px"><b>${wo.toLocaleString('es-CL')}</b> de <b>${n.toLocaleString('es-CL')}</b> productos ya tienen número de OC o proceso asociado (${pc(wo,n)}%).</div>`;
+  document.getElementById('p-rec').innerHTML=`<h3 title="órdenes de compra · clic para filtrar">Mecanismo de compra</h3>`+donutBlock(mi,'mec',mecNow,totOC.toLocaleString('es-CL'),'órdenes de compra'.replace('órdenes de compra','OC'),true)+`<div class="mini"><div class="kp-bar"><i style="width:${pc(wo,n)}%;background:#3B7BD9"></i></div><b>${pc(wo,n)}%</b></div>`;
   // evolución mensual (todos los meses, sin filtros de estado)
   const all=DATA[a.k]||[],ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),mx=Math.max(1,...ms.map(m=>all.filter(x=>x.mes===m).length));
   const used=Object.keys(OCC).filter(k=>all.some(x=>x.oc===k));
-  document.getElementById('p-ev').innerHTML=`<h3>Productos por mes y estado de compra <small>clic en un mes para filtrar</small></h3><div class="ev">`+ms.map(m=>{const r=all.filter(x=>x.mes===m),t=r.length;
+  document.getElementById('p-ev').innerHTML=`<h3 title="clic en un mes para filtrar">Productos por mes y estado de compra</h3><div class="ev">`+ms.map(m=>{const r=all.filter(x=>x.mes===m),t=r.length;
     return `<div class="col${String(m)===MES?' on':''}" data-m="${m}" title="${MNAME(m)}: ${t} productos"><span class="tot">${t}</span><div class="st" style="height:${t/mx*150}px">${used.map(k=>{const c=r.filter(x=>x.oc===k).length;return c?`<i style="height:${c/t*100}%;background:${OCC[k][1]}"></i>`:'';}).join('')}</div><span class="mm">${MNAME(m).slice(0,3)}</span></div>`;}).join('')+`</div><div class="lg">`+used.map(k=>`<span><i style="background:${OCC[k][1]}"></i>${k}</span>`).join('')+`</div>`;
   // proveedores con pendientes
   const pm={};base.filter(x=>x.prov).forEach(x=>pm[x.prov]=(pm[x.prov]||0)+1);
   const pv=Object.entries(pm).sort((x,y)=>y[1]-x[1]).slice(0,8).map(([k,n])=>({k,n,c:'#3B7BD9'}));
-  document.getElementById('p-pv').innerHTML=`<h3>Principales proveedores <small>productos · clic para buscar en la tabla</small></h3>`+(pv.length?hbars(pv,base.length,'pv',''):'<div class="kp-sub">Sin proveedores informados</div>');
+  document.getElementById('p-pv').innerHTML=`<h3 title="productos · clic para buscar en la tabla">Principales proveedores</h3>`+(pv.length?hbars(pv,base.length,'pv',''):'<div class="kp-sub">Sin proveedores informados</div>');
   document.querySelectorAll('#p-oc [data-oc]').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-est');f.value=f.value===e.dataset.oc?'':e.dataset.oc;render();}));
   document.querySelectorAll('#p-rec [data-mec]').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-mec');f.value=f.value===e.dataset.mec?'':e.dataset.mec;render();}));
   document.querySelectorAll('#p-pv .hb').forEach(e=>e.addEventListener('click',()=>{document.getElementById('q').value=e.dataset.pv;renderTable();document.getElementById('tb').scrollIntoView({behavior:'smooth',block:'start'});}));
@@ -698,7 +694,7 @@ function topAG(el,rows,showArea){
   const t=Object.values(m).sort((a,b)=>b.ocs.size-a.ocs.size||b.val-a.val).slice(0,10),mx=Math.max(1,...t.map(x=>x.ocs.size));
   const esc=v=>v.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const hasV=t.some(x=>x.val>0);
-  document.getElementById(el).innerHTML=`<h3>Compras ágiles por producto <small>todos los meses · N° de OC distintas</small></h3>`+(t.length?`<div class="table-wrap" style="border:0"><table><thead><tr><th>#</th><th>Producto</th>${showArea?'<th>Área</th>':''}<th>Compras ágiles</th><th class="num">Meses</th>${hasV?'<th class="num">Valor estimado total</th>':''}<th>Proveedores</th></tr></thead><tbody>`+t.map((x,i)=>`<tr data-p="${esc(x.prod)}" style="cursor:pointer"><td>${i+1}</td><td class="pr">${esc(x.prod)}</td>${showArea?`<td>${[...x.areas].join(', ')}</td>`:''}<td><div style="display:flex;align-items:center;gap:8px"><span class="hb" style="display:block;padding:0;min-width:90px;flex:1;background:none"><span class="tr" style="display:block"><i style="display:block;width:${x.ocs.size/mx*100}%;background:#3B7BD9;height:100%;border-radius:99px"></i></span></span><b style="font-family:var(--mono)">${x.ocs.size}</b></div></td><td class="num">${x.meses.size}</td>${hasV?`<td class="num">${x.val?fmt(x.val):'–'}</td>`:''}<td>${x.provs.size>1?x.provs.size+' proveedores':esc([...x.provs][0]||'–')}</td></tr>`).join('')+`</tbody></table></div>`:'<div class="kp-sub">Sin compras ágiles registradas</div>');
+  document.getElementById(el).innerHTML=`<h3 title="todos los meses · N° de OC distintas">Compras ágiles por producto</h3>`+(t.length?`<div class="table-wrap" style="border:0"><table><thead><tr><th>#</th><th>Producto</th>${showArea?'<th>Área</th>':''}<th>Compras ágiles</th><th class="num">Meses</th>${hasV?'<th class="num">Valor estimado total</th>':''}<th>Proveedores</th></tr></thead><tbody>`+t.map((x,i)=>`<tr data-p="${esc(x.prod)}" style="cursor:pointer"><td>${i+1}</td><td class="pr">${esc(x.prod)}</td>${showArea?`<td>${[...x.areas].join(', ')}</td>`:''}<td><div style="display:flex;align-items:center;gap:8px"><span class="hb" style="display:block;padding:0;min-width:90px;flex:1;background:none"><span class="tr" style="display:block"><i style="display:block;width:${x.ocs.size/mx*100}%;background:#3B7BD9;height:100%;border-radius:99px"></i></span></span><b style="font-family:var(--mono)">${x.ocs.size}</b></div></td><td class="num">${x.meses.size}</td>${hasV?`<td class="num">${x.val?fmt(x.val):'–'}</td>`:''}<td>${x.provs.size>1?x.provs.size+' proveedores':esc([...x.provs][0]||'–')}</td></tr>`).join('')+`</tbody></table></div>`:'<div class="kp-sub">Sin compras ágiles registradas</div>');
   document.querySelectorAll('#'+el+' tr[data-p]').forEach(r=>r.addEventListener('click',()=>{if(showArea)return;MES='';document.getElementById('f-mes').value='';document.getElementById('f-mec').value='Compra ágil';document.getElementById('f-est').value='';document.getElementById('q').value=r.dataset.p;render();document.getElementById('tb').scrollIntoView({behavior:'smooth',block:'start'});}));
 }
 function renderTable(){
