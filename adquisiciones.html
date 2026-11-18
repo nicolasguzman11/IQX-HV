@@ -518,7 +518,9 @@ td.pr{max-width:360px;}
     <div class="kp-grid" id="kpis0"></div>
     <div class="ad-sub" id="areas"></div>
     <div class="pn" id="p-top0" style="margin-bottom:12px"></div>
-    <div class="pn" id="p-cost0" style="margin-bottom:12px"></div>
+    <div class="pn" id="p-cost0a" style="margin-bottom:12px"></div>
+    <div class="pn" id="p-cost0b" style="margin-bottom:12px"></div>
+    <div class="pn" id="p-cost0c" style="margin-bottom:12px"></div>
   </div>
   <div id="v-area">
     <div class="kp-grid" id="kpis"></div>
@@ -636,7 +638,7 @@ function kpiSet(rows,s,hasVal){const pr=n=>n.toLocaleString('es-CL')+' productos
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
-  topCost('p-cost0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
+  [['p-cost0a','far'],['p-cost0b','med'],['p-cost0c','gen']].forEach(([el,k])=>topCost(el,DATA[k]||[],k));
   document.getElementById('kpis0').innerHTML=kpiSet(rows0,s,true);
   document.getElementById('areas').innerHTML=AREAS.map(a=>{const r=rowsOf(a.k),t=stats(r);
     return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${a.col.val>=0?' · '+fmt(t.val):''}</div>
@@ -650,7 +652,7 @@ function renderArea(){
   document.getElementById('kpis').innerHTML=kpiSet(rows,s,a.col.val>=0);
   renderPanels(a,rows);
   topAG('p-top',DATA[a.k]||[],false);
-  topCost('p-cost',DATA[a.k]||[],false);
+  topCost('p-cost',DATA[a.k]||[],a.k);
   const hasP=a.col.prio>=0,hasV=a.col.val>=0;
 
 }
@@ -701,17 +703,18 @@ function topAG(el,rows,showArea){
 }
 
 
-function topCost(el,rows,showArea){
-  const host=document.getElementById(el),a=AREAS.find(x=>x.k===TAB);
-  const m={};rows.filter(x=>x.oc==='Enviada a proveedor'&&x.val>0).forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,val:0,n:0,max:0,areas:new Set(),mec:new Set()});e.val+=x.val;e.n++;e.max=Math.max(e.max,x.val);e.areas.add(x.area);if(x.mec!=='Sin OC')e.mec.add(x.mec);});
-  const t=Object.values(m).sort((x,y)=>y.val-x.val).slice(0,10),mx=Math.max(1,...t.map(x=>x.val));
-  host.style.display=(!showArea&&a&&a.col.val<0)?'none':'';
+function topCost(el,rows,ak){
+  const host=document.getElementById(el),a=AREAS.find(x=>x.k===ak),hasV=a.col.val>=0;
+  const m={};rows.filter(x=>x.oc==='Enviada a proveedor'&&(!hasV||x.val>0)).forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,val:0,n:0,max:0,mec:new Set(),meses:new Set()});e.val+=x.val;e.n++;e.meses.add(x.mes);e.max=Math.max(e.max,x.val);if(x.mec!=='Sin OC')e.mec.add(x.mec);});
+  const t=Object.values(m).sort((x,y)=>hasV?y.val-x.val:(y.n-x.n||y.meses.size-x.meses.size)).slice(0,10),mx=Math.max(1,...t.map(x=>hasV?x.val:x.n));
   const esc=v=>v.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  host.innerHTML=`<h3 title="Productos con OC enviada a proveedor · valor estimado acumulado de todos los meses${showArea?'':' · clic para ver el detalle'}">Top 10 · productos de mayor valor comprados</h3>`+(t.length?`<div class="table-wrap" style="border:0"><table><thead><tr><th>#</th><th>Producto</th>${showArea?'<th>Área</th>':''}<th>Valor estimado total</th><th class="num">Compras</th><th class="num">Mayor compra</th><th>Mecanismo</th></tr></thead><tbody>`+t.map((x,i)=>`<tr data-p="${esc(x.prod)}" style="${showArea?'':'cursor:pointer'}"><td>${i+1}</td><td class="pr">${esc(x.prod)}</td>${showArea?`<td>${[...x.areas].join(', ')}</td>`:''}<td><div style="display:flex;align-items:center;gap:8px"><span class="hb" style="display:block;padding:0;min-width:90px;flex:1;background:none"><span class="tr" style="display:block"><i style="display:block;width:${x.val/mx*100}%;background:#E8A33D;height:100%;border-radius:99px"></i></span></span><b style="font-family:var(--mono);white-space:nowrap">${fmtM(x.val)}</b></div></td><td class="num">${x.n}</td><td class="num">${fmtM(x.max)}</td><td>${[...x.mec].map(k=>`<span class="eb ${MECC[k][0]}">${k}</span>`).join(' ')||'–'}</td></tr>`).join('')+`</tbody></table></div>`:'<div class="kp-sub">Sin valores registrados</div>');
-  if(!showArea)host.querySelectorAll('tr[data-p]').forEach(r=>r.addEventListener('click',()=>openList(r.dataset.p,x=>norm(x.prod)===norm(r.dataset.p))));
+  const ttl=hasV?`Top 10 · ${a.n} de mayor valor comprados`:`Top 10 · ${a.n} más comprados`;
+  const tip=hasV?'Productos con OC enviada a proveedor · valor estimado acumulado de todos los meses · clic para ver el detalle':'La planilla no trae valores: se ordena por número de compras con OC enviada · clic para ver el detalle';
+  host.innerHTML=`<h3 title="${tip}"><span style="display:inline-flex;align-items:center;gap:8px"><i style="width:10px;height:10px;border-radius:3px;background:${a.c};display:inline-block"></i>${ttl}</span></h3>`+(t.length?`<div class="table-wrap" style="border:0"><table><thead><tr><th>#</th><th>Producto</th><th>${hasV?'Valor estimado total':'Veces comprado'}</th><th class="num">${hasV?'Compras':'Meses'}</th>${hasV?'<th class="num">Mayor compra</th>':''}<th>Mecanismo</th></tr></thead><tbody>`+t.map((x,i)=>`<tr data-p="${esc(x.prod)}" style="cursor:pointer"><td>${i+1}</td><td class="pr">${esc(x.prod)}</td><td><div style="display:flex;align-items:center;gap:8px"><span class="hb" style="display:block;padding:0;min-width:90px;flex:1;background:none"><span class="tr" style="display:block"><i style="display:block;width:${(hasV?x.val:x.n)/mx*100}%;background:${a.c};height:100%;border-radius:99px"></i></span></span><b style="font-family:var(--mono);white-space:nowrap">${hasV?fmtM(x.val):x.n}</b></div></td><td class="num">${hasV?x.n:x.meses.size}</td>${hasV?`<td class="num">${fmtM(x.max)}</td>`:''}<td>${[...x.mec].map(k=>`<span class="eb ${MECC[k][0]}">${k}</span>`).join(' ')||'–'}</td></tr>`).join('')+`</tbody></table></div>`:'<div class="kp-sub">Sin datos</div>');
+  host.querySelectorAll('tr[data-p]').forEach(r=>r.addEventListener('click',()=>openList(r.dataset.p,x=>norm(x.prod)===norm(r.dataset.p),false,ak)));
 }
-function openList(title,pred,fixedMonth){
-  const a=AREAS.find(x=>x.k===TAB);if(!a)return;const all=(DATA[a.k]||[]).filter(pred),hasV=a.col.val>=0;
+function openList(title,pred,fixedMonth,ak){
+  const a=AREAS.find(x=>x.k===(ak||TAB));if(!a)return;const all=(DATA[a.k]||[]).filter(pred),hasV=a.col.val>=0;
   const ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),sel=document.getElementById('m-mes'),q=document.getElementById('m-q');
   sel.innerHTML='<option value="">Todos los meses</option>'+ms.map(m=>`<option value="${m}">${MNAME(m)}</option>`).join('');sel.value=(!fixedMonth&&MES!==''&&ms.includes(+MES))?MES:'';q.value='';
   document.getElementById('m-t').textContent=title+' · '+a.n;
