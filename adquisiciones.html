@@ -440,9 +440,13 @@ html[data-tema="adquisiciones"][data-mode="dark"] .hv-aurora i:nth-child(3){back
 .ad-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 0;}
 .ad-tab{font:600 13px var(--fb,inherit);padding:9px 16px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink-2);cursor:pointer;transition:all .15s;}
 .ad-tab:hover{border-color:#E8A33D;color:var(--ink);}
+.fl-subs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0;}
+.fl-sub{font:600 12px var(--fb,inherit);padding:6px 13px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--ink-2);cursor:pointer;}
+.fl-sub small{opacity:.7;margin-left:4px;font-weight:500;}
+.fl-sub.on{background:var(--ink,#12233A);border-color:var(--ink,#12233A);color:var(--card,#fff);}
 .ad-tab.on{background:#E8A33D;border-color:#E8A33D;color:#fff;}
 html[data-mode="dark"] .ad-tab.on{color:#1d1405;}
-.ad-sub{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;}
+.ad-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;}
 .ad-card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;cursor:pointer;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s;}
 .ad-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(0,0,0,.35);}
 .ad-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--ac);}
@@ -509,9 +513,10 @@ td.pr{max-width:360px;}
 <header>
   <div class="eyebrow">Subdirección Administrativa · Adquisiciones</div>
   <h1>Panel de Adquisiciones</h1>
-  <p class="subtitle">Órdenes de compra y productos · fármacos, insumos médicos e insumos generales</p>
+  <p class="subtitle">Órdenes de compra y productos · fármacos y laboratorio, insumos médicos e insumos generales</p>
   <div class="stat-row"><span class="s-chip good" id="st">Conectando…</span><span class="s-chip neu" id="st2">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button"></button></div>
   <div class="ad-tabs" id="tabs"></div>
+  <div class="fl-subs" id="subtabs" style="display:none"></div>
   <div class="filters-row">
     <label>Mes<select id="f-mes"></select></label>
   </div>
@@ -519,7 +524,7 @@ td.pr{max-width:360px;}
 <main>
   <div id="v-res">
     <div class="kp-grid" id="kpis0"></div>
-    <div class="ad-sub" id="areas"></div>
+    <div class="ad-grid" id="areas"></div>
     <div class="pn" id="p-top0" style="margin-bottom:12px"></div>
   </div>
   <div id="v-area">
@@ -532,7 +537,7 @@ td.pr{max-width:360px;}
 </div>
 </main>
 <div class="modal" id="modal"><div class="m-box"><div class="m-head"><div><h2 id="m-t"></h2><p id="m-s"></p></div><button class="m-x" id="m-x" type="button">Cerrar ✕</button></div><div class="m-body"><div class="tb-top"><select id="m-mes" class="srch" style="min-width:150px"></select><input class="srch" id="m-q" type="search" placeholder="Buscar producto o proveedor"><span class="s-chip neu" id="m-cnt"></span></div><div class="table-wrap"><table><thead id="m-th"></thead><tbody id="m-tb"></tbody></table></div></div></div></div>
-<footer><span>Fuente: Google Sheets · planillas de Fármacos, Insumos médicos e Insumos generales</span><span>Hospital de Villarrica · uso institucional</span></footer>
+<footer><span>Fuente: Google Sheets · planillas de Fármacos y laboratorio, Insumos médicos e Insumos generales</span><span>Hospital de Villarrica · uso institucional</span></footer>
 <script>
 const __DK=document.documentElement.getAttribute('data-mode')==='dark';
 const TICKC=__DK?'#8793A5':'#5C6E76',GRIDC=__DK?'#2B3645':'#E1E7E7';
@@ -549,7 +554,8 @@ function money(t){
 }
 // Áreas: índices de columna (base 0) de cada planilla
 const AREAS=[
- {k:'far',n:'Fármacos',id:'1b5KlSHTWlS-XZchD0RywzkBYP3Ew4Wuk2JKyA08mfhs',sheet:'CONSOLIDADO FARMACIA',c:'#2E9E6B',col:{mes:2,prio:-1,resp:4,prod:6,aut:12,val:15,prov:23,oc:28,rec:31,ocn:[27,24]}},
+ {k:'far',g:'fl',n:'Fármacos',id:'1b5KlSHTWlS-XZchD0RywzkBYP3Ew4Wuk2JKyA08mfhs',sheet:'CONSOLIDADO FARMACIA',c:'#2E9E6B',col:{mes:2,prio:-1,resp:4,prod:6,aut:12,val:15,prov:23,oc:28,rec:31,ocn:[27,24]}},
+ {k:'lab',g:'fl',n:'Laboratorio',id:'1b5KlSHTWlS-XZchD0RywzkBYP3Ew4Wuk2JKyA08mfhs',sheet:'LABORATORIO',c:'#1E8F8F',col:{mes:0,prio:-1,resp:-1,prod:1,aut:-1,val:-1,prov:11,oc:13,rec:16,ocn:[12,9]}},
  {k:'med',n:'Insumos médicos',id:'1Ad3G1wxeRn1sO7jOUh6UtGSlhGkw02Af2jZL8nSOElo',sheet:'CONSOLIDADO',c:'#3B7BD9',col:{mes:5,prio:-1,resp:4,prod:7,aut:10,val:13,prov:19,oc:35,rec:36,ocn:[17,30]}},
  {k:'gen',n:'Insumos generales',id:'1eU9H-nPvg6gMNcMrt_bsyB-h5lMZR6L56xoblIVq7h4',sheet:'CONSOLIDADO',c:'#E8A33D',col:{mes:3,prio:-1,resp:4,prod:6,aut:8,val:-1,prov:12,oc:17,rec:19,ocn:[11]}}
 ];
@@ -578,7 +584,10 @@ function nMec(t){const m=(t||'').toString().match(/-\s*([A-Za-z]{2,4})\s?\d{2}\b
 const MECC={'Compra ágil':['b','#3B7BD9'],'Convenio marco':['g','#2E9E6B'],'Licitación':['a','#E8A33D'],'Trato directo':['r','#A8485C'],'Cotización':['n','#4FB3C8'],'Sin OC':['n','#B8C0CC']};
 const OCC={'Enviada a proveedor':['g','#2E9E6B'],'Ágil publicada':['b','#4FB3C8'],'En firmas':['b','#3B7BD9'],'Espera VB':['b','#7B6CD9'],'Pedido especial':['a','#E8A33D'],'Sin avance':['r','#D9806A'],'Desierta':['r','#C25B5B'],'Quiebre proveedor':['r','#A8485C'],'No se compra':['n','#9AA6B6'],'Otro':['n','#B8C0CC']};
 const RECC={'Recepcionado':['g','#2E9E6B'],'Sin recepción':['a','#EAB866'],'Próximo mes':['b','#3B7BD9'],'Quiebre de stock':['r','#C25B5B'],'Desistida':['n','#9AA6B6'],'Sin dato':['n','#B8C0CC']};
-let DATA={},TAB='res',MES='';
+let DATA={},TAB='res',MES='',SUB='all';
+const GROUPS=[{k:'fl',n:'Fármacos y laboratorio',c:'#2E9E6B',src:['far','lab']},{k:'med',n:'Insumos médicos',c:'#3B7BD9',src:['med']},{k:'gen',n:'Insumos generales',c:'#E8A33D',src:['gen']}];
+function dataOf(k){if(k==='fl')return SUB==='far'?DATA.far||[]:SUB==='lab'?DATA.lab||[]:(DATA.far||[]).concat(DATA.lab||[]);return DATA[k]||[];}
+function getArea(k){if(k==='fl'){const n=SUB==='far'?'Fármacos':SUB==='lab'?'Laboratorio':'Fármacos y laboratorio';return {k:'fl',n,c:SUB==='lab'?'#1E8F8F':'#2E9E6B',col:{val:SUB==='far'?15:-1}};}return AREAS.find(x=>x.k===k);}
 function urlFor(a){return `https://docs.google.com/spreadsheets/d/${a.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(a.sheet)}&_=`+Date.now();}
 function ocl0(row,c){for(const i of c.ocn){const out=[],seen=new Set();for(const m of (row[i]||'').toString().matchAll(/\d{4}-\d+-\s*[A-Za-z]{2,4}\s?\d{2}\b/g)){const n=m[0].replace(/\s/g,'').toUpperCase(),mec=nMec(m[0]);if(mec&&!seen.has(n)){seen.add(n);out.push({n,mec});}}if(out.length)return out.sort((a,b)=>(a.mec==='Cotización')-(b.mec==='Cotización'));}return [];}
 function loadArea(a){return new Promise(res=>{
@@ -598,7 +607,7 @@ const MNAME=m=>m===12?'Dic-Ene':cap(MESES[m]);
 async function init(){
   const rs=await Promise.all(AREAS.map(a=>loadArea(a)));
   let ok=0;AREAS.forEach((a,i)=>{if(rs[i]){DATA[a.k]=rs[i];ok++;}else DATA[a.k]=[];DATA[a.k].forEach(x=>x.area=a.n);});
-  document.getElementById('st').textContent=ok===3?'Panel en vivo':(ok?'Carga parcial':'Error al conectar');
+  document.getElementById('st').textContent=ok===AREAS.length?'Panel en vivo':(ok?'Carga parcial':'Error al conectar');
   document.getElementById('st2').textContent='Última carga: '+new Date().toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
   const all=[].concat(...Object.values(DATA));const ms=[...new Set(all.map(r=>r.mes))].sort((a,b)=>a-b);
   const cur=new Date().getMonth();MES=String(ms.includes(cur)?cur:ms[ms.length-1]);
@@ -606,11 +615,11 @@ async function init(){
   document.getElementById('f-mes').value=MES;
   const ocs=Object.keys(OCC),recs=Object.keys(RECC);
   document.getElementById('f-mes').addEventListener('change',()=>{MES=document.getElementById('f-mes').value;render();});
-  const t=location.hash.replace('#','');if(['res','far','med','gen'].includes(t))TAB=t;
+  const t=location.hash.replace('#','');if(['res','fl','med','gen'].includes(t))TAB=t;
   render();
 }
 function setTab(t){TAB=t;try{history.replaceState(null,'','#'+t)}catch(e){}render();}
-function rowsOf(k){return (DATA[k]||[]).filter(x=>MES===''||x.mes===+MES);}
+function rowsOf(k){return dataOf(k).filter(x=>MES===''||x.mes===+MES);}
 function stats(rows){const n=rows.length,c=f=>rows.filter(f).length;
   return {n,env:c(x=>x.oc==='Enviada a proveedor'),firm:c(x=>x.oc==='En firmas'||x.oc==='Espera VB'),sin:c(x=>x.oc==='Sin avance'||x.oc==='Desierta'||x.oc==='Quiebre proveedor'),nc:c(x=>x.oc==='No se compra'),rec:c(x=>x.rec==='Recepcionado'),pend:c(x=>x.rec==='Sin recepción'),val:rows.reduce((s,x)=>s+x.val,0)};}
 const pc=(a,b)=>b?Math.round(a/b*100):0;
@@ -621,8 +630,11 @@ function topMecSub(rows){const m=mecCount(rows),t=m.reduce((a,b)=>a+b[1],0);retu
 function topMecPct(rows){const m=mecCount(rows),t=m.reduce((a,b)=>a+b[1],0);return m.length?pc(m[0][1],t):null;}
 function K(l,v,c,sub,bar){return `<div class="vital" style="--kc:${c}"><div class="label">${l}</div><div class="value">${v}</div>${bar!=null?`<div class="kp-bar"><i style="width:${bar}%"></i></div>`:''}<div class="kp-sub">${sub||''}</div></div>`;}
 function render(){
-  document.getElementById('tabs').innerHTML=[['res','Resumen general']].concat(AREAS.map(a=>[a.k,a.n])).map(([k,n])=>`<button type="button" class="ad-tab${TAB===k?' on':''}" data-t="${k}">${n}</button>`).join('');
+  document.getElementById('tabs').innerHTML=[['res','Resumen general']].concat(GROUPS.map(a=>[a.k,a.n])).map(([k,n])=>`<button type="button" class="ad-tab${TAB===k?' on':''}" data-t="${k}">${n}</button>`).join('');
   document.querySelectorAll('.ad-tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.t)));
+  const sb=document.getElementById('subtabs');sb.style.display=TAB==='fl'?'':'none';
+  if(TAB==='fl'){sb.innerHTML=[['all','Todo'],['far','Fármacos'],['lab','Laboratorio']].map(([k,n])=>`<button type="button" class="fl-sub${SUB===k?' on':''}" data-s="${k}">${n} <small>${(k==='all'?(DATA.far||[]).concat(DATA.lab||[]):DATA[k]||[]).filter(x=>MES===''||x.mes===+MES).length.toLocaleString('es-CL')}</small></button>`).join('');
+    sb.querySelectorAll('.fl-sub').forEach(b=>b.addEventListener('click',()=>{SUB=b.dataset.s;render();}));}
   document.getElementById('v-res').style.display=TAB==='res'?'':'none';
   document.getElementById('v-area').style.display=TAB==='res'?'none':'';
   if(TAB==='res') renderRes(); else renderArea();
@@ -639,19 +651,19 @@ function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
   document.getElementById('kpis0').innerHTML=kpiSet(rows0,s,true);
-  document.getElementById('areas').innerHTML=AREAS.map(a=>{const r=rowsOf(a.k),t=stats(r);
-    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${a.col.val>=0?' · '+fmt(t.val):''}</div>
+  document.getElementById('areas').innerHTML=GROUPS.map(a=>{const r=rowsOf(a.k),t=stats(r);
+    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${t.val>0?' · '+fmt(t.val):''}</div>
     <div class="ad-row"><span>Enviadas a proveedor</span><b>${pc(t.env,t.n)}%</b></div><div class="ad-bar"><i style="width:${pc(t.env,t.n)}%"></i></div>
     <div class="ad-row"><span>Mecanismo de compra</span><b>${topMec(r)}</b></div><div class="ad-bar" style="display:flex">${mecCount(r).map(([k,n])=>`<i style="width:${pc(n,mecCount(r).reduce((x,y)=>x+y[1],0))}%;background:${MECC[k][1]}" title="${k}: ${n}"></i>`).join('')}</div>
     <div class="ad-row"><span>Sin avance</span><b>${t.sin}</b></div></div>`;}).join('');
   document.querySelectorAll('.ad-card').forEach(c=>c.addEventListener('click',()=>setTab(c.dataset.t)));
 }
 function renderArea(){
-  const a=AREAS.find(x=>x.k===TAB),rows=rowsOf(a.k),s=stats(rows);
+  const a=getArea(TAB),rows=rowsOf(a.k),s=stats(rows);
   document.getElementById('kpis').innerHTML=kpiSet(rows,s,a.col.val>=0);
   renderPanels(a,rows);
-  topAG('p-top',DATA[a.k]||[],false);
-  topCost('p-cost',DATA[a.k]||[],a.k);
+  topAG('p-top',dataOf(a.k),false);
+  topCost('p-cost',dataOf(a.k),a.k);
   const hasP=a.col.prio>=0,hasV=a.col.val>=0;
 
 }
@@ -678,7 +690,7 @@ function renderPanels(a,rows){
   const totOC=new Set(base.filter(x=>x.oc==='Enviada a proveedor').flatMap(x=>x.ocl).filter(o=>o.mec!=='Cotización').map(o=>o.n)).size,wo=base.filter(x=>x.mec!=='Sin OC').length;
   document.getElementById('p-rec').innerHTML=`<h3 title="órdenes de compra · clic para filtrar">Mecanismo de compra</h3>`+donutBlock(mi,'mec',mecNow,totOC.toLocaleString('es-CL'),'órdenes de compra'.replace('órdenes de compra','OC'),true)+`<div class="mini"><div class="kp-bar"><i style="width:${pc(wo,n)}%;background:#3B7BD9"></i></div><b>${pc(wo,n)}%</b></div>`;
   // evolución mensual (todos los meses, sin filtros de estado)
-  const all=DATA[a.k]||[],ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),mx=Math.max(1,...ms.map(m=>all.filter(x=>x.mes===m).length));
+  const all=dataOf(a.k),ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),mx=Math.max(1,...ms.map(m=>all.filter(x=>x.mes===m).length));
   const used=Object.keys(OCC).filter(k=>all.some(x=>x.oc===k));
   document.getElementById('p-ev').innerHTML=`<h3 title="clic en un mes para filtrar">Productos por mes y estado de compra</h3><div class="ev">`+ms.map(m=>{const r=all.filter(x=>x.mes===m),t=r.length;
     return `<div class="col${String(m)===MES?' on':''}" data-m="${m}" title="${MNAME(m)}: ${t} productos"><span class="tot">${t}</span><div class="st" style="height:${t/mx*150}px">${used.map(k=>{const c=r.filter(x=>x.oc===k).length;return c?`<i style="height:${c/t*100}%;background:${OCC[k][1]}"></i>`:'';}).join('')}</div><span class="mm">${MNAME(m).slice(0,3)}</span></div>`;}).join('')+`</div><div class="lg">`+used.map(k=>`<span><i style="background:${OCC[k][1]}"></i>${k}</span>`).join('')+`</div>`;
@@ -703,7 +715,7 @@ function topAG(el,rows,showArea){
 
 
 function topCost(el,rows,ak){
-  const host=document.getElementById(el),a=AREAS.find(x=>x.k===ak),hasV=a.col.val>=0;
+  const host=document.getElementById(el),a=getArea(ak),hasV=a.col.val>=0;
   const m={};rows.filter(x=>x.oc==='Enviada a proveedor'&&(!hasV||x.val>0)).forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,val:0,n:0,max:0,mec:new Set(),meses:new Set()});e.val+=x.val;e.n++;e.meses.add(x.mes);e.max=Math.max(e.max,x.val);if(x.mec!=='Sin OC')e.mec.add(x.mec);});
   const t=Object.values(m).sort((x,y)=>hasV?y.val-x.val:(y.n-x.n||y.meses.size-x.meses.size)).slice(0,10),mx=Math.max(1,...t.map(x=>hasV?x.val:x.n));
   const esc=v=>v.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -713,7 +725,7 @@ function topCost(el,rows,ak){
   host.querySelectorAll('tr[data-p]').forEach(r=>r.addEventListener('click',()=>openList(r.dataset.p,x=>norm(x.prod)===norm(r.dataset.p),false,ak)));
 }
 function openList(title,pred,fixedMonth,ak){
-  const a=AREAS.find(x=>x.k===(ak||TAB));if(!a)return;const all=(DATA[a.k]||[]).filter(pred),hasV=a.col.val>=0;
+  const a=getArea(ak||TAB);if(!a)return;const all=dataOf(a.k).filter(pred),hasV=a.col.val>=0;
   const ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),sel=document.getElementById('m-mes'),q=document.getElementById('m-q');
   sel.innerHTML='<option value="">Todos los meses</option>'+ms.map(m=>`<option value="${m}">${MNAME(m)}</option>`).join('');sel.value=(!fixedMonth&&MES!==''&&ms.includes(+MES))?MES:'';q.value='';
   document.getElementById('m-t').textContent=title+' · '+a.n;
@@ -722,8 +734,8 @@ function openList(title,pred,fixedMonth,ak){
     r=r.slice().sort((x,y)=>y.mes-x.mes||y.val-x.val);
     document.getElementById('m-s').textContent=all.length.toLocaleString('es-CL')+' productos en total';
     document.getElementById('m-cnt').textContent=r.length.toLocaleString('es-CL')+' productos'+(hasV?' · '+fmt(r.reduce((s,x)=>s+x.val,0)):'');
-    document.getElementById('m-th').innerHTML='<tr><th>Producto</th><th>Mes</th><th>Proveedor</th>'+(hasV?'<th class="num">Valor est.</th>':'')+'<th>Estado de compra</th><th>Mecanismo</th><th>N° OC</th></tr>';
-    document.getElementById('m-tb').innerHTML=r.slice(0,500).map(x=>`<tr><td class="pr">${esc(x.prod)}</td><td>${MNAME(x.mes)}</td><td>${esc(x.prov)||'–'}</td>${hasV?`<td class="num">${x.val?fmt(x.val):'–'}</td>`:''}<td><span class="eb ${OCC[x.oc][0]}">${x.oc}</span></td><td><span class="eb ${MECC[x.mec][0]}">${x.mec}</span></td><td style="font:12px var(--mono)">${esc(x.ocn)||'–'}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px">Sin resultados</td></tr>';};
+    document.getElementById('m-th').innerHTML='<tr><th>Producto</th>'+(a.k==='fl'?'<th>Origen</th>':'')+'<th>Mes</th><th>Proveedor</th>'+(hasV?'<th class="num">Valor est.</th>':'')+'<th>Estado de compra</th><th>Mecanismo</th><th>N° OC</th></tr>';
+    document.getElementById('m-tb').innerHTML=r.slice(0,500).map(x=>`<tr><td class="pr">${esc(x.prod)}</td>${a.k==='fl'?`<td>${x.area}</td>`:''}<td>${MNAME(x.mes)}</td><td>${esc(x.prov)||'–'}</td>${hasV?`<td class="num">${x.val?fmt(x.val):'–'}</td>`:''}<td><span class="eb ${OCC[x.oc][0]}">${x.oc}</span></td><td><span class="eb ${MECC[x.mec][0]}">${x.mec}</span></td><td style="font:12px var(--mono)">${esc(x.ocn)||'–'}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px">Sin resultados</td></tr>';};
   sel.onchange=draw;q.oninput=draw;draw();document.getElementById('modal').classList.add('open');
 }
 document.getElementById('m-x').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));

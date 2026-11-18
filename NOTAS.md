@@ -53,3 +53,7 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
   - Insumos generales `1eU9H-nPvg6gMNcMrt_bsyB-h5lMZR6L56xoblIVq7h4` (sin valor estimado)
 - Solo cuentan filas con MES informado; estados normalizados en `nOC()` / `nRec()`.
 - Menú (`worker.js`): grupo Subdirección Médica (IQX, Horas Médicas, Consultas y Controles) y Subdirección Administrativa (Gestión de Contratos, Adquisiciones). Tras cambiar worker.js hay que pegarlo en Cloudflare → Edit code → Deploy.
+
+### Fármacos y laboratorio (Adquisiciones)
+- La pestaña "Fármacos y laboratorio" une dos hojas del mismo libro Maestra Farmacia 2026 (id 1b5KlSHT…): `CONSOLIDADO FARMACIA` y `LABORATORIO` (gid 1916132163). Sub-pestañas: Todo / Fármacos / Laboratorio.
+- Columnas LABORATORIO (base 0): mes 0, producto 1, proveedor 11, N° OC 12 (respaldo 9 = licitación/OC vigente), estado OC 13, recepción 16. No trae valor: en "Laboratorio" y "Todo" el Top 10 se ordena por veces comprado.
