@@ -555,7 +555,7 @@ function money(t){
 // Áreas: índices de columna (base 0) de cada planilla
 const AREAS=[
  {k:'far',g:'fl',n:'Fármacos',id:'1b5KlSHTWlS-XZchD0RywzkBYP3Ew4Wuk2JKyA08mfhs',sheet:'CONSOLIDADO FARMACIA',c:'#2E9E6B',col:{mes:2,prio:-1,resp:4,prod:6,aut:12,val:15,prov:23,oc:28,rec:31,ocn:[27,24]}},
- {k:'lab',g:'fl',n:'Laboratorio',id:'1b5KlSHTWlS-XZchD0RywzkBYP3Ew4Wuk2JKyA08mfhs',sheet:'LABORATORIO',c:'#1E8F8F',col:{mes:0,prio:-1,resp:-1,prod:1,aut:-1,val:-1,prov:11,oc:13,rec:16,ocn:[12,9]}},
+ {k:'lab',g:'fl',n:'Laboratorio',id:'1b5KlSHTWlS-XZchD0RywzkBYP3Ew4Wuk2JKyA08mfhs',sheet:'LABORATORIO',c:'#1E8F8F',blankOC:true,col:{mes:0,prio:-1,resp:-1,prod:1,aut:-1,val:-1,prov:11,oc:13,rec:16,ocn:[12,9]}},
  {k:'med',n:'Insumos médicos',id:'1Ad3G1wxeRn1sO7jOUh6UtGSlhGkw02Af2jZL8nSOElo',sheet:'CONSOLIDADO',c:'#3B7BD9',col:{mes:5,prio:-1,resp:4,prod:7,aut:10,val:13,prov:19,oc:35,rec:36,ocn:[17,30]}},
  {k:'gen',n:'Insumos generales',id:'1eU9H-nPvg6gMNcMrt_bsyB-h5lMZR6L56xoblIVq7h4',sheet:'CONSOLIDADO',c:'#E8A33D',col:{mes:3,prio:-1,resp:4,prod:6,aut:8,val:-1,prov:12,oc:17,rec:19,ocn:[11]}}
 ];
@@ -597,8 +597,9 @@ function loadArea(a){return new Promise(res=>{
         const mi=MESES.indexOf(norm(row[c.mes])); const mraw=norm(row[c.mes]);
         const mes=mi>=0?mi:(/dic.*ene/.test(mraw)?12:-1); if(mes<0) continue;
         const prod=(row[c.prod]||'').toString().trim(); if(!prod) continue;
+        let oc0=nOC(row[c.oc]);if(a.blankOC&&!(row[c.oc]||'').toString().trim()&&ocl0(row,c).some(o=>o.mec!=='Cotización'))oc0='Enviada a proveedor';
         out.push({mes,prod,prio:c.prio>=0?(row[c.prio]||'').toString().trim():'',resp:(row[c.resp]||'').toString().trim(),
-          val:c.val>=0?money(row[c.val]):0,prov:(row[c.prov]||'').toString().trim(),oc:nOC(row[c.oc]),rec:nRec(row[c.rec]),mec:ocl0(row,c).length?ocl0(row,c)[0].mec:'Sin OC',ocl:ocl0(row,c),ocn:ocl0(row,c).map(o=>o.n).join(' · ')});
+          val:c.val>=0?money(row[c.val]):0,prov:(row[c.prov]||'').toString().trim(),oc:oc0,rec:nRec(row[c.rec]),mec:ocl0(row,c).length?ocl0(row,c)[0].mec:'Sin OC',ocl:ocl0(row,c),ocn:ocl0(row,c).map(o=>o.n).join(' · ')});
       }
       res(out);
     }catch(e){console.error(e);res(null);}

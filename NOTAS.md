@@ -57,3 +57,4 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 ### Fármacos y laboratorio (Adquisiciones)
 - La pestaña "Fármacos y laboratorio" une dos hojas del mismo libro Maestra Farmacia 2026 (id 1b5KlSHT…): `CONSOLIDADO FARMACIA` y `LABORATORIO` (gid 1916132163). Sub-pestañas: Todo / Fármacos / Laboratorio.
 - Columnas LABORATORIO (base 0): mes 0, producto 1, proveedor 11, N° OC 12 (respaldo 9 = licitación/OC vigente), estado OC 13, recepción 16. No trae valor: en "Laboratorio" y "Todo" el Top 10 se ordena por veces comprado.
+- Laboratorio: si ESTADO OC está en blanco pero hay N° OC válido (no cotización) se considera "Enviada a proveedor" (la hoja no llena el estado en los meses antiguos). "COMPRAR" sigue siendo sin avance.
