@@ -363,6 +363,27 @@ function menuPage() {
       <div class="eyebrow">Gestión de Contratos</div>
       <h1>¿Qué quieres <span>revisar hoy?</span></h1>
     </section>
+    <section class="grp" style="--g:#E8A33D">
+      <div class="grp-h"><span class="grp-dot"></span><div><h2>Sub Dirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div></div>
+      <div class="cards c2">
+      <a class="tile" style="--c:#E8A33D" href="/contratos">
+        <span class="live lock">Acceso restringido</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
+        <h2>Gestión de Contratos</h2>
+        <p>Indicadores, vencimientos y avisos de contratos, y validación de órdenes de compra por responsable.</p>
+        <div class="chips"><span>Vencimientos</span><span>Órdenes de compra</span><span>Acceso exclusivo</span></div>
+        <div class="go">Abrir panel ${arrow}</div>
+      </a>
+      <a class="tile" style="--c:#2E9E6B" href="/adquisiciones">
+        <span class="live">En vivo</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg></div>
+        <h2>Adquisiciones</h2>
+        <p>Avance de las compras de insumos médicos, insumos generales y fármacos: estado de la compra, recepción y productos críticos.</p>
+        <div class="chips"><span>Insumos médicos</span><span>Insumos generales</span><span>Fármacos</span></div>
+        <div class="go">Abrir panel ${arrow}</div>
+      </a>
+      </div>
+    </section>
     <section class="grp" style="--g:#3B7BD9">
       <div class="grp-h"><span class="grp-dot"></span><div><h2>Sub Dirección Médica</h2><p>Intervenciones quirúrgicas, horas médicas, consultas y controles</p></div></div>
       <div class="cards c3">
@@ -388,27 +409,6 @@ function menuPage() {
         <h2>Consultas y Controles</h2>
         <p>Consultas médicas nuevas y controles: avance de las licitaciones vigentes, estado de pago y atenciones por especialidad.</p>
         <div class="chips"><span>Consultas</span><span>Controles</span><span>Licitaciones</span></div>
-        <div class="go">Abrir panel ${arrow}</div>
-      </a>
-      </div>
-    </section>
-    <section class="grp" style="--g:#E8A33D">
-      <div class="grp-h"><span class="grp-dot"></span><div><h2>Sub Dirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div></div>
-      <div class="cards c2">
-      <a class="tile" style="--c:#E8A33D" href="/contratos">
-        <span class="live lock">Acceso restringido</span>
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
-        <h2>Gestión de Contratos</h2>
-        <p>Indicadores, vencimientos y avisos de contratos, y validación de órdenes de compra por responsable.</p>
-        <div class="chips"><span>Vencimientos</span><span>Órdenes de compra</span><span>Acceso exclusivo</span></div>
-        <div class="go">Abrir panel ${arrow}</div>
-      </a>
-      <a class="tile" style="--c:#2E9E6B" href="/adquisiciones">
-        <span class="live">En vivo</span>
-        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg></div>
-        <h2>Adquisiciones</h2>
-        <p>Avance de las compras de insumos médicos, insumos generales y fármacos: estado de la compra, recepción y productos críticos.</p>
-        <div class="chips"><span>Insumos médicos</span><span>Insumos generales</span><span>Fármacos</span></div>
         <div class="go">Abrir panel ${arrow}</div>
       </a>
       </div>
