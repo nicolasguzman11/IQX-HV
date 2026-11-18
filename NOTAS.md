@@ -21,7 +21,7 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 
 ## Acceso
 - **Primer nivel (todo el portal):** secretos de Cloudflare `DASH_USER` y `DASH_PASS`. Cookie `iqx_session`, 8 horas.
-- **Segundo nivel (solo Gestión de Contratos, Sub Dirección Administrativa):** secretos `CONTRATOS_USER` y `CONTRATOS_PASS`. Cookie `iqx_contratos`. Si no están configurados, el panel queda cerrado para todos.
+- **Segundo nivel (solo Gestión de Contratos, Subdirección Administrativa):** secretos `CONTRATOS_USER` y `CONTRATOS_PASS`. Cookie `iqx_contratos`. Si no están configurados, el panel queda cerrado para todos.
 - Rutas del Worker: `/` (login), `/menu`, `/logout`, `/logo.png`, `/dashboard*`, `/consultas*`, `/contratos*`, `/acceso-contratos` (POST).
 - Límite conocido: las hojas de Google y GitHub Pages son públicos para quien tenga el enlace directo; la protección es la del portal.
 
@@ -45,11 +45,11 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 2. Si cambia `worker/worker.js`: pegarlo en Cloudflare → Edit code → Deploy.
 3. Recargar con Ctrl+F5 (o ventana de incógnito) para evitar la caché del navegador.
 
-## Adquisiciones (Sub Dirección Administrativa)
+## Adquisiciones (Subdirección Administrativa)
 - Panel `adquisiciones.html`, ruta Worker `/adquisiciones` (solo login de primer nivel).
 - Lee 3 planillas Google por gviz CSV (hoja CONSOLIDADO / CONSOLIDADO FARMACIA), columnas por índice (ver `AREAS` en el archivo):
   - Fármacos `1b5KlSHTWlS-XZchD0RywzkBYP3Ew4Wuk2JKyA08mfhs`
   - Insumos médicos `1Ad3G1wxeRn1sO7jOUh6UtGSlhGkw02Af2jZL8nSOElo`
   - Insumos generales `1eU9H-nPvg6gMNcMrt_bsyB-h5lMZR6L56xoblIVq7h4` (sin valor estimado)
 - Solo cuentan filas con MES informado; estados normalizados en `nOC()` / `nRec()`.
-- Menú (`worker.js`): grupo Sub Dirección Médica (IQX, Horas Médicas, Consultas y Controles) y Sub Dirección Administrativa (Gestión de Contratos, Adquisiciones). Tras cambiar worker.js hay que pegarlo en Cloudflare → Edit code → Deploy.
+- Menú (`worker.js`): grupo Subdirección Médica (IQX, Horas Médicas, Consultas y Controles) y Subdirección Administrativa (Gestión de Contratos, Adquisiciones). Tras cambiar worker.js hay que pegarlo en Cloudflare → Edit code → Deploy.

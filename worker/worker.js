@@ -6,7 +6,7 @@ export default {
     const token = await sessionToken(env);
     const cookieHeader = request.headers.get('Cookie') || '';
     const authenticated = cookieHeader.includes(`iqx_session=${token}`);
-    // Segundo nivel: solo Sub Dirección Administrativa (Gestión de Contratos)
+    // Segundo nivel: solo Subdirección Administrativa (Gestión de Contratos)
     const cToken = await contratosToken(env);
     const contratosOk = !!cToken && cookieHeader.includes(`iqx_contratos=${cToken}`);
 
@@ -271,10 +271,10 @@ function restrictedPage(showError, configured) {
     action: '/acceso-contratos',
     eyebrow: 'Hospital de Villarrica',
     title: 'Gestión de Contratos',
-    sub: 'Acceso exclusivo · Sub Dirección Administrativa',
+    sub: 'Acceso exclusivo · Subdirección Administrativa',
     button: 'Ingresar',
     badge: 'Acceso restringido',
-    foot: 'Solo Sub Dirección Administrativa',
+    foot: 'Solo Subdirección Administrativa',
     note,
     back: '<p style="text-align:center;margin:16px 0 0"><a href="/menu" style="color:var(--mute);font-size:13px;text-decoration:none">← Volver al menú</a></p>'
   });
@@ -364,7 +364,7 @@ function menuPage() {
       <h1>¿Qué quieres <span>revisar hoy?</span></h1>
     </section>
     <section class="grp" style="--g:#E8A33D">
-      <div class="grp-h"><span class="grp-dot"></span><div><h2>Sub Dirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div></div>
+      <div class="grp-h"><span class="grp-dot"></span><div><h2>Subdirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div></div>
       <div class="cards c2">
       <a class="tile" style="--c:#E8A33D" href="/contratos">
         <span class="live lock">Acceso restringido</span>
@@ -385,7 +385,7 @@ function menuPage() {
       </div>
     </section>
     <section class="grp" style="--g:#3B7BD9">
-      <div class="grp-h"><span class="grp-dot"></span><div><h2>Sub Dirección Médica</h2><p>Intervenciones quirúrgicas, horas médicas, consultas y controles</p></div></div>
+      <div class="grp-h"><span class="grp-dot"></span><div><h2>Subdirección Médica</h2><p>Intervenciones quirúrgicas, horas médicas, consultas y controles</p></div></div>
       <div class="cards c3">
       <a class="tile" style="--c:#1E9C8B" href="/dashboard?view=iqx">
         <span class="live">En vivo</span>
