@@ -623,15 +623,18 @@ function render(){
   document.getElementById('v-area').style.display=TAB==='res'?'none':'';
   if(TAB==='res') renderRes(); else renderArea();
 }
+function fmtM(n){return n>=1e6?'$'+(n/1e6).toLocaleString('es-CL',{maximumFractionDigits:1})+' M':fmt(n);}
+function kpiSet(rows,s,hasVal){const pr=n=>n.toLocaleString('es-CL')+' productos';
+  return K('OC emitidas a proveedor',ocEmit(rows).toLocaleString('es-CL'),'#12233A','')+
+    K('Mecanismo principal',topMec(rows),'#1E8F8F','',topMecPct(rows))+
+    K('Con OC enviada',pc(s.env,s.n)+'%','#2E9E6B',pr(s.env),pc(s.env,s.n))+
+    K('En firmas / VB',pc(s.firm,s.n)+'%','#7B6CD9',pr(s.firm),pc(s.firm,s.n))+
+    K('Sin avance',pc(s.sin,s.n)+'%','#D9806A',pr(s.sin),pc(s.sin,s.n))+
+    (hasVal?K('Valor estimado',fmtM(s.val),'#E8A33D','compra programada'):'');}
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
-  document.getElementById('kpis0').innerHTML=K('OC emitidas a proveedor',ocEmit(rows0).toLocaleString('es-CL'),'#12233A','')+K('Productos programados',s.n.toLocaleString('es-CL'),'#3B7BD9','')+
-    K('Con OC enviada a proveedor',pc(s.env,s.n)+'%','#2E9E6B',s.env.toLocaleString('es-CL')+' de '+s.n.toLocaleString('es-CL'),pc(s.env,s.n))+
-    K('Mecanismo principal',topMec(rows0),'#1E8F8F','',topMecPct(rows0))+
-    K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','')+
-    K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A','',pc(s.sin,s.n))+
-    K('Valor estimado',fmt(s.val),'#E8A33D','fármacos e insumos médicos');
+  document.getElementById('kpis0').innerHTML=kpiSet(rows0,s,true);
   document.getElementById('areas').innerHTML=AREAS.map(a=>{const r=rowsOf(a.k),t=stats(r);
     return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${a.col.val>=0?' · '+fmt(t.val):''}</div>
     <div class="ad-row"><span>Enviadas a proveedor</span><b>${pc(t.env,t.n)}%</b></div><div class="ad-bar"><i style="width:${pc(t.env,t.n)}%"></i></div>
@@ -641,12 +644,7 @@ function renderRes(){
 }
 function renderArea(){
   const a=AREAS.find(x=>x.k===TAB),rows=rowsOf(a.k),s=stats(rows);
-  document.getElementById('kpis').innerHTML=K('OC emitidas a proveedor',ocEmit(rows).toLocaleString('es-CL'),'#12233A','')+K('Productos programados',s.n.toLocaleString('es-CL'),a.c,MES===''?'todos los meses':MNAME(+MES))+
-    K('Con OC enviada',pc(s.env,s.n)+'%','#2E9E6B','',pc(s.env,s.n))+
-    K('Mecanismo principal',topMec(rows),'#1E8F8F','',topMecPct(rows))+
-    K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','')+
-    K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A','',pc(s.sin,s.n))+
-    (a.col.val>=0?K('Valor estimado',fmt(s.val),'#E8A33D',''):K('Sin emitir OC',(s.sin+s.firm).toLocaleString('es-CL'),'#E8A33D',''));
+  document.getElementById('kpis').innerHTML=kpiSet(rows,s,a.col.val>=0);
   renderPanels(a,rows);
   topAG('p-top',DATA[a.k]||[],false);
   const hasP=a.col.prio>=0,hasV=a.col.val>=0;
