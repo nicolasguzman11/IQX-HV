@@ -647,13 +647,13 @@ function kpiSet(rows,s,hasVal){const pr=n=>n.toLocaleString('es-CL')+' productos
     K('Con OC enviada',pc(s.env,s.n)+'%','#2E9E6B',pr(s.env),pc(s.env,s.n))+
     K('En firmas / VB',pc(s.firm,s.n)+'%','#7B6CD9',pr(s.firm),pc(s.firm,s.n))+
     K('Sin avance',pc(s.sin,s.n)+'%','#D9806A',pr(s.sin),pc(s.sin,s.n))+
-    (hasVal?K('Valor de OC enviadas',fmtM(s.valEnv),'#E8A33D','estimado · productos con OC enviada'):'');}
+    (hasVal?K('Valorizado OC enviadas',fmtM(s.valEnv),'#E8A33D',''):'');}
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
   document.getElementById('kpis0').innerHTML=kpiSet(rows0,s,true);
   document.getElementById('areas').innerHTML=GROUPS.map(a=>{const r=rowsOf(a.k),t=stats(r);
-    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${t.valEnv>0?' · '+fmtM(t.valEnv)+' en OC enviadas':''}</div>
+    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${t.valEnv>0?' · '+fmtM(t.valEnv)+' valorizado':''}</div>
     <div class="ad-row"><span>Enviadas a proveedor</span><b>${pc(t.env,t.n)}%</b></div><div class="ad-bar"><i style="width:${pc(t.env,t.n)}%"></i></div>
     <div class="ad-row"><span>Mecanismo de compra</span><b>${topMec(r)}</b></div><div class="ad-bar" style="display:flex">${mecCount(r).map(([k,n])=>`<i style="width:${pc(n,mecCount(r).reduce((x,y)=>x+y[1],0))}%;background:${MECC[k][1]}" title="${k}: ${n}"></i>`).join('')}</div>
     <div class="ad-row"><span>Sin avance</span><b>${t.sin}</b></div></div>`;}).join('');
