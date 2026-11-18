@@ -72,6 +72,10 @@ export default {
       if (!authenticated) return redirectToLogin(url);
       return proxy(GH + '/consultas.html' + url.search);
     }
+    if (url.pathname.startsWith('/adquisiciones')) {
+      if (!authenticated) return redirectToLogin(url);
+      return proxy(GH + '/adquisiciones.html' + url.search);
+    }
     if (url.pathname.startsWith('/contratos')) {
       if (!authenticated) return redirectToLogin(url);
       if (!contratosOk) return html(restrictedPage(false, !!cToken), cToken ? 200 : 503);
@@ -296,6 +300,15 @@ function menuPage() {
   .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
   @media (max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));}}
   @media (max-width:640px){.cards{grid-template-columns:1fr;}}
+  .grp{margin-bottom:26px;padding:20px clamp(14px,2vw,24px) 24px;border-radius:26px;border:1px solid color-mix(in srgb,var(--g) 30%, var(--glass-line));background:linear-gradient(160deg,color-mix(in srgb,var(--g) 11%, rgba(255,255,255,.55)),color-mix(in srgb,var(--g) 4%, rgba(255,255,255,.35)));animation:rise .6s ease both;}
+  .grp-h{display:flex;align-items:center;gap:14px;margin:0 4px 18px;}
+  .grp-dot{width:8px;align-self:stretch;border-radius:99px;background:var(--g);}
+  .grp-h h2{margin:0;font-size:clamp(19px,2.4vw,24px);font-weight:700;letter-spacing:-.01em;}
+  .grp-h p{margin:3px 0 0;color:var(--mute);font-size:13.5px;}
+  .cards.c3{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .cards.c2{grid-template-columns:repeat(2,minmax(0,1fr));}
+  @media (max-width:900px){.cards.c3,.cards.c2{grid-template-columns:repeat(2,minmax(0,1fr));}}
+  @media (max-width:640px){.cards.c3,.cards.c2{grid-template-columns:1fr;}}
   .tile{
     --c:var(--teal);
     position:relative;display:flex;flex-direction:column;gap:18px;min-height:300px;padding:26px 24px 22px;border-radius:20px;text-decoration:none;color:var(--ink);
@@ -350,7 +363,9 @@ function menuPage() {
       <div class="eyebrow">Gestión de Contratos</div>
       <h1>¿Qué quieres <span>revisar hoy?</span></h1>
     </section>
-    <section class="cards">
+    <section class="grp" style="--g:#3B7BD9">
+      <div class="grp-h"><span class="grp-dot"></span><div><h2>Sub Dirección Médica</h2><p>Intervenciones quirúrgicas, horas médicas, consultas y controles</p></div></div>
+      <div class="cards c3">
       <a class="tile" style="--c:#1E9C8B" href="/dashboard?view=iqx">
         <span class="live">En vivo</span>
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
@@ -375,6 +390,11 @@ function menuPage() {
         <div class="chips"><span>Consultas</span><span>Controles</span><span>Licitaciones</span></div>
         <div class="go">Abrir panel ${arrow}</div>
       </a>
+      </div>
+    </section>
+    <section class="grp" style="--g:#E8A33D">
+      <div class="grp-h"><span class="grp-dot"></span><div><h2>Sub Dirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div></div>
+      <div class="cards c2">
       <a class="tile" style="--c:#E8A33D" href="/contratos">
         <span class="live lock">Acceso restringido</span>
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
@@ -383,6 +403,15 @@ function menuPage() {
         <div class="chips"><span>Vencimientos</span><span>Órdenes de compra</span><span>Acceso exclusivo</span></div>
         <div class="go">Abrir panel ${arrow}</div>
       </a>
+      <a class="tile" style="--c:#2E9E6B" href="/adquisiciones">
+        <span class="live">En vivo</span>
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg></div>
+        <h2>Adquisiciones</h2>
+        <p>Avance de las compras de insumos médicos, insumos generales y fármacos: estado de la compra, recepción y productos críticos.</p>
+        <div class="chips"><span>Insumos médicos</span><span>Insumos generales</span><span>Fármacos</span></div>
+        <div class="go">Abrir panel ${arrow}</div>
+      </a>
+      </div>
     </section>
     <div class="foot">Información confidencial · uso exclusivo institucional</div>
   </main>`, css);
