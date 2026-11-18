@@ -581,6 +581,7 @@ const OCC={'Enviada a proveedor':['g','#2E9E6B'],'Ágil publicada':['b','#4FB3C8
 const RECC={'Recepcionado':['g','#2E9E6B'],'Sin recepción':['a','#EAB866'],'Próximo mes':['b','#3B7BD9'],'Quiebre de stock':['r','#C25B5B'],'Desistida':['n','#9AA6B6'],'Sin dato':['n','#B8C0CC']};
 let DATA={},TAB='res',MES='';
 function urlFor(a){return `https://docs.google.com/spreadsheets/d/${a.id}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(a.sheet)}&_=`+Date.now();}
+function ocl0(row,c){for(const i of c.ocn){const out=[],seen=new Set();for(const m of (row[i]||'').toString().matchAll(/\d{4}-\d+-\s*[A-Za-z]{2,4}\s?\d{2}\b/g)){const n=m[0].replace(/\s/g,'').toUpperCase(),mec=nMec(m[0]);if(mec&&!seen.has(n)){seen.add(n);out.push({n,mec});}}if(out.length)return out.sort((a,b)=>(a.mec==='Cotización')-(b.mec==='Cotización'));}return [];}
 function loadArea(a){return new Promise(res=>{
   Papa.parse(urlFor(a),{download:true,header:false,skipEmptyLines:true,complete:r=>{
     try{const c=a.col,out=[];
@@ -589,7 +590,7 @@ function loadArea(a){return new Promise(res=>{
         const mes=mi>=0?mi:(/dic.*ene/.test(mraw)?12:-1); if(mes<0) continue;
         const prod=(row[c.prod]||'').toString().trim(); if(!prod) continue;
         out.push({mes,prod,prio:c.prio>=0?(row[c.prio]||'').toString().trim():'',resp:(row[c.resp]||'').toString().trim(),
-          val:c.val>=0?money(row[c.val]):0,prov:(row[c.prov]||'').toString().trim(),oc:nOC(row[c.oc]),rec:nRec(row[c.rec]),mec:(c.ocn.map(i=>nMec(row[i])).find(Boolean))||'Sin OC',ocn:(c.ocn.map(i=>(row[i]||'').toString().trim()).find(v=>nMec(v))||'')});
+          val:c.val>=0?money(row[c.val]):0,prov:(row[c.prov]||'').toString().trim(),oc:nOC(row[c.oc]),rec:nRec(row[c.rec]),mec:ocl0(row,c).length?ocl0(row,c)[0].mec:'Sin OC',ocl:ocl0(row,c),ocn:ocl0(row,c).map(o=>o.n).join(' · ')});
       }
       res(out);
     }catch(e){console.error(e);res(null);}
@@ -679,8 +680,8 @@ function renderPanels(a,rows){
   const oi=Object.keys(OCC).map(k=>({k,n:base.filter(x=>x.oc===k).length,c:OCC[k][1]})).filter(x=>x.n);
   document.getElementById('p-oc').innerHTML=`<h3 title="productos · clic para filtrar">Estado de compra</h3>`+donutBlock(oi,'oc',ocNow,n.toLocaleString('es-CL'),'productos',null);
   const mecNow=document.getElementById('f-mec').value;
-  const mi=Object.keys(MECC).map(k=>{const r=base.filter(x=>x.mec===k);return {k,n:(k==='Cotización'?0:new Set(r.filter(x=>x.ocn).map(x=>x.ocn)).size),prod:r.length,c:MECC[k][1]};}).filter(x=>x.prod);
-  const totOC=new Set(base.filter(x=>x.mec!=='Sin OC'&&x.mec!=='Cotización'&&x.ocn).map(x=>x.ocn)).size,wo=base.filter(x=>x.mec!=='Sin OC').length;
+  const mi=Object.keys(MECC).map(k=>{const r=base.filter(x=>x.mec===k);return {k,n:(k==='Cotización'?0:new Set(base.flatMap(x=>x.ocl).filter(o=>o.mec===k).map(o=>o.n)).size),prod:r.length,c:MECC[k][1]};}).filter(x=>x.prod);
+  const totOC=new Set(base.flatMap(x=>x.ocl).filter(o=>o.mec!=='Cotización').map(o=>o.n)).size,wo=base.filter(x=>x.mec!=='Sin OC').length;
   document.getElementById('p-rec').innerHTML=`<h3 title="órdenes de compra · clic para filtrar">Mecanismo de compra</h3>`+donutBlock(mi,'mec',mecNow,totOC.toLocaleString('es-CL'),'órdenes de compra'.replace('órdenes de compra','OC'),true)+`<div class="mini"><div class="kp-bar"><i style="width:${pc(wo,n)}%;background:#3B7BD9"></i></div><b>${pc(wo,n)}%</b></div>`;
   // evolución mensual (todos los meses, sin filtros de estado)
   const all=DATA[a.k]||[],ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),mx=Math.max(1,...ms.map(m=>all.filter(x=>x.mes===m).length));
@@ -698,7 +699,7 @@ function renderPanels(a,rows){
 }
 
 function topAG(el,rows,showArea){
-  const m={};rows.filter(x=>x.mec==='Compra ágil').forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,ocs:new Set(),meses:new Set(),val:0,provs:new Set(),areas:new Set(),n:0});e.n++;e.ocs.add(x.ocn||('l'+e.n));e.meses.add(x.mes);e.val+=x.val;if(x.prov)e.provs.add(x.prov);e.areas.add(x.area);});
+  const m={};rows.filter(x=>x.ocl.some(o=>o.mec==='Compra ágil')).forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,ocs:new Set(),meses:new Set(),val:0,provs:new Set(),areas:new Set(),n:0});e.n++;x.ocl.filter(o=>o.mec==='Compra ágil').forEach(o=>e.ocs.add(o.n));e.meses.add(x.mes);e.val+=x.val;if(x.prov)e.provs.add(x.prov);e.areas.add(x.area);});
   const t=Object.values(m).sort((a,b)=>b.ocs.size-a.ocs.size||b.val-a.val).slice(0,10),mx=Math.max(1,...t.map(x=>x.ocs.size));
   const esc=v=>v.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const hasV=t.some(x=>x.val>0);
