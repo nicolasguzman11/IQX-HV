@@ -518,6 +518,7 @@ td.pr{max-width:360px;}
     <div class="kp-grid" id="kpis0"></div>
     <div class="ad-sub" id="areas"></div>
     <div class="pn" id="p-top0" style="margin-bottom:12px"></div>
+    <div class="pn" id="p-cost0" style="margin-bottom:12px"></div>
   </div>
   <div id="v-area">
     <div class="kp-grid" id="kpis"></div>
@@ -525,6 +526,7 @@ td.pr{max-width:360px;}
     <div class="pn" id="p-ev" style="margin-bottom:12px"></div>
     <div class="pn" id="p-pv" style="margin-bottom:12px"></div>
     <div class="pn" id="p-top" style="margin-bottom:12px"></div>
+    <div class="pn" id="p-cost" style="margin-bottom:12px"></div>
 </div>
 </main>
 <div class="modal" id="modal"><div class="m-box"><div class="m-head"><div><h2 id="m-t"></h2><p id="m-s"></p></div><button class="m-x" id="m-x" type="button">Cerrar ✕</button></div><div class="m-body"><div class="tb-top"><select id="m-mes" class="srch" style="min-width:150px"></select><input class="srch" id="m-q" type="search" placeholder="Buscar producto o proveedor"><span class="s-chip neu" id="m-cnt"></span></div><div class="table-wrap"><table><thead id="m-th"></thead><tbody id="m-tb"></tbody></table></div></div></div></div>
@@ -634,6 +636,7 @@ function kpiSet(rows,s,hasVal){const pr=n=>n.toLocaleString('es-CL')+' productos
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
+  topCost('p-cost0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
   document.getElementById('kpis0').innerHTML=kpiSet(rows0,s,true);
   document.getElementById('areas').innerHTML=AREAS.map(a=>{const r=rowsOf(a.k),t=stats(r);
     return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${a.col.val>=0?' · '+fmt(t.val):''}</div>
@@ -647,6 +650,7 @@ function renderArea(){
   document.getElementById('kpis').innerHTML=kpiSet(rows,s,a.col.val>=0);
   renderPanels(a,rows);
   topAG('p-top',DATA[a.k]||[],false);
+  topCost('p-cost',DATA[a.k]||[],false);
   const hasP=a.col.prio>=0,hasV=a.col.val>=0;
 
 }
@@ -688,7 +692,7 @@ function renderPanels(a,rows){
 }
 
 function topAG(el,rows,showArea){
-  const m={};rows.filter(x=>x.oc==='Enviada a proveedor'&&x.ocl.some(o=>o.mec==='Compra ágil')).forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,ocs:new Set(),meses:new Set(),val:0,provs:new Set(),areas:new Set(),n:0});e.n++;x.ocl.filter(o=>o.mec==='Compra ágil').forEach(o=>e.ocs.add(o.n));e.meses.add(x.mes);e.val+=x.val;if(x.prov)e.provs.add(x.prov);e.areas.add(x.area);});
+  const m={};rows.filter(x=>x.oc==='Enviada a proveedor'&&x.ocl.some(o=>o.mec==='Compra ágil')).forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,ocs:new Set(),meses:new Set(),val:0,provs:new Set(),areas:new Set(),n:0});e.n++;x.ocl.filter(o=>o.mec==='Compra ágil').forEach(o=>e.ocs.add(o.n));e.meses.add(x.mes);e.val+=x.val;if(x.prov&&!/^sin prov/.test(norm(x.prov)))e.provs.add(x.prov);e.areas.add(x.area);});
   const t=Object.values(m).sort((a,b)=>b.ocs.size-a.ocs.size||b.val-a.val).slice(0,10),mx=Math.max(1,...t.map(x=>x.ocs.size));
   const esc=v=>v.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const hasV=t.some(x=>x.val>0);
@@ -696,6 +700,16 @@ function topAG(el,rows,showArea){
   if(!showArea)document.querySelectorAll('#'+el+' tr[data-p]').forEach(r=>r.addEventListener('click',()=>openList(r.dataset.p,x=>norm(x.prod)===norm(r.dataset.p))));
 }
 
+
+function topCost(el,rows,showArea){
+  const host=document.getElementById(el),a=AREAS.find(x=>x.k===TAB);
+  const m={};rows.filter(x=>x.oc==='Enviada a proveedor'&&x.val>0).forEach(x=>{const k=norm(x.prod);const e=m[k]||(m[k]={prod:x.prod,val:0,n:0,max:0,areas:new Set(),mec:new Set()});e.val+=x.val;e.n++;e.max=Math.max(e.max,x.val);e.areas.add(x.area);if(x.mec!=='Sin OC')e.mec.add(x.mec);});
+  const t=Object.values(m).sort((x,y)=>y.val-x.val).slice(0,10),mx=Math.max(1,...t.map(x=>x.val));
+  host.style.display=(!showArea&&a&&a.col.val<0)?'none':'';
+  const esc=v=>v.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  host.innerHTML=`<h3 title="Productos con OC enviada a proveedor · valor estimado acumulado de todos los meses${showArea?'':' · clic para ver el detalle'}">Top 10 · productos de mayor valor comprados</h3>`+(t.length?`<div class="table-wrap" style="border:0"><table><thead><tr><th>#</th><th>Producto</th>${showArea?'<th>Área</th>':''}<th>Valor estimado total</th><th class="num">Compras</th><th class="num">Mayor compra</th><th>Mecanismo</th></tr></thead><tbody>`+t.map((x,i)=>`<tr data-p="${esc(x.prod)}" style="${showArea?'':'cursor:pointer'}"><td>${i+1}</td><td class="pr">${esc(x.prod)}</td>${showArea?`<td>${[...x.areas].join(', ')}</td>`:''}<td><div style="display:flex;align-items:center;gap:8px"><span class="hb" style="display:block;padding:0;min-width:90px;flex:1;background:none"><span class="tr" style="display:block"><i style="display:block;width:${x.val/mx*100}%;background:#E8A33D;height:100%;border-radius:99px"></i></span></span><b style="font-family:var(--mono);white-space:nowrap">${fmtM(x.val)}</b></div></td><td class="num">${x.n}</td><td class="num">${fmtM(x.max)}</td><td>${[...x.mec].map(k=>`<span class="eb ${MECC[k][0]}">${k}</span>`).join(' ')||'–'}</td></tr>`).join('')+`</tbody></table></div>`:'<div class="kp-sub">Sin valores registrados</div>');
+  if(!showArea)host.querySelectorAll('tr[data-p]').forEach(r=>r.addEventListener('click',()=>openList(r.dataset.p,x=>norm(x.prod)===norm(r.dataset.p))));
+}
 function openList(title,pred,fixedMonth){
   const a=AREAS.find(x=>x.k===TAB);if(!a)return;const all=(DATA[a.k]||[]).filter(pred),hasV=a.col.val>=0;
   const ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),sel=document.getElementById('m-mes'),q=document.getElementById('m-q');
