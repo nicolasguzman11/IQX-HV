@@ -622,14 +622,14 @@ function render(){
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
-  document.getElementById('kpis0').innerHTML=K('Líneas de compra',s.n.toLocaleString('es-CL'),'#3B7BD9','programadas en el período')+
-    K('Enviadas a proveedor',pc(s.env,s.n)+'%','#2E9E6B',s.env.toLocaleString('es-CL')+' de '+s.n.toLocaleString('es-CL'),pc(s.env,s.n))+
+  document.getElementById('kpis0').innerHTML=K('Productos programados',s.n.toLocaleString('es-CL'),'#3B7BD9','programadas en el período')+
+    K('Con OC enviada a proveedor',pc(s.env,s.n)+'%','#2E9E6B',s.env.toLocaleString('es-CL')+' de '+s.n.toLocaleString('es-CL'),pc(s.env,s.n))+
     K('Mecanismo principal',topMec(rows0),'#1E8F8F',topMecSub(rows0),topMecPct(rows0))+
     K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','en tramitación')+
     K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A',pc(s.sin,s.n)+'% del total',pc(s.sin,s.n))+
     K('Valor estimado',fmt(s.val),'#E8A33D','fármacos e insumos médicos');
   document.getElementById('areas').innerHTML=AREAS.map(a=>{const r=rowsOf(a.k),t=stats(r);
-    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} líneas${a.col.val>=0?' · '+fmt(t.val):''}</div>
+    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${a.col.val>=0?' · '+fmt(t.val):''}</div>
     <div class="ad-row"><span>Enviadas a proveedor</span><b>${pc(t.env,t.n)}%</b></div><div class="ad-bar"><i style="width:${pc(t.env,t.n)}%"></i></div>
     <div class="ad-row"><span>Mecanismo de compra</span><b>${topMec(r)}</b></div><div class="ad-bar" style="display:flex">${mecCount(r).map(([k,n])=>`<i style="width:${pc(n,mecCount(r).reduce((x,y)=>x+y[1],0))}%;background:${MECC[k][1]}" title="${k}: ${n}"></i>`).join('')}</div>
     <div class="ad-row"><span>Sin avance</span><b>${t.sin}</b></div></div>`;}).join('');
@@ -637,12 +637,12 @@ function renderRes(){
 }
 function renderArea(){
   const a=AREAS.find(x=>x.k===TAB),rows=rowsOf(a.k),s=stats(rows);
-  document.getElementById('kpis').innerHTML=K('Líneas de compra',s.n.toLocaleString('es-CL'),a.c,MES===''?'todos los meses':MNAME(+MES))+
-    K('Enviadas a proveedor',pc(s.env,s.n)+'%','#2E9E6B',s.env.toLocaleString('es-CL')+' líneas',pc(s.env,s.n))+
+  document.getElementById('kpis').innerHTML=K('Productos programados',s.n.toLocaleString('es-CL'),a.c,MES===''?'todos los meses':MNAME(+MES))+
+    K('Con OC enviada a proveedor',pc(s.env,s.n)+'%','#2E9E6B',s.env.toLocaleString('es-CL')+' productos',pc(s.env,s.n))+
     K('Mecanismo principal',topMec(rows),'#1E8F8F',topMecSub(rows),topMecPct(rows))+
     K('En firmas / VB',s.firm.toLocaleString('es-CL'),'#7B6CD9','en tramitación')+
     K('Sin avance',s.sin.toLocaleString('es-CL'),'#D9806A',pc(s.sin,s.n)+'% del total',pc(s.sin,s.n))+
-    (a.col.val>=0?K('Valor estimado',fmt(s.val),'#E8A33D','compra programada'):K('Pend. recepción',s.pend.toLocaleString('es-CL'),'#E8A33D','líneas sin recibir'));
+    (a.col.val>=0?K('Valor estimado',fmt(s.val),'#E8A33D','compra programada'):K('Pendientes de emitir OC',(s.sin+s.firm).toLocaleString('es-CL'),'#E8A33D','productos sin OC emitida'));
   renderPanels(a,rows);
   topAG('p-top',DATA[a.k]||[],false);
   const hasP=a.col.prio>=0,hasV=a.col.val>=0;
@@ -656,19 +656,19 @@ function renderPanels(a,rows){
   const ocNow=document.getElementById('f-est').value;
   const base=rowsOf(a.k,{noEst:true}),n=base.length;
   const oi=Object.keys(OCC).map(k=>({k,n:base.filter(x=>x.oc===k).length,c:OCC[k][1]})).filter(x=>x.n);
-  document.getElementById('p-oc').innerHTML=`<h3>Estado de compra <small>${n.toLocaleString('es-CL')} líneas · clic para filtrar</small></h3>`+hbars(oi,n,'oc',ocNow);
+  document.getElementById('p-oc').innerHTML=`<h3>Estado de compra <small>${n.toLocaleString('es-CL')} productos · clic para filtrar</small></h3>`+hbars(oi,n,'oc',ocNow);
   const mi=Object.keys(MECC).map(k=>({k,n:base.filter(x=>x.mec===k).length,c:MECC[k][1]})).filter(x=>x.n),mecNow=document.getElementById('f-mec').value;
   const wo=base.filter(x=>x.mec!=='Sin OC').length;
-  document.getElementById('p-rec').innerHTML=`<h3>Mecanismo de compra <small>según N° de OC · clic para filtrar</small></h3><div class="ring"><div class="rg" style="--p:${pc(wo,n)};--c:#3B7BD9"><b>${pc(wo,n)}%</b></div><p><b>${wo.toLocaleString('es-CL')}</b> de <b>${n.toLocaleString('es-CL')}</b> líneas ya tienen número de OC o proceso asociado.</p></div>`+hbars(mi,n,'mec',mecNow)+`<div class="lg">${[['Compra ágil','AG'],['Convenio marco','CM'],['Licitación','SE'],['Trato directo','TD']].map(([a,b])=>`<span><i style="background:${MECC[a][1]}"></i>${a} (…-${b}26)</span>`).join('')}</div>`;
+  document.getElementById('p-rec').innerHTML=`<h3>Mecanismo de compra <small>según N° de OC · clic para filtrar</small></h3><div class="ring"><div class="rg" style="--p:${pc(wo,n)};--c:#3B7BD9"><b>${pc(wo,n)}%</b></div><p><b>${wo.toLocaleString('es-CL')}</b> de <b>${n.toLocaleString('es-CL')}</b> productos ya tienen número de OC o proceso asociado.</p></div>`+hbars(mi,n,'mec',mecNow)+`<div class="lg">${[['Compra ágil','AG'],['Convenio marco','CM'],['Licitación','SE'],['Trato directo','TD']].map(([a,b])=>`<span><i style="background:${MECC[a][1]}"></i>${a} (…-${b}26)</span>`).join('')}</div>`;
   // evolución mensual (todos los meses, sin filtros de estado)
   const all=DATA[a.k]||[],ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),mx=Math.max(1,...ms.map(m=>all.filter(x=>x.mes===m).length));
   const used=Object.keys(OCC).filter(k=>all.some(x=>x.oc===k));
-  document.getElementById('p-ev').innerHTML=`<h3>Líneas por mes y estado de compra <small>clic en un mes para filtrar</small></h3><div class="ev">`+ms.map(m=>{const r=all.filter(x=>x.mes===m),t=r.length;
-    return `<div class="col${String(m)===MES?' on':''}" data-m="${m}" title="${MNAME(m)}: ${t} líneas"><span class="tot">${t}</span><div class="st" style="height:${t/mx*150}px">${used.map(k=>{const c=r.filter(x=>x.oc===k).length;return c?`<i style="height:${c/t*100}%;background:${OCC[k][1]}"></i>`:'';}).join('')}</div><span class="mm">${MNAME(m).slice(0,3)}</span></div>`;}).join('')+`</div><div class="lg">`+used.map(k=>`<span><i style="background:${OCC[k][1]}"></i>${k}</span>`).join('')+`</div>`;
+  document.getElementById('p-ev').innerHTML=`<h3>Productos por mes y estado de compra <small>clic en un mes para filtrar</small></h3><div class="ev">`+ms.map(m=>{const r=all.filter(x=>x.mes===m),t=r.length;
+    return `<div class="col${String(m)===MES?' on':''}" data-m="${m}" title="${MNAME(m)}: ${t} productos"><span class="tot">${t}</span><div class="st" style="height:${t/mx*150}px">${used.map(k=>{const c=r.filter(x=>x.oc===k).length;return c?`<i style="height:${c/t*100}%;background:${OCC[k][1]}"></i>`:'';}).join('')}</div><span class="mm">${MNAME(m).slice(0,3)}</span></div>`;}).join('')+`</div><div class="lg">`+used.map(k=>`<span><i style="background:${OCC[k][1]}"></i>${k}</span>`).join('')+`</div>`;
   // proveedores con pendientes
   const pm={};base.filter(x=>x.prov).forEach(x=>pm[x.prov]=(pm[x.prov]||0)+1);
   const pv=Object.entries(pm).sort((x,y)=>y[1]-x[1]).slice(0,8).map(([k,n])=>({k,n,c:'#3B7BD9'}));
-  document.getElementById('p-pv').innerHTML=`<h3>Principales proveedores <small>líneas · clic para buscar en la tabla</small></h3>`+(pv.length?hbars(pv,base.length,'pv',''):'<div class="kp-sub">Sin proveedores informados</div>');
+  document.getElementById('p-pv').innerHTML=`<h3>Principales proveedores <small>productos · clic para buscar en la tabla</small></h3>`+(pv.length?hbars(pv,base.length,'pv',''):'<div class="kp-sub">Sin proveedores informados</div>');
   document.querySelectorAll('#p-oc .hb').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-est');f.value=f.value===e.dataset.oc?'':e.dataset.oc;render();}));
   document.querySelectorAll('#p-rec .hb').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-mec');f.value=f.value===e.dataset.mec?'':e.dataset.mec;render();}));
   document.querySelectorAll('#p-pv .hb').forEach(e=>e.addEventListener('click',()=>{document.getElementById('q').value=e.dataset.pv;renderTable();document.getElementById('tb').scrollIntoView({behavior:'smooth',block:'start'});}));
@@ -688,7 +688,7 @@ function renderTable(){
   let rows=rowsOf(a.k).filter(x=>!q||norm(x.prod+' '+x.prov).includes(q));
   const ord={'Sin avance':0,'En firmas':1,'Espera VB':1,'Ágil publicada':2,'Otro':3,'Enviada a proveedor':4,'No se compra':5};
   rows=rows.slice().sort((x,y)=>(ord[x.oc]-ord[y.oc])||y.val-x.val);
-  document.getElementById('cnt').textContent=rows.length.toLocaleString('es-CL')+' líneas'+(rows.length>300?' · primeras 300':'');
+  document.getElementById('cnt').textContent=rows.length.toLocaleString('es-CL')+' productos'+(rows.length>300?' · primeras 300':'');
   const hasP=a.col.prio>=0,hasV=a.col.val>=0,esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
   document.getElementById('tb').innerHTML=rows.slice(0,300).map(x=>`<tr><td class="pr">${esc(x.prod)}</td><td>${esc(x.prov)||'–'}</td><td>${MNAME(x.mes)}</td>${hasV?`<td class="num">${x.val?fmt(x.val):'–'}</td>`:''}<td><span class="eb ${OCC[x.oc][0]}">${x.oc}</span></td><td><span class="eb ${MECC[x.mec][0]}">${x.mec}</span></td><td style="font:12px var(--mono)">${esc(x.ocn)||'–'}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px">Sin resultados para los filtros</td></tr>';
 }
