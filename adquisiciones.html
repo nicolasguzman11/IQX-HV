@@ -518,9 +518,6 @@ td.pr{max-width:360px;}
     <div class="kp-grid" id="kpis0"></div>
     <div class="ad-sub" id="areas"></div>
     <div class="pn" id="p-top0" style="margin-bottom:12px"></div>
-    <div class="pn" id="p-cost0a" style="margin-bottom:12px"></div>
-    <div class="pn" id="p-cost0b" style="margin-bottom:12px"></div>
-    <div class="pn" id="p-cost0c" style="margin-bottom:12px"></div>
   </div>
   <div id="v-area">
     <div class="kp-grid" id="kpis"></div>
@@ -638,7 +635,6 @@ function kpiSet(rows,s,hasVal){const pr=n=>n.toLocaleString('es-CL')+' productos
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
-  [['p-cost0a','far'],['p-cost0b','med'],['p-cost0c','gen']].forEach(([el,k])=>topCost(el,DATA[k]||[],k));
   document.getElementById('kpis0').innerHTML=kpiSet(rows0,s,true);
   document.getElementById('areas').innerHTML=AREAS.map(a=>{const r=rowsOf(a.k),t=stats(r);
     return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${a.col.val>=0?' · '+fmt(t.val):''}</div>
