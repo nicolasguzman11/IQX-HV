@@ -622,7 +622,7 @@ async function init(){
 function setTab(t){TAB=t;try{history.replaceState(null,'','#'+t)}catch(e){}render();}
 function rowsOf(k){return dataOf(k).filter(x=>MES===''||x.mes===+MES);}
 function stats(rows){const n=rows.length,c=f=>rows.filter(f).length;
-  return {n,env:c(x=>x.oc==='Enviada a proveedor'),firm:c(x=>x.oc==='En firmas'||x.oc==='Espera VB'),sin:c(x=>x.oc==='Sin avance'||x.oc==='Desierta'||x.oc==='Quiebre proveedor'),nc:c(x=>x.oc==='No se compra'),rec:c(x=>x.rec==='Recepcionado'),pend:c(x=>x.rec==='Sin recepción'),val:rows.reduce((s,x)=>s+x.val,0)};}
+  return {n,env:c(x=>x.oc==='Enviada a proveedor'),firm:c(x=>x.oc==='En firmas'||x.oc==='Espera VB'),sin:c(x=>x.oc==='Sin avance'||x.oc==='Desierta'||x.oc==='Quiebre proveedor'),nc:c(x=>x.oc==='No se compra'),rec:c(x=>x.rec==='Recepcionado'),pend:c(x=>x.rec==='Sin recepción'),val:rows.reduce((s,x)=>s+x.val,0),valEnv:rows.filter(x=>x.oc==='Enviada a proveedor').reduce((s,x)=>s+x.val,0)};}
 const pc=(a,b)=>b?Math.round(a/b*100):0;
 function ocEmit(rows){return new Set(rows.filter(x=>x.oc==='Enviada a proveedor').flatMap(x=>x.ocl).filter(o=>o.mec!=='Cotización').map(o=>o.n)).size;}
 function mecCount(rows){const m={};rows.filter(x=>x.oc==='Enviada a proveedor').forEach(x=>x.ocl.forEach(o=>{if(o.mec!=='Cotización'){(m[o.mec]=m[o.mec]||new Set()).add(o.n);}}));return Object.entries(m).map(([k,v])=>[k,v.size]).sort((a,b)=>b[1]-a[1]);}
@@ -647,13 +647,13 @@ function kpiSet(rows,s,hasVal){const pr=n=>n.toLocaleString('es-CL')+' productos
     K('Con OC enviada',pc(s.env,s.n)+'%','#2E9E6B',pr(s.env),pc(s.env,s.n))+
     K('En firmas / VB',pc(s.firm,s.n)+'%','#7B6CD9',pr(s.firm),pc(s.firm,s.n))+
     K('Sin avance',pc(s.sin,s.n)+'%','#D9806A',pr(s.sin),pc(s.sin,s.n))+
-    (hasVal?K('Valor estimado',fmtM(s.val),'#E8A33D','compra programada'):'');}
+    (hasVal?K('Valor de OC enviadas',fmtM(s.valEnv),'#E8A33D','estimado · productos con OC enviada'):'');}
 function renderRes(){
   const all=[].concat(...AREAS.map(a=>rowsOf(a.k))),s=stats(all),rows0=all;
   topAG('p-top0',[].concat(...AREAS.map(a=>DATA[a.k]||[])),true);
   document.getElementById('kpis0').innerHTML=kpiSet(rows0,s,true);
   document.getElementById('areas').innerHTML=GROUPS.map(a=>{const r=rowsOf(a.k),t=stats(r);
-    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${t.val>0?' · '+fmt(t.val):''}</div>
+    return `<div class="ad-card" style="--ac:${a.c}" data-t="${a.k}"><h3>${a.n}</h3><div class="ad-n">${t.n.toLocaleString('es-CL')} productos${t.valEnv>0?' · '+fmtM(t.valEnv)+' en OC enviadas':''}</div>
     <div class="ad-row"><span>Enviadas a proveedor</span><b>${pc(t.env,t.n)}%</b></div><div class="ad-bar"><i style="width:${pc(t.env,t.n)}%"></i></div>
     <div class="ad-row"><span>Mecanismo de compra</span><b>${topMec(r)}</b></div><div class="ad-bar" style="display:flex">${mecCount(r).map(([k,n])=>`<i style="width:${pc(n,mecCount(r).reduce((x,y)=>x+y[1],0))}%;background:${MECC[k][1]}" title="${k}: ${n}"></i>`).join('')}</div>
     <div class="ad-row"><span>Sin avance</span><b>${t.sin}</b></div></div>`;}).join('');
