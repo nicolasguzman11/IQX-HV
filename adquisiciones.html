@@ -611,7 +611,7 @@ function stats(rows){const n=rows.length,c=f=>rows.filter(f).length;
   return {n,env:c(x=>x.oc==='Enviada a proveedor'),firm:c(x=>x.oc==='En firmas'||x.oc==='Espera VB'),sin:c(x=>x.oc==='Sin avance'||x.oc==='Desierta'||x.oc==='Quiebre proveedor'),nc:c(x=>x.oc==='No se compra'),rec:c(x=>x.rec==='Recepcionado'),pend:c(x=>x.rec==='Sin recepción'),val:rows.reduce((s,x)=>s+x.val,0)};}
 const pc=(a,b)=>b?Math.round(a/b*100):0;
 function ocEmit(rows){return new Set(rows.filter(x=>x.oc==='Enviada a proveedor').flatMap(x=>x.ocl).filter(o=>o.mec!=='Cotización').map(o=>o.n)).size;}
-function mecCount(rows){const m={};rows.forEach(x=>{if(x.mec!=='Sin OC')m[x.mec]=(m[x.mec]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+function mecCount(rows){const m={};rows.filter(x=>x.oc==='Enviada a proveedor').forEach(x=>x.ocl.forEach(o=>{if(o.mec!=='Cotización'){(m[o.mec]=m[o.mec]||new Set()).add(o.n);}}));return Object.entries(m).map(([k,v])=>[k,v.size]).sort((a,b)=>b[1]-a[1]);}
 function topMec(rows){const m=mecCount(rows);return m.length?m[0][0]:'–';}
 function topMecSub(rows){const m=mecCount(rows),t=m.reduce((a,b)=>a+b[1],0);return m.length?m[0][1].toLocaleString('es-CL')+' de '+t.toLocaleString('es-CL')+' con OC':'sin OC registrada';}
 function topMecPct(rows){const m=mecCount(rows),t=m.reduce((a,b)=>a+b[1],0);return m.length?pc(m[0][1],t):null;}
