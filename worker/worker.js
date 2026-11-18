@@ -344,6 +344,9 @@ function menuPage() {
   .go{margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--glass-line);font-weight:600;font-size:14px;position:relative;}
   .go svg{width:20px;height:20px;color:var(--c);transition:transform .25s;}
   .tile:hover .go svg{transform:translateX(6px);}
+  .tile.big{min-height:260px;} .tile.big h2{font-size:clamp(22px,2.6vw,28px);margin:0;} .tile.big .ico{width:64px;height:64px;}
+  .back{margin-left:auto;align-self:center;font-size:13px;font-weight:600;color:var(--mute);text-decoration:none;padding:8px 14px;border-radius:10px;border:1px solid var(--glass-line);background:var(--glass);}
+  .back:hover{color:var(--ink);}
   .foot{margin-top:40px;text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#7C93A3;}
   `;
   const arrow = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
@@ -363,8 +366,24 @@ function menuPage() {
       <div class="eyebrow">Gestión de Contratos</div>
       <h1>¿Qué quieres <span>revisar hoy?</span></h1>
     </section>
-    <section class="grp" style="--g:#E8A33D">
-      <div class="grp-h"><span class="grp-dot"></span><div><h2>Subdirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div></div>
+    <section class="cards c2" id="v-home">
+      <a class="tile big" style="--c:#E8A33D" href="#admin">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg></div>
+        <h2>Subdirección Administrativa</h2>
+        <p>Gestión de contratos y adquisiciones.</p>
+        <div class="chips"><span>Gestión de Contratos</span><span>Adquisiciones</span></div>
+        <div class="go">Ver paneles ${arrow}</div>
+      </a>
+      <a class="tile big" style="--c:#3B7BD9" href="#medica">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg></div>
+        <h2>Subdirección Médica</h2>
+        <p>Intervenciones quirúrgicas, horas médicas, consultas y controles.</p>
+        <div class="chips"><span>Intervenciones Quirúrgicas</span><span>Horas Médicas</span><span>Consultas y Controles</span></div>
+        <div class="go">Ver paneles ${arrow}</div>
+      </a>
+    </section>
+    <section class="grp view" id="v-admin" style="--g:#E8A33D">
+      <div class="grp-h"><span class="grp-dot"></span><div><h2>Subdirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div><a class="back" href="#">← Volver</a></div>
       <div class="cards c2">
       <a class="tile" style="--c:#E8A33D" href="/contratos">
         <span class="live lock">Acceso restringido</span>
@@ -378,14 +397,14 @@ function menuPage() {
         <span class="live">En vivo</span>
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg></div>
         <h2>Adquisiciones</h2>
-        <p>Avance de las compras de insumos médicos, insumos generales y fármacos: estado de la compra, recepción y productos críticos.</p>
-        <div class="chips"><span>Insumos médicos</span><span>Insumos generales</span><span>Fármacos</span></div>
+        <p>Avance de las compras de fármacos y laboratorio, insumos médicos e insumos generales: estado de la compra, mecanismos y OC enviadas.</p>
+        <div class="chips"><span>Insumos médicos</span><span>Insumos generales</span><span>Fármacos y laboratorio</span></div>
         <div class="go">Abrir panel ${arrow}</div>
       </a>
       </div>
     </section>
-    <section class="grp" style="--g:#3B7BD9">
-      <div class="grp-h"><span class="grp-dot"></span><div><h2>Subdirección Médica</h2><p>Intervenciones quirúrgicas, horas médicas, consultas y controles</p></div></div>
+    <section class="grp view" id="v-medica" style="--g:#3B7BD9">
+      <div class="grp-h"><span class="grp-dot"></span><div><h2>Subdirección Médica</h2><p>Intervenciones quirúrgicas, horas médicas, consultas y controles</p></div><a class="back" href="#">← Volver</a></div>
       <div class="cards c3">
       <a class="tile" style="--c:#1E9C8B" href="/dashboard?view=iqx">
         <span class="live">En vivo</span>
@@ -414,5 +433,15 @@ function menuPage() {
       </div>
     </section>
     <div class="foot">Información confidencial · uso exclusivo institucional</div>
-  </main>`, css);
+  </main>
+  <script>
+  (function(){
+    function show(){var h=location.hash.replace('#','');if(h!=='admin'&&h!=='medica')h='home';
+      document.getElementById('v-home').style.display=h==='home'?'':'none';
+      document.getElementById('v-admin').style.display=h==='admin'?'':'none';
+      document.getElementById('v-medica').style.display=h==='medica'?'':'none';
+      var e=document.querySelector('.hero h1');if(e)e.style.display='';window.scrollTo(0,0);}
+    window.addEventListener('hashchange',show);show();
+  })();
+  </script>`, css);
 }
