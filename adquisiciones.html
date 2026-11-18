@@ -484,18 +484,21 @@ td.pr{max-width:360px;}
 .pr-row .st2 i{display:block;height:100%;}
 .kp-grid{margin-bottom:14px;}#kpis0{margin-bottom:14px;}
 .dn{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
-.dsvg{width:210px;height:210px;flex:none;}
+.dsvg{width:250px;height:250px;max-width:100%;flex:none;}
 .dseg{cursor:pointer;transition:stroke-width .15s;}.dseg:hover{stroke-width:20;}
-.dc1{font:700 19px var(--mono);fill:var(--ink);}.dc2{font:500 6.5px var(--mono);fill:var(--ink-2);}
-.lgdw{flex:1;min-width:210px;display:flex;flex-direction:column;gap:2px;}
-.lgd{display:grid;grid-template-columns:12px 1fr auto 74px;gap:9px;align-items:center;padding:5px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--ink-2);}
+.dc1{font:700 17px var(--mono);fill:var(--ink);}.dc2{font:500 6px var(--mono);fill:var(--ink-2);}
+.dpc{font:700 6px var(--mono);fill:#fff;pointer-events:none;paint-order:stroke;stroke:rgba(0,0,0,.25);stroke-width:.5px;}
+.pcb{font:700 14px var(--mono);color:var(--ink);text-align:right;}
+.lgd.w4,.lgh.w4{grid-template-columns:12px minmax(0,1fr) 42px 44px 56px;gap:6px;}.lgd .nm{white-space:nowrap;}
+.lgdw{flex:1;min-width:230px;display:flex;flex-direction:column;gap:2px;}
+.lgd{display:grid;grid-template-columns:12px 1fr 60px 52px;gap:9px;align-items:center;padding:8px 8px;border-radius:8px;cursor:pointer;font-size:14px;color:var(--ink-2);}
 .lgd:hover,.lgd.on{background:rgba(232,163,61,.14);}
 .lgd i{width:11px;height:11px;border-radius:4px;display:block;}
 .lgd .nm{color:var(--ink);font-weight:500;}
-.lgd .vl{font:600 12px var(--mono);color:var(--ink);text-align:right;}.lgd .vl em{font-style:normal;color:var(--ink-2);font-weight:500;}
-.lgh{display:grid;grid-template-columns:12px 1fr auto 74px;gap:9px;padding:0 8px;font:600 10px var(--mono);color:var(--ink-2);text-align:right;text-transform:uppercase;}
+.lgd .vl{font:700 15px var(--mono);color:var(--ink);text-align:right;}.lgd .vl em{font-style:normal;color:var(--ink-2);font-weight:500;}
+.lgh{display:grid;grid-template-columns:12px 1fr 60px 52px;gap:9px;padding:0 8px;font:600 10px var(--mono);color:var(--ink-2);text-align:right;text-transform:uppercase;}
 .mini{display:flex;align-items:center;gap:10px;margin-top:10px;}.mini .kp-bar{flex:1;height:9px;}.mini b{font:700 13px var(--mono);color:#3B7BD9;}
-.lgd .vl2{font:500 11.5px var(--mono);color:var(--ink-2);text-align:right;}
+.lgd .vl2{font:500 13px var(--mono);color:var(--ink-2);text-align:right;}
 @media(max-width:560px){.hb{grid-template-columns:110px 1fr 64px}.g2{grid-template-columns:1fr}}
 </style>
 <div class="hv-bar"><a class="hv-brand" href="/menu"><span class="hv-logo"><img src="/logo.png" alt="Hospital de Villarrica" onerror="this.parentNode.classList.add('nologo');this.outerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M3 12h4l2-6 4 12 2-6h6&quot;/></svg>'"></span><span><div class="hv-t">Sub Departamento de Abastecimiento</div><div class="hv-s">Adquisiciones</div></span></a><nav class="hv-nav"><a href="/menu">← Menú</a><a class="hv-out" href="/logout">Cerrar sesión</a></nav></div>
@@ -529,6 +532,7 @@ td.pr{max-width:360px;}
     <div class="table-wrap"><table><thead><tr id="th"></tr></thead><tbody id="tb"></tbody></table></div>
   </div>
 </main>
+<div class="modal" id="modal"><div class="m-box"><div class="m-head"><div><h2 id="m-t"></h2><p id="m-s"></p></div><button class="m-x" id="m-x" type="button">Cerrar ✕</button></div><div class="m-body"><div class="tb-top"><select id="m-mes" class="srch" style="min-width:150px"></select><input class="srch" id="m-q" type="search" placeholder="Buscar producto o proveedor"><span class="s-chip neu" id="m-cnt"></span></div><div class="table-wrap"><table><thead id="m-th"></thead><tbody id="m-tb"></tbody></table></div></div></div></div>
 <footer><span>Fuente: Google Sheets · planillas de Fármacos, Insumos médicos e Insumos generales</span><span>Hospital de Villarrica · uso institucional</span></footer>
 <script>
 const __DK=document.documentElement.getAttribute('data-mode')==='dark';
@@ -658,10 +662,14 @@ function renderArea(){
 }
 
 function donutBlock(items,attr,cur,center,sub,withProd){
-  const tot=items.reduce((a,i)=>a+(withProd?i.n:i.n),0)||1,R=42,C=2*Math.PI*R;let cum=0;
-  const segs=items.filter(i=>i.n>0).map(i=>{const len=i.n/tot*C,s=`<circle class="dseg${cur===i.k?' on':''}" data-${attr}="${i.k}" cx="60" cy="60" r="${R}" fill="none" stroke="${i.c}" stroke-width="${cur===i.k?20:16}" stroke-dasharray="${Math.max(len-1.2,0.5)} ${C-Math.max(len-1.2,0.5)}" stroke-dashoffset="${-cum}"><title>${i.k}: ${i.n}</title></circle>`;cum+=len;return s;}).join('');
-  const rows=items.map(i=>`<div class="lgd${cur===i.k?' on':''}" data-${attr}="${i.k}"><i style="background:${i.c}"></i><span class="nm">${i.k}</span>${withProd?`<span class="vl" style="color:${i.c}">${i.n?i.n.toLocaleString('es-CL'):'–'}</span><span class="vl2">${i.prod.toLocaleString('es-CL')}</span>`:`<span class="vl" style="color:${i.c}">${i.n.toLocaleString('es-CL')}</span><span class="vl2">${pc(i.n,tot)}%</span>`}</div>`).join('');
-  return `<div class="dn"><svg viewBox="0 0 120 120" class="dsvg"><circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(120,130,150,.18)" stroke-width="16"/><g transform="rotate(-90 60 60)">${segs}</g><text x="60" y="58" text-anchor="middle" class="dc1">${center}</text><text x="60" y="73" text-anchor="middle" class="dc2">${sub}</text></svg><div class="lgdw">${withProd?'<div class="lgh"><span></span><span></span><span>OC</span><span>Prod.</span></div>':''}${rows||'<div class="kp-sub">Sin datos</div>'}</div></div>`;
+  const tot=items.reduce((a,i)=>a+i.n,0)||1,R=42,C=2*Math.PI*R;let cum=0,lab='';
+  const segs=items.filter(i=>i.n>0).map(i=>{const len=i.n/tot*C,pct=Math.round(i.n/tot*100),g=Math.max(len-1.2,0.5);
+    const s=`<circle class="dseg${cur===i.k?' on':''}" data-${attr}="${i.k}" cx="60" cy="60" r="${R}" fill="none" stroke="${i.c}" stroke-width="${cur===i.k?22:19}" stroke-dasharray="${g} ${C-g}" stroke-dashoffset="${-cum}"><title>${i.k}: ${i.n.toLocaleString('es-CL')} (${pct}%)</title></circle>`;
+    if(pct>=4){const an=(cum+len/2)/C*2*Math.PI-Math.PI/2;lab+=`<text x="${(60+R*Math.cos(an)).toFixed(1)}" y="${(60+R*Math.sin(an)+2.6).toFixed(1)}" text-anchor="middle" class="dpc">${pct}%</text>`;}
+    cum+=len;return s;}).join('');
+  const rows=items.map(i=>{const pct=i.n?Math.round(i.n/tot*100)+'%':'';return `<div class="lgd${cur===i.k?' on':''}${withProd?' w4':''}" data-${attr}="${i.k}"><i style="background:${i.c}"></i><span class="nm">${i.k}</span>${withProd?`<span class="vl" style="color:${i.c}">${i.n?i.n.toLocaleString('es-CL'):'–'}</span><span class="pcb">${pct||'–'}</span><span class="vl2">${i.prod.toLocaleString('es-CL')}</span>`:`<span class="vl" style="color:${i.c}">${i.n.toLocaleString('es-CL')}</span><span class="pcb">${pct}</span>`}</div>`;}).join('');
+  const hd=withProd?'<div class="lgh w4"><span></span><span></span><span>OC</span><span>%</span><span>Prod.</span></div>':'<div class="lgh"><span></span><span></span><span>Productos</span><span>%</span></div>';
+  return `<div class="dn"><svg viewBox="0 0 120 120" class="dsvg"><circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(120,130,150,.18)" stroke-width="19"/><g transform="rotate(-90 60 60)">${segs}</g>${lab}<text x="60" y="58" text-anchor="middle" class="dc1">${center}</text><text x="60" y="71" text-anchor="middle" class="dc2">${sub}</text></svg><div class="lgdw">${hd}${rows||'<div class="kp-sub">Sin datos</div>'}</div></div>`;
 }
 function hbars(items,total,attr,cur){const mx=Math.max(1,...items.map(i=>i.n));
   return items.map(i=>`<div class="hb${cur===i.k?' on':''}" data-${attr}="${i.k.replace(/"/g,'&quot;')}"><span class="nm">${i.k}</span><span class="tr"><i style="width:${i.n/mx*100}%;background:${i.c}"></i></span><span class="vl">${i.n.toLocaleString('es-CL')} <em>${pc(i.n,total)}%</em></span></div>`).join('')||'<div class="kp-sub">Sin datos</div>';}
@@ -680,11 +688,11 @@ function renderPanels(a,rows){
   document.getElementById('p-ev').innerHTML=`<h3 title="clic en un mes para filtrar">Productos por mes y estado de compra</h3><div class="ev">`+ms.map(m=>{const r=all.filter(x=>x.mes===m),t=r.length;
     return `<div class="col${String(m)===MES?' on':''}" data-m="${m}" title="${MNAME(m)}: ${t} productos"><span class="tot">${t}</span><div class="st" style="height:${t/mx*150}px">${used.map(k=>{const c=r.filter(x=>x.oc===k).length;return c?`<i style="height:${c/t*100}%;background:${OCC[k][1]}"></i>`:'';}).join('')}</div><span class="mm">${MNAME(m).slice(0,3)}</span></div>`;}).join('')+`</div><div class="lg">`+used.map(k=>`<span><i style="background:${OCC[k][1]}"></i>${k}</span>`).join('')+`</div>`;
   // proveedores con pendientes
-  const pm={};base.filter(x=>x.prov).forEach(x=>pm[x.prov]=(pm[x.prov]||0)+1);
+  const pm={};base.filter(x=>x.prov&&!/^sin prov/.test(norm(x.prov))).forEach(x=>pm[x.prov]=(pm[x.prov]||0)+1);
   const pv=Object.entries(pm).sort((x,y)=>y[1]-x[1]).slice(0,8).map(([k,n])=>({k,n,c:'#3B7BD9'}));
   document.getElementById('p-pv').innerHTML=`<h3 title="productos · clic para buscar en la tabla">Principales proveedores</h3>`+(pv.length?hbars(pv,base.length,'pv',''):'<div class="kp-sub">Sin proveedores informados</div>');
   document.querySelectorAll('#p-oc [data-oc]').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-est');f.value=f.value===e.dataset.oc?'':e.dataset.oc;render();}));
-  document.querySelectorAll('#p-rec [data-mec]').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-mec');f.value=f.value===e.dataset.mec?'':e.dataset.mec;render();}));
+  document.querySelectorAll('#p-rec [data-mec]').forEach(e=>e.addEventListener('click',()=>{if(e.dataset.mec==='Sin OC'){openSinOC();return;}const f=document.getElementById('f-mec');f.value=f.value===e.dataset.mec?'':e.dataset.mec;render();}));
   document.querySelectorAll('#p-pv .hb').forEach(e=>e.addEventListener('click',()=>{document.getElementById('q').value=e.dataset.pv;renderTable();document.getElementById('tb').scrollIntoView({behavior:'smooth',block:'start'});}));
   document.querySelectorAll('#p-ev .col').forEach(e=>e.addEventListener('click',()=>{MES=String(MES)===e.dataset.m?'':e.dataset.m;document.getElementById('f-mes').value=MES;render();}));
 }
@@ -697,6 +705,24 @@ function topAG(el,rows,showArea){
   document.getElementById(el).innerHTML=`<h3 title="todos los meses · N° de OC distintas">Compras ágiles por producto</h3>`+(t.length?`<div class="table-wrap" style="border:0"><table><thead><tr><th>#</th><th>Producto</th>${showArea?'<th>Área</th>':''}<th>Compras ágiles</th><th class="num">Meses</th>${hasV?'<th class="num">Valor estimado total</th>':''}<th>Proveedores</th></tr></thead><tbody>`+t.map((x,i)=>`<tr data-p="${esc(x.prod)}" style="cursor:pointer"><td>${i+1}</td><td class="pr">${esc(x.prod)}</td>${showArea?`<td>${[...x.areas].join(', ')}</td>`:''}<td><div style="display:flex;align-items:center;gap:8px"><span class="hb" style="display:block;padding:0;min-width:90px;flex:1;background:none"><span class="tr" style="display:block"><i style="display:block;width:${x.ocs.size/mx*100}%;background:#3B7BD9;height:100%;border-radius:99px"></i></span></span><b style="font-family:var(--mono)">${x.ocs.size}</b></div></td><td class="num">${x.meses.size}</td>${hasV?`<td class="num">${x.val?fmt(x.val):'–'}</td>`:''}<td>${x.provs.size>1?x.provs.size+' proveedores':esc([...x.provs][0]||'–')}</td></tr>`).join('')+`</tbody></table></div>`:'<div class="kp-sub">Sin compras ágiles registradas</div>');
   document.querySelectorAll('#'+el+' tr[data-p]').forEach(r=>r.addEventListener('click',()=>{if(showArea)return;MES='';document.getElementById('f-mes').value='';document.getElementById('f-mec').value='Compra ágil';document.getElementById('f-est').value='';document.getElementById('q').value=r.dataset.p;render();document.getElementById('tb').scrollIntoView({behavior:'smooth',block:'start'});}));
 }
+
+function openSinOC(){
+  const a=AREAS.find(x=>x.k===TAB);if(!a)return;const all=(DATA[a.k]||[]).filter(x=>x.mec==='Sin OC'),hasV=a.col.val>=0;
+  const ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),sel=document.getElementById('m-mes'),q=document.getElementById('m-q');
+  sel.innerHTML='<option value="">Todos los meses</option>'+ms.map(m=>`<option value="${m}">${MNAME(m)}</option>`).join('');sel.value=ms.includes(+MES)&&MES!==''?MES:'';q.value='';
+  document.getElementById('m-t').textContent='Productos sin OC · '+a.n;
+  const esc=v=>v.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const draw=()=>{const mm=sel.value,qq=norm(q.value);let r=all.filter(x=>(mm===''||x.mes===+mm)&&(!qq||norm(x.prod+' '+x.prov).includes(qq)));
+    r=r.slice().sort((x,y)=>y.mes-x.mes||y.val-x.val);
+    document.getElementById('m-s').textContent=all.length.toLocaleString('es-CL')+' productos sin número de OC en total';
+    document.getElementById('m-cnt').textContent=r.length.toLocaleString('es-CL')+' productos'+(hasV?' · '+fmt(r.reduce((s,x)=>s+x.val,0)):'');
+    document.getElementById('m-th').innerHTML='<tr><th>Producto</th><th>Mes</th>'+(false?'<th>Comprador</th>':'')+'<th>Proveedor</th>'+(hasV?'<th class="num">Valor est.</th>':'')+'<th>Estado de compra</th></tr>';
+    document.getElementById('m-tb').innerHTML=r.slice(0,500).map(x=>`<tr><td class="pr">${esc(x.prod)}</td><td>${MNAME(x.mes)}</td>${false?`<td>${esc(x.resp)||'–'}</td>`:''}<td>${esc(x.prov)||'–'}</td>${hasV?`<td class="num">${x.val?fmt(x.val):'–'}</td>`:''}<td><span class="eb ${OCC[x.oc][0]}">${x.oc}</span></td></tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:24px">Sin resultados</td></tr>';};
+  sel.onchange=draw;q.oninput=draw;draw();document.getElementById('modal').classList.add('open');
+}
+document.getElementById('m-x').addEventListener('click',()=>document.getElementById('modal').classList.remove('open'));
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')e.currentTarget.classList.remove('open');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('modal').classList.remove('open');});
 function renderTable(){
   if(TAB==='res')return;const a=AREAS.find(x=>x.k===TAB),q=norm(document.getElementById('q').value);
   let rows=rowsOf(a.k).filter(x=>!q||norm(x.prod+' '+x.prov).includes(q));
