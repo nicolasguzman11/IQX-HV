@@ -482,6 +482,17 @@ td.pr{max-width:360px;}
 .pr-row{display:grid;grid-template-columns:120px 1fr 60px;gap:10px;align-items:center;padding:5px 6px;font-size:12.5px;}
 .pr-row .st2{display:flex;height:14px;border-radius:99px;overflow:hidden;background:rgba(120,130,150,.2);}
 .pr-row .st2 i{display:block;height:100%;}
+.dn{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.dsvg{width:190px;height:190px;flex:none;}
+.dseg{cursor:pointer;transition:stroke-width .15s;}.dseg:hover{stroke-width:20;}
+.dc1{font:700 17px var(--mono);fill:var(--ink);}.dc2{font:500 6.5px var(--mono);fill:var(--ink-2);}
+.lgdw{flex:1;min-width:210px;display:flex;flex-direction:column;gap:2px;}
+.lgd{display:grid;grid-template-columns:12px 1fr auto 74px;gap:9px;align-items:center;padding:5px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;color:var(--ink-2);}
+.lgd:hover,.lgd.on{background:rgba(232,163,61,.14);}
+.lgd i{width:11px;height:11px;border-radius:4px;display:block;}
+.lgd .nm{color:var(--ink);font-weight:500;}
+.lgd .vl{font:600 12px var(--mono);color:var(--ink);text-align:right;}.lgd .vl em{font-style:normal;color:var(--ink-2);font-weight:500;}
+.lgd .vl2{font:500 11.5px var(--mono);color:var(--ink-2);text-align:right;}
 @media(max-width:560px){.hb{grid-template-columns:110px 1fr 64px}.g2{grid-template-columns:1fr}}
 </style>
 <div class="hv-bar"><a class="hv-brand" href="/menu"><span class="hv-logo"><img src="/logo.png" alt="Hospital de Villarrica" onerror="this.parentNode.classList.add('nologo');this.outerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M3 12h4l2-6 4 12 2-6h6&quot;/></svg>'"></span><span><div class="hv-t">Sub Departamento de Abastecimiento</div><div class="hv-s">Adquisiciones</div></span></a><nav class="hv-nav"><a href="/menu">← Menú</a><a class="hv-out" href="/logout">Cerrar sesión</a></nav></div>
@@ -650,16 +661,23 @@ function renderArea(){
   renderTable();
 }
 
+function donutBlock(items,attr,cur,center,sub,withProd){
+  const tot=items.reduce((a,i)=>a+(withProd?i.n:i.n),0)||1,R=42,C=2*Math.PI*R;let cum=0;
+  const segs=items.filter(i=>i.n>0).map(i=>{const len=i.n/tot*C,s=`<circle class="dseg${cur===i.k?' on':''}" data-${attr}="${i.k}" cx="60" cy="60" r="${R}" fill="none" stroke="${i.c}" stroke-width="${cur===i.k?20:16}" stroke-dasharray="${Math.max(len-1.2,0.5)} ${C-Math.max(len-1.2,0.5)}" stroke-dashoffset="${-cum}"><title>${i.k}: ${i.n}</title></circle>`;cum+=len;return s;}).join('');
+  const rows=items.map(i=>`<div class="lgd${cur===i.k?' on':''}" data-${attr}="${i.k}"><i style="background:${i.c}"></i><span class="nm">${i.k}</span>${withProd?`<span class="vl">${i.n?i.n.toLocaleString('es-CL')+'<em> OC</em>':'<em>sin OC aún</em>'}</span><span class="vl2">${i.prod.toLocaleString('es-CL')} prod.</span>`:`<span class="vl">${i.n.toLocaleString('es-CL')}</span><span class="vl2">${pc(i.n,tot)}%</span>`}</div>`).join('');
+  return `<div class="dn"><svg viewBox="0 0 120 120" class="dsvg"><circle cx="60" cy="60" r="${R}" fill="none" stroke="rgba(120,130,150,.18)" stroke-width="16"/><g transform="rotate(-90 60 60)">${segs}</g><text x="60" y="58" text-anchor="middle" class="dc1">${center}</text><text x="60" y="73" text-anchor="middle" class="dc2">${sub}</text></svg><div class="lgdw">${rows||'<div class="kp-sub">Sin datos</div>'}</div></div>`;
+}
 function hbars(items,total,attr,cur){const mx=Math.max(1,...items.map(i=>i.n));
   return items.map(i=>`<div class="hb${cur===i.k?' on':''}" data-${attr}="${i.k.replace(/"/g,'&quot;')}"><span class="nm">${i.k}</span><span class="tr"><i style="width:${i.n/mx*100}%;background:${i.c}"></i></span><span class="vl">${i.n.toLocaleString('es-CL')} <em>${pc(i.n,total)}%</em></span></div>`).join('')||'<div class="kp-sub">Sin datos</div>';}
 function renderPanels(a,rows){
   const ocNow=document.getElementById('f-est').value;
   const base=rowsOf(a.k,{noEst:true}),n=base.length;
   const oi=Object.keys(OCC).map(k=>({k,n:base.filter(x=>x.oc===k).length,c:OCC[k][1]})).filter(x=>x.n);
-  document.getElementById('p-oc').innerHTML=`<h3>Estado de compra <small>${n.toLocaleString('es-CL')} productos · clic para filtrar</small></h3>`+hbars(oi,n,'oc',ocNow);
-  const mi=Object.keys(MECC).map(k=>({k,n:base.filter(x=>x.mec===k).length,c:MECC[k][1]})).filter(x=>x.n),mecNow=document.getElementById('f-mec').value;
-  const wo=base.filter(x=>x.mec!=='Sin OC').length;
-  document.getElementById('p-rec').innerHTML=`<h3>Mecanismo de compra <small>según N° de OC · clic para filtrar</small></h3><div class="ring"><div class="rg" style="--p:${pc(wo,n)};--c:#3B7BD9"><b>${pc(wo,n)}%</b></div><p><b>${wo.toLocaleString('es-CL')}</b> de <b>${n.toLocaleString('es-CL')}</b> productos ya tienen número de OC o proceso asociado.</p></div>`+hbars(mi,n,'mec',mecNow)+`<div class="lg">${[['Compra ágil','AG'],['Convenio marco','CM'],['Licitación','SE'],['Trato directo','TD']].map(([a,b])=>`<span><i style="background:${MECC[a][1]}"></i>${a} (…-${b}26)</span>`).join('')}</div>`;
+  document.getElementById('p-oc').innerHTML=`<h3>Estado de compra <small>productos · clic para filtrar</small></h3>`+donutBlock(oi,'oc',ocNow,n.toLocaleString('es-CL'),'productos',null);
+  const mecNow=document.getElementById('f-mec').value;
+  const mi=Object.keys(MECC).map(k=>{const r=base.filter(x=>x.mec===k);return {k,n:(k==='Cotización'?0:new Set(r.filter(x=>x.ocn).map(x=>x.ocn)).size),prod:r.length,c:MECC[k][1]};}).filter(x=>x.prod);
+  const totOC=new Set(base.filter(x=>x.mec!=='Sin OC'&&x.mec!=='Cotización'&&x.ocn).map(x=>x.ocn)).size,wo=base.filter(x=>x.mec!=='Sin OC').length;
+  document.getElementById('p-rec').innerHTML=`<h3>Mecanismo de compra <small>órdenes de compra · clic para filtrar</small></h3>`+donutBlock(mi,'mec',mecNow,totOC.toLocaleString('es-CL'),'órdenes de compra',true)+`<div class="kp-sub" style="margin-top:8px"><b>${wo.toLocaleString('es-CL')}</b> de <b>${n.toLocaleString('es-CL')}</b> productos ya tienen número de OC o proceso asociado (${pc(wo,n)}%).</div>`;
   // evolución mensual (todos los meses, sin filtros de estado)
   const all=DATA[a.k]||[],ms=[...new Set(all.map(x=>x.mes))].sort((x,y)=>x-y),mx=Math.max(1,...ms.map(m=>all.filter(x=>x.mes===m).length));
   const used=Object.keys(OCC).filter(k=>all.some(x=>x.oc===k));
@@ -669,8 +687,8 @@ function renderPanels(a,rows){
   const pm={};base.filter(x=>x.prov).forEach(x=>pm[x.prov]=(pm[x.prov]||0)+1);
   const pv=Object.entries(pm).sort((x,y)=>y[1]-x[1]).slice(0,8).map(([k,n])=>({k,n,c:'#3B7BD9'}));
   document.getElementById('p-pv').innerHTML=`<h3>Principales proveedores <small>productos · clic para buscar en la tabla</small></h3>`+(pv.length?hbars(pv,base.length,'pv',''):'<div class="kp-sub">Sin proveedores informados</div>');
-  document.querySelectorAll('#p-oc .hb').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-est');f.value=f.value===e.dataset.oc?'':e.dataset.oc;render();}));
-  document.querySelectorAll('#p-rec .hb').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-mec');f.value=f.value===e.dataset.mec?'':e.dataset.mec;render();}));
+  document.querySelectorAll('#p-oc [data-oc]').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-est');f.value=f.value===e.dataset.oc?'':e.dataset.oc;render();}));
+  document.querySelectorAll('#p-rec [data-mec]').forEach(e=>e.addEventListener('click',()=>{const f=document.getElementById('f-mec');f.value=f.value===e.dataset.mec?'':e.dataset.mec;render();}));
   document.querySelectorAll('#p-pv .hb').forEach(e=>e.addEventListener('click',()=>{document.getElementById('q').value=e.dataset.pv;renderTable();document.getElementById('tb').scrollIntoView({behavior:'smooth',block:'start'});}));
   document.querySelectorAll('#p-ev .col').forEach(e=>e.addEventListener('click',()=>{MES=String(MES)===e.dataset.m?'':e.dataset.m;document.getElementById('f-mes').value=MES;render();}));
 }
