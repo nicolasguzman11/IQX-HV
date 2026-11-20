@@ -61,3 +61,6 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 
 ### Menú con dos tarjetas
 - `/menu` muestra dos tarjetas (Subdirección Administrativa / Subdirección Médica); al hacer clic se abre la vista con sus paneles (hash `#admin` / `#medica`, botón "← Volver"). Requiere pegar `worker/worker.js` en Cloudflare.
+
+### Gestión de Contratos sin segunda contraseña
+- Desde 20-11-2026 `/contratos` solo exige el inicio de sesión general (se quitó el segundo nivel `iqx_contratos`). El código de la ruta `/acceso-contratos` queda sin uso; los secretos CONTRATOS_USER / CONTRATOS_PASS de Cloudflare ya no se necesitan.

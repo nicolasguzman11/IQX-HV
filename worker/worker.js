@@ -78,7 +78,7 @@ export default {
     }
     if (url.pathname.startsWith('/contratos')) {
       if (!authenticated) return redirectToLogin(url);
-      if (!contratosOk) return html(restrictedPage(false, !!cToken), cToken ? 200 : 503);
+      // Segundo nivel desactivado: basta el inicio de sesión general
       return proxy(GH + '/contratos.html' + url.search);
     }
 
@@ -386,11 +386,11 @@ function menuPage() {
       <div class="grp-h"><span class="grp-dot"></span><div><h2>Subdirección Administrativa</h2><p>Gestión de contratos y adquisiciones</p></div><a class="back" href="#">← Volver</a></div>
       <div class="cards c2">
       <a class="tile" style="--c:#E8A33D" href="/contratos">
-        <span class="live lock">Acceso restringido</span>
+        <span class="live">En vivo</span>
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg></div>
         <h2>Gestión de Contratos</h2>
         <p>Indicadores, vencimientos y avisos de contratos, y validación de órdenes de compra por responsable.</p>
-        <div class="chips"><span>Vencimientos</span><span>Órdenes de compra</span><span>Acceso exclusivo</span></div>
+        <div class="chips"><span>Vencimientos</span><span>Órdenes de compra</span><span>Responsables</span></div>
         <div class="go">Abrir panel ${arrow}</div>
       </a>
       <a class="tile" style="--c:#2E9E6B" href="/adquisiciones">
