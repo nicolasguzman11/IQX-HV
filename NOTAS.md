@@ -66,6 +66,6 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 - Desde 20-11-2026 `/contratos` solo exige el inicio de sesión general (se quitó el segundo nivel `iqx_contratos`). El código de la ruta `/acceso-contratos` queda sin uso; los secretos CONTRATOS_USER / CONTRATOS_PASS de Cloudflare ya no se necesitan.
 
 ### Gantt ejecutivo (Gestión de Contratos · Visión general)
-- Tarjetas KPI de color arriba (vigentes, vencen en 30 y 90 días, sin aviso, críticas sin aviso, % con aviso); todas abren el detalle.
+- (Las tarjetas KPI de color se quitaron a pedido: la Visión general muestra solo la carta Gantt.)
 - Barras con degradado y glow; las sin aviso que vencen en ≤90 días pulsan. Cada fila muestra fecha y "N días". Encabezado de mes con barra de calor y pastilla sin aviso / todas avisadas.
 - Botón "Modo presentación" (pantalla completa) para reuniones.
