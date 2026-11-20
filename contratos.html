@@ -105,7 +105,7 @@ html[data-tema="contratos"][data-mode="dark"] .hv-aurora i:nth-child(3){backgrou
 <div class="hv-bar"><a class="hv-brand" href="/menu"><span class="hv-logo"><img src="/logo.png" alt="Hospital de Villarrica" onerror="this.parentNode.classList.add('nologo');this.outerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M3 12h4l2-6 4 12 2-6h6&quot;/></svg>'"></span><span><div class="hv-t">Sub Departamento de Abastecimiento</div><div class="hv-s">Gestión de Contratos</div></span></a><nav class="hv-nav"><a href="/menu#admin">← Subdirección Administrativa</a><a class="hv-out" href="/logout">Cerrar sesión</a></nav></div>
 
 <script>try{var _m=localStorage.getItem('mode');if(!_m)_m=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-mode',_m);}catch(e){}</script>
-<title>Dashboard Gestión de Contratos</title>
+<title>Panel Gestión de Contratos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
@@ -287,6 +287,44 @@ table.vg tr.nov .vg-id b::after{content:' · ' attr(data-etq);font-weight:500;co
 .gt-today{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);z-index:4;pointer-events:none}
 .gt-todaylab{position:absolute;bottom:2px;z-index:7;background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;transform:translateX(-50%)}
 .gt-sep{padding:8px 12px;font-size:13px;font-weight:700;color:var(--accent);background:var(--vg1);position:sticky;left:0;border-bottom:1px solid var(--line)}
+
+/* ===== Gantt ejecutivo ===== */
+.gk-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:6px 0 16px}
+.gk{--c:#1F4E8C;position:relative;overflow:hidden;border-radius:18px;padding:18px 18px 16px;color:#fff;cursor:pointer;text-align:left;border:0;font:inherit;background:linear-gradient(135deg,color-mix(in srgb,var(--c) 92%,#fff),color-mix(in srgb,var(--c) 62%,#000));box-shadow:0 12px 26px -14px var(--c);transition:transform .2s,box-shadow .2s}
+.gk:hover{transform:translateY(-3px);box-shadow:0 18px 30px -14px var(--c)}
+.gk::after{content:"";position:absolute;right:-34px;top:-34px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.13)}
+.gk .t{font:600 12px var(--fb);letter-spacing:.07em;text-transform:uppercase;opacity:.92;position:relative;z-index:1}
+.gk .n{font-family:var(--fd);font-size:clamp(40px,4.4vw,58px);font-weight:800;line-height:1;margin:8px 0 6px;position:relative;z-index:1;font-variant-numeric:tabular-nums}
+.gk .n small{font-size:.42em;font-weight:700;margin-left:3px;opacity:.9}
+.gk .f{font-size:12.5px;opacity:.92;position:relative;z-index:1}
+.gk .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.28);margin-top:10px;overflow:hidden;position:relative;z-index:1}.gk .bar i{display:block;height:100%;background:#fff;border-radius:3px}
+.gt-card{padding:14px;border-radius:20px}
+.gt-wrap{border-radius:16px;box-shadow:inset 0 0 0 1px var(--line)}
+.gt-h .gm{height:104px}
+.gt-mh{transition:background .15s}
+.gt-mh .gn{font-size:34px;font-weight:800;color:var(--ink)}
+.gt-mh .gy{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.gt-mh .gs{font-size:11px;padding:2px 9px;border-radius:999px;background:var(--crit-bg);color:var(--crit)}
+.gt-mh .gs.okk{background:var(--good-bg);color:var(--good)}
+.gt-mh .heat{position:absolute;left:0;right:0;bottom:0;height:5px;background:var(--accent);opacity:var(--o,.2)}
+.gt-r{height:54px}
+.gt-r .gl{gap:10px;border-left:5px solid var(--sc,#2E9E6B)}
+.gt-r .gl b{font-size:14px}.gt-r .gl span{font-size:13.5px}
+.gt-bar{top:11px;height:32px;border-radius:16px;opacity:1;background:linear-gradient(180deg,color-mix(in srgb,var(--bc) 82%,#fff),var(--bc));box-shadow:0 6px 12px -6px var(--bc),inset 0 1px 0 rgba(255,255,255,.35)}
+.gt-bar.ok{--bc:#2E9E6B}.gt-bar.no{--bc:#E39A2D}.gt-bar.cr{--bc:#D9534F}
+.gt-bar.urg{animation:gtp 1.8s ease-in-out infinite}
+@keyframes gtp{0%,100%{box-shadow:0 6px 12px -6px var(--bc),0 0 0 0 color-mix(in srgb,var(--bc) 55%,transparent)}50%{box-shadow:0 6px 12px -6px var(--bc),0 0 0 8px transparent}}
+.gt-end{top:14px;font-size:13.5px}.gt-end em{font-style:normal;font-weight:600;font-size:12px;color:var(--muted);margin-left:6px}
+.gt-end.l em{margin-left:0;margin-right:6px}
+.gt-dot{top:20px;width:14px;height:14px}
+.gt-today{width:3px;box-shadow:0 0 10px var(--accent)}
+.gt-todaylab{bottom:-11px;top:auto;font-size:11px;padding:2px 9px;box-shadow:0 4px 10px -3px var(--accent)}
+.gt-sep{padding:11px 14px;font-size:14px;letter-spacing:.04em;text-transform:uppercase;background:linear-gradient(90deg,var(--vg1),transparent 85%);border-left:5px solid var(--accent)}
+.gt-r:nth-of-type(even) .gl{background:color-mix(in srgb,var(--surface) 96%,var(--accent))}
+.gt-pres{margin-left:auto;font:600 13px var(--fb);padding:8px 16px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+.gt-card:fullscreen{background:var(--bg,var(--surface));padding:22px;overflow:auto}
+.gt-card:fullscreen .gt-wrap{height:calc(100vh - 190px)}
+.gt-card:fullscreen .gt-r{height:62px}.gt-card:fullscreen .gt-bar{top:14px;height:34px}.gt-card:fullscreen .gt-end{top:17px;font-size:15px}
 .sec-label{font-family:var(--fd);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin:18px 0 8px}
 .sec-label:first-child{margin-top:0}.sec-label span{text-transform:none;letter-spacing:0;color:var(--muted);font-weight:500;font-family:var(--fb);font-size:12.5px}
 .people{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
@@ -352,7 +390,7 @@ tr.total td{font-weight:600;background:var(--surface-2)}
 <header class="top">
   <div>
     <div class="eyebrow">Gestión de Contratos · Línea base</div>
-    <h1 class="ed-title">Dashboard Gestión de Contratos</h1>
+    <h1 class="ed-title">Panel Gestión de Contratos</h1>
     <div class="ed-desc">Resultados globales de Gestión de Contratos</div>
     <div class="views sec-views" role="tablist" aria-label="Área">
       <button class="view" role="tab" data-s="vg" aria-selected="true"><span class="v-t">Visión general</span><span class="v-d">Carta Gantt de vencimientos</span></button>
@@ -479,8 +517,9 @@ tr.total td{font-weight:600;background:var(--surface-2)}
 </div>
 <section class="panel" id="p-vg" hidden>
   <div class="sec-label">Visión general</div>
-  <div class="card gt-card">
-    <div class="vg-tools"><input type="search" id="gt-q" placeholder="Buscar ID, proveedor o contrato" aria-label="Buscar"><label>Mostrar <select id="gt-f"><option value="todas">Todas las licitaciones</option><option value="sin">Solo sin aviso</option><option value="crit">Solo críticas</option></select></label><span class="hint" id="gt-n"></span></div>
+  <div class="gk-row" id="gt-kpis"></div>
+  <div class="card gt-card" id="gt-card">
+    <div class="vg-tools"><input type="search" id="gt-q" placeholder="Buscar ID, proveedor o contrato" aria-label="Buscar"><label>Mostrar <select id="gt-f"><option value="todas">Todas las licitaciones</option><option value="sin">Solo sin aviso</option><option value="crit">Solo críticas</option></select></label><span class="hint" id="gt-n"></span><button type="button" class="gt-pres" id="gt-pres">⛶ Modo presentación</button></div>
     <div class="gt-wrap" id="gt"></div>
   </div>
   <div class="vg-leg" id="cal-leg"></div>
@@ -1242,9 +1281,15 @@ function renderCal(){
   const after=LV.filter(l=>l.near&&l.near.ter&&l.near.ter>=W1).length;
   document.getElementById('gt-n').textContent=`${rows.length} licitaciones en el calendario`+(after?` · ${after} vencen después de dic 2027`:'');
   const bands=months.map((m,i)=>{const l=pc(m),r=pc(new Date(m.getFullYear(),m.getMonth()+1,1));return `left:${l}%;width:${r-l}%`});
+  const mx=Math.max(1,...months.map(m=>new Set(win.filter(c=>c.ter.getFullYear()===m.getFullYear()&&c.ter.getMonth()===m.getMonth()).map(c=>c.id)).size));
   const mh=months.map((m,i)=>{const a=win.filter(c=>c.ter.getFullYear()===m.getFullYear()&&c.ter.getMonth()===m.getMonth()),st=stats(a),k='m'+i;window.CALD[k]=[`Licitaciones que vencen — ${m.toLocaleDateString('es-CL',{month:'long',year:'numeric'})}`,a];
-    return `<button class="gt-mh${i%2?' alt':''}" data-k="${k}" style="${bands[i]}" title="Ver detalle del mes"><span class="gy">${MN[m.getMonth()]} ${m.getFullYear()}</span><span class="gn">${st.n}</span>${st.sa?`<span class="gs">${st.sa} sin aviso</span>`:'<span class="gs" style="color:var(--good)">'+(st.n?'todas avisadas':'—')+'</span>'}</button>`}).join('');
+    return `<button class="gt-mh${i%2?' alt':''}" data-k="${k}" style="${bands[i]}" title="Ver detalle del mes"><span class="gy">${MN[m.getMonth()]} ${m.getFullYear()}</span><span class="gn">${st.n}</span>${st.sa?`<span class="gs">${st.sa} sin aviso</span>`:'<span class="gs okk">'+(st.n?'todas avisadas':'—')+'</span>'}<i class="heat" style="--o:${Math.max(.08,st.n/mx)}"></i></button>`}).join('');
   const hoyP=pc(HOY);
+  const dl=l=>Math.round((l.near.ter-HOY)/864e5),rowsAll=LV.filter(l=>l.near&&l.near.ter&&l.near.ter>=HOY),sinA=rowsAll.filter(l=>!l.aviso),critA=rowsAll.filter(l=>l.crit&&!l.aviso),d30=rowsAll.filter(l=>dl(l)<=30),d90=rowsAll.filter(l=>dl(l)<=90);
+  const pctAv=rowsAll.length?Math.round((1-sinA.length/rowsAll.length)*100):0,vv=a=>a.flatMap(l=>l.vig);
+  window.CALD.k1=['Licitaciones vigentes',vv(rowsAll)];window.CALD.k2=['Vencen en 30 días',vv(d30)];window.CALD.k3=['Vencen en 90 días',vv(d90)];window.CALD.k4=['Licitaciones sin aviso',vv(sinA)];window.CALD.k5=['Críticas sin aviso',vv(critA)];
+  const gk=(k,c,t,n,f,b)=>`<button type="button" class="gk" style="--c:${c}" data-k="${k}"><div class="t">${t}</div><div class="n">${n}</div><div class="f">${f}</div>${b!=null?`<div class="bar"><i style="width:${b}%"></i></div>`:''}</button>`;
+  document.getElementById('gt-kpis').innerHTML=gk('k1','#1F4E8C','Licitaciones vigentes',rowsAll.length,'con contrato en curso',null)+gk('k2','#C9514A','Vencen en 30 días',d30.length,d30.filter(l=>!l.aviso).length+' sin aviso',rowsAll.length?Math.round(d30.length/rowsAll.length*100):0)+gk('k3','#E39A2D','Vencen en 90 días',d90.length,d90.filter(l=>!l.aviso).length+' sin aviso',rowsAll.length?Math.round(d90.length/rowsAll.length*100):0)+gk('k4','#8E5BC2','Sin aviso',sinA.length,'requieren gestión',rowsAll.length?Math.round(sinA.length/rowsAll.length*100):0)+gk('k5','#B3261E','Críticas sin aviso',critA.length,'prioridad máxima',null)+gk('k6','#2E9E6B','Con aviso',pctAv+'<small>%</small>','de las licitaciones vigentes',pctAv);
   const stripes=months.map((m,i)=>`<div class="gt-st${i%2?' alt':''}" style="${bands[i]}"></div>`).join('');
   let html=`<div class="gt"><div class="gt-h"><div class="gl">Licitación · proveedor</div><div class="gm">${mh}<span class="gt-todaylab" style="left:${hoyP}%">Hoy</span></div></div>`;
   let lastKey='';
@@ -1255,13 +1300,15 @@ function renderCal(){
     const lateral=x1>88;
     const dots=l.vig.filter(v=>v!==c&&v.ter&&v.ter<W1&&+v.ter!==+c.ter).map(v=>`<i class="gt-dot" style="left:${pc(v.ter)}%;background:${v.ult?'#2E9E6B':'#D9534F'}" title="${esc(v.prov)} · vence ${fd(v.ter)}"></i>`).join('');
     window.CALD['r'+ri]=['Licitación '+l.id,l.vig];
-    html+=`<div class="gt-r" data-k="r${ri}"><div class="gl" title="${esc(l.id+' · '+(c.nom||''))}"><b>${esc(l.id)}</b><span>${esc(lab)}</span></div><div class="gm">${stripes}<i class="gt-today" style="left:${hoyP}%"></i><i class="gt-bar ${cls}" style="left:${x0}%;width:${Math.max(x1-x0,.6)}%" title="${esc(c.prov)} · vence ${fd(c.ter)} · ${l.aviso?'con aviso':'sin aviso'}"></i><span class="gt-end${lateral?' l':''}" style="left:${x1}%">${fd(c.ter).slice(0,5).replace('-','/')}${l.aviso?'':' ⚠'}</span>${dots}</div></div>`});
+    html+=`<div class="gt-r" data-k="r${ri}"><div class="gl" style="--sc:${cls==='ok'?'#2E9E6B':cls==='cr'?'#D9534F':'#E39A2D'}" title="${esc(l.id+' · '+(c.nom||''))}"><b>${esc(l.id)}</b><span>${esc(lab)}</span></div><div class="gm">${stripes}<i class="gt-today" style="left:${hoyP}%"></i><i class="gt-bar ${cls}${(!l.aviso&&dl(l)<=90)?' urg':''}" style="left:${x0}%;width:${Math.max(x1-x0,.6)}%" title="${esc(c.prov)} · vence ${fd(c.ter)} · ${l.aviso?'con aviso':'sin aviso'}"></i><span class="gt-end${lateral?' l':''}" style="left:${x1}%">${fd(c.ter).slice(0,5).replace('-','/')}${l.aviso?'':' ⚠'}<em>${dl(l)<=0?'vence hoy':dl(l)===1?'1 día':dl(l)+' días'}</em></span>${dots}</div></div>`});
   if(!rows.length)html+='<p class="note" style="padding:14px">No hay licitaciones con ese filtro.</p>';
   gt.innerHTML=html+'</div>';
   gt.querySelectorAll('.gt-mh,.gt-r').forEach(b=>b.onclick=()=>{const d=window.CALD[b.dataset.k];if(d&&d[1].length)openContrDetail(d[0],d[1])});
+  document.querySelectorAll('#gt-kpis .gk').forEach(b=>b.onclick=()=>{const d=window.CALD[b.dataset.k];if(d&&d[1].length)openContrDetail(d[0],d[1])});
   document.getElementById('cal-leg').innerHTML='<span><i style="background:#2E9E6B"></i>con aviso</span><span><i style="background:#E39A2D"></i>sin aviso</span><span><i style="background:#D9534F"></i>crítica sin aviso</span><span><b>●</b> otro proveedor de la licitación con distinto término</span><span><b style="color:var(--accent)">|</b> hoy</span>';
 }
 const GT={q:'',f:'todas'};
+document.getElementById('gt-pres').addEventListener('click',()=>{const c=document.getElementById('gt-card');if(document.fullscreenElement)document.exitFullscreen();else if(c.requestFullscreen)c.requestFullscreen();});
 document.getElementById('gt-q').addEventListener('input',e=>{GT.q=e.target.value;renderCal()});
 document.getElementById('gt-f').addEventListener('change',e=>{GT.f=e.target.value;renderCal()});
 function renderVG(){
