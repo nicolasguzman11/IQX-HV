@@ -400,6 +400,19 @@ html[data-tema="contratos"][data-mode="dark"] .hv-aurora i:nth-child(3){backgrou
 .hv-nav a{font-size:12.5px;padding:7px 12px;border-radius:9px;border:1px solid rgba(255,255,255,.14);color:#B7C7D1;transition:all .15s}
 .hv-nav a:hover{color:#fff;border-color:#3DBBA9}
 @media(max-width:560px){.hv-s{display:none}.hv-nav a.hv-out{display:none}}
+
+  /* Horas Médicas: tarjetas con acento de color */
+  #app-turnos .vitals{gap:14px;}
+  #app-turnos .vital{--ac:#3B7BD9;position:relative;overflow:hidden;min-height:112px;border-radius:16px;border:1px solid color-mix(in srgb,var(--ac) 28%,var(--line));background:linear-gradient(160deg,color-mix(in srgb,var(--ac) 12%,var(--card)),color-mix(in srgb,var(--ac) 3%,var(--card)));box-shadow:0 6px 18px -10px color-mix(in srgb,var(--ac) 55%,transparent);transition:transform .2s,box-shadow .2s;}
+  #app-turnos .vital:hover{transform:translateY(-2px);box-shadow:0 10px 22px -10px color-mix(in srgb,var(--ac) 65%,transparent);}
+  #app-turnos .vital::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--ac);}
+  #app-turnos .vital::after{content:"";position:absolute;right:-26px;top:-26px;width:84px;height:84px;border-radius:50%;background:color-mix(in srgb,var(--ac) 14%,transparent);}
+  #app-turnos .vital .label{position:relative;z-index:1;font-size:12px;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.07em;}
+  #app-turnos .vital .value{position:relative;z-index:1;color:var(--ac) !important;font-size:clamp(20px,1.9vw,26px) !important;font-weight:700;}
+  #app-turnos .vital:nth-child(1){--ac:#12233A;} #app-turnos .vital:nth-child(2){--ac:#1E8F5F;} #app-turnos .vital:nth-child(3){--ac:#2A9D8F;}
+  #app-turnos .vital:nth-child(4){--ac:#C98A12;} #app-turnos .vital:nth-child(5){--ac:#C5483B;}
+  #app-turnos .vital:nth-child(3) .value{font-size:clamp(34px,3.2vw,44px) !important;}
+  html[data-mode="dark"] #app-turnos .vital:nth-child(1){--ac:#9DB8E8;} html[data-mode="dark"] #app-turnos .vital:nth-child(2){--ac:#5CC592;} html[data-mode="dark"] #app-turnos .vital:nth-child(3){--ac:#59D0C2;} html[data-mode="dark"] #app-turnos .vital:nth-child(4){--ac:#F0B35A;} html[data-mode="dark"] #app-turnos .vital:nth-child(5){--ac:#F28B82;}
 </style>
 <div class="hv-bar"><a class="hv-brand" href="/menu"><span class="hv-logo"><img src="/logo.png" alt="Hospital de Villarrica" onerror="this.parentNode.classList.add('nologo');this.outerHTML='<svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;><path d=&quot;M3 12h4l2-6 4 12 2-6h6&quot;/></svg>'"></span><span><div class="hv-t">Sub Departamento de Abastecimiento</div><div class="hv-s">Gestión de Contratos</div></span></a><nav class="hv-nav"><a href="/menu#medica">← Subdirección Médica</a><a class="hv-out" href="/logout">Cerrar sesión</a></nav></div>
 
@@ -413,7 +426,7 @@ html[data-tema="contratos"][data-mode="dark"] .hv-aurora i:nth-child(3){backgrou
 
 <header>
   <div class="eyebrow">Gestión de Contratos · Licitaciones</div>
-  <h1>Dashboard Intervenciones Quirúrgicas</h1>
+  <h1>Panel Intervenciones Quirúrgicas</h1>
   <p class="subtitle">Cumplimiento por licitación · intervenciones convenidas vs. realizadas</p>
   <div class="stat-row"><span class="s-chip good" id="eyebrow">Conectando…</span><span class="s-chip neu" id="eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
 
@@ -602,7 +615,7 @@ html[data-tema="contratos"][data-mode="dark"] .hv-aurora i:nth-child(3){backgrou
 
 <header>
   <div class="eyebrow">Gestión de Contratos · Horas médicas</div>
-  <h1>Dashboard Horas Médicas</h1>
+  <h1>Panel Horas Médicas</h1>
   <p class="subtitle">Turnos extras, consultas y controles médicos · horas y montos</p>
   <div class="stat-row"><span class="s-chip good" id="ht-eyebrow">Conectando…</span><span class="s-chip neu" id="ht-eyebrow-fecha">Última carga: –</span><button class="s-btn" type="button" onclick="location.reload()">Actualizar datos</button><button class="s-btn mode-toggle" type="button" aria-label="Cambiar fondo">Fondo oscuro</button></div>
 
