@@ -69,3 +69,8 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 - (Las tarjetas KPI de color se quitaron a pedido: la Visión general muestra solo la carta Gantt.)
 - Barras con degradado y glow; las sin aviso que vencen en ≤90 días pulsan. Cada fila muestra fecha y "N días". Encabezado de mes con barra de calor y pastilla sin aviso / todas avisadas.
 - Botón "Modo presentación" (pantalla completa) para reuniones.
+
+## Contratos: hoja «Consumo por monto»
+- Cuarta vista del panel de Contratos (junto a Visión general, que mantiene la carta Gantt por fecha de vencimiento).
+- Lista los contratos vigentes con monto > 0: consumo = (Monto − Saldo $) ÷ Monto; saldo ≤ 0 = «Sin saldo · ampliar» (en rojo). Filtros: todos / sin saldo / ≥90% / ≥70% y buscador; columnas ordenables.
+- Usa las mismas columnas de BD CONTRATOS (Monto $, Saldo $, Gasto mensual $); no requiere cambios en el Worker.

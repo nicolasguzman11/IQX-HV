@@ -179,8 +179,13 @@ section.panel{padding-top:18px}
 [hidden]{display:none!important}
 .ed-title{font-family:var(--fd);font-size:clamp(24px,3.2vw,32px);font-weight:700;margin:4px 0 0;letter-spacing:-.01em}.ed-desc{font-size:13px;color:var(--ink-2);margin:0 0 6px}
 header.top>div{flex:1 1 100%;min-width:0}
-.views.sec-views{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 12px;width:100%}
+.views.sec-views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 12px;width:100%}
+@media (max-width:1100px){.views.sec-views{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:720px){.views.sec-views{grid-template-columns:1fr}}
+.cn-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}.cn-chips .chip{cursor:pointer;font-size:12.5px;padding:4px 11px;border:1px solid transparent}.cn-chips .chip.on{border-color:currentColor}
+.cn-bar{position:relative;height:12px;min-width:110px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}.cn-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:7px}
+.cn-pct{font-weight:700;margin-left:8px}
+tr.cn-zero td{background:var(--crit-bg)}
 .sec-views .view{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px 14px 20px;gap:4px;color:var(--ink-2);box-shadow:0 1px 2px rgba(10,20,40,.05);transition:border-color .15s,box-shadow .15s,transform .15s;overflow:hidden;border-bottom:1px solid var(--line)}
 .sec-views .view::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--line);transition:background .15s}
 .sec-views .view .v-t{font-size:clamp(17px,1.9vw,21px);color:var(--ink)}
@@ -394,6 +399,7 @@ tr.total td{font-weight:600;background:var(--surface-2)}
     <div class="ed-desc">Resultados globales de Gestión de Contratos</div>
     <div class="views sec-views" role="tablist" aria-label="Área">
       <button class="view" role="tab" data-s="vg" aria-selected="true"><span class="v-t">Visión general</span><span class="v-d">Carta Gantt de vencimientos</span></button>
+      <button class="view" role="tab" data-s="con" aria-selected="false"><span class="v-t">Consumo por monto</span><span class="v-d">Plata consumida y contratos sin saldo</span></button>
       <button class="view" role="tab" data-s="contr" aria-selected="false"><span class="v-t">Contratos</span><span class="v-d">Estado, vencimientos y avisos</span></button>
       <button class="view" role="tab" data-s="val" aria-selected="false"><span class="v-t">Validación y órdenes de compra</span><span class="v-d">Tiempos, devoluciones, órdenes por convenio</span></button>
     </div>
@@ -522,6 +528,15 @@ tr.total td{font-weight:600;background:var(--surface-2)}
     <div class="gt-wrap" id="gt"></div>
   </div>
   <div class="vg-leg" id="cal-leg"></div>
+</section>
+<section class="panel" id="p-con" hidden>
+  <div class="sec-label">Consumo por monto</div>
+  <div class="card" style="margin-top:10px">
+    <div class="vg-tools"><input type="search" id="cn-q" placeholder="Buscar ID, proveedor o contrato" aria-label="Buscar"><label>Mostrar <select id="cn-f"><option value="todos">Todos los vigentes</option><option value="cero">Sin saldo ($0): requieren ampliación</option><option value="90">Consumo de 90% o más</option><option value="70">Consumo de 70% o más</option></select></label><span class="hint" id="cn-n"></span></div>
+    <div class="cn-chips" id="cn-chips"></div>
+    <div class="tbl-wrap"><table id="t-con"></table></div>
+  </div>
+  <div class="vg-leg"><span><i style="background:var(--crit)"></i>Sin saldo: se necesita ampliación</span><span><i style="background:var(--warn)"></i>Consumo de 90% o más</span><span><i style="background:var(--accent)"></i>Consumo de 70% a 90%</span><span><i style="background:var(--good)"></i>Menos de 70%</span><span>Consumo = (Monto − Saldo) ÷ Monto · solo contratos vigentes</span></div>
 </section>
 <section class="panel" id="p-ocm" hidden>
   <div class="sec-label">Órdenes por convenio y mes</div>
@@ -659,12 +674,12 @@ document.getElementById('f-reset').addEventListener('click',()=>{F.resp=F.mes=F.
 // tabs
 const EDITION='unidad';let VIEW=EDITION;
 const curTab=()=>document.querySelector('.tab[aria-selected="true"]').dataset.p;
-let SECTION='vg';try{const s=localStorage.getItem('section2');if(s==='val'||s==='contr'||s==='vg')SECTION=s}catch(e){}
-const curPanel=()=>{if(SECTION==='contr')return 'contr';if(SECTION==='vg')return 'vg';const t=curTab();if(t==='ocm')return 'ocm';if(t==='comp2')return VIEW==='interno'?'comp':'ucomp';return t==='ind'?(VIEW==='interno'?'comp':'base'):t};
+let SECTION='vg';try{const s=localStorage.getItem('section2');if(s==='val'||s==='contr'||s==='vg'||s==='con')SECTION=s}catch(e){}
+const curPanel=()=>{if(SECTION==='contr')return 'contr';if(SECTION==='vg')return 'vg';if(SECTION==='con')return 'con';const t=curTab();if(t==='ocm')return 'ocm';if(t==='comp2')return VIEW==='interno'?'comp':'ucomp';return t==='ind'?(VIEW==='interno'?'comp':'base'):t};
 function showPanels(){const a=curPanel();document.querySelectorAll('section.panel').forEach(p=>p.hidden=p.id!=='p-'+a);
   document.querySelectorAll('.view[data-v]').forEach(v=>v.setAttribute('aria-selected',v.dataset.v===VIEW));
   document.getElementById('f-resp').closest('label').hidden=(VIEW==='unidad');
-  document.querySelector('.filters').hidden=(a==='contr'||a==='def'||a==='vg'||a==='ocm');
+  document.querySelector('.filters').hidden=(a==='contr'||a==='def'||a==='vg'||a==='con'||a==='ocm');
   document.querySelector('.bar').hidden=(SECTION!=='val');document.getElementById('sub-wrap').hidden=(SECTION!=='val');
   document.querySelectorAll('.sec-views .view').forEach(v=>v.setAttribute('aria-selected',v.dataset.s===SECTION));
   const c2=document.getElementById('tab-comp2');c2.hidden=(VIEW==='interno');
@@ -940,6 +955,7 @@ function render(){
   }
   if(active==='contr') renderContratos();
   if(active==='vg') renderCal();
+  if(active==='con') renderCon();
   if(active==='ocm') renderVG();
   if(active==='pend') renderPend(rs);
 }
@@ -1308,6 +1324,32 @@ const GT={q:'',f:'todas'};
 document.getElementById('gt-pres').addEventListener('click',()=>{const c=document.getElementById('gt-card');if(document.fullscreenElement)document.exitFullscreen();else if(c.requestFullscreen)c.requestFullscreen();});
 document.getElementById('gt-q').addEventListener('input',e=>{GT.q=e.target.value;renderCal()});
 document.getElementById('gt-f').addEventListener('change',e=>{GT.f=e.target.value;renderCal()});
+
+// ===== Consumo por monto: plata consumida de cada contrato vigente
+let CN={f:'todos',q:'',k:'pct',d:-1};
+function renderCon(){
+  const t=document.getElementById('t-con');
+  if(!CONTR){t.innerHTML='';document.getElementById('cn-chips').innerHTML='<p class="note">Los contratos se leen en vivo desde Google Drive. '+(CONTR_ERR?esc(CONTR_ERR)+'.':'')+'</p>';return}
+  const base=CONTR.filter(c=>!c.hist&&c.dias!=null&&c.monto>0).map(c=>{const cons=c.monto-c.saldo,pct=c.saldo<=0?1:Math.max(0,cons/c.monto);return {c,cons:Math.max(cons,0),pct,zero:c.saldo<=0}});
+  const cat=x=>x.zero?'cero':x.pct>=.9?'90':x.pct>=.7?'70':'ok';
+  const cnt={cero:0,'90':0,'70':0,ok:0};base.forEach(x=>cnt[cat(x)]++);
+  const CH=[['cero','crit','Sin saldo · ampliar'],['90','warn','Consumo ≥ 90%'],['70','neu','Consumo 70–90%'],['ok','good','Menos de 70%']];
+  document.getElementById('cn-chips').innerHTML=`<span class="chip ${CN.f==='todos'?'on':''} neu" data-f="todos">Todos · ${base.length}</span>`+CH.map(([k,cl,l])=>`<span class="chip ${cl} ${CN.f===k||(k==='ok'&&CN.f==='ok')?'on':''}" data-f="${k}" role="button" tabindex="0">${l} · ${cnt[k]}</span>`).join('');
+  document.querySelectorAll('#cn-chips .chip').forEach(ch=>ch.onclick=()=>{CN.f=ch.dataset.f;document.getElementById('cn-f').value=['todos','cero','90','70'].includes(CN.f)?CN.f:'todos';renderCon()});
+  const q=CN.q.toLowerCase();
+  let r=base.filter(x=>CN.f==='todos'?true:CN.f==='cero'?x.zero:CN.f==='90'?(x.zero||x.pct>=.9):CN.f==='70'?(x.zero||x.pct>=.7):cat(x)==='ok')
+    .filter(x=>!q||(x.c.id+' '+x.c.prov+' '+x.c.nom).toLowerCase().includes(q));
+  const val=(x,k)=>k==='pct'?x.pct+(x.zero?1:0):k==='monto'?x.c.monto:k==='cons'?x.cons:k==='saldo'?x.c.saldo:k==='gasto'?x.c.gasto:k==='meses'?(x.c.meses===Infinity?1e9:x.c.meses):k==='dias'?x.c.dias:k==='id'?x.c.id:k==='prov'?x.c.prov:0;
+  r.sort((a,b)=>{const x=val(a,CN.k),y=val(b,CN.k);return (x>y?1:x<y?-1:0)*CN.d||(b.pct-a.pct)});
+  document.getElementById('cn-n').textContent=`${r.length} contratos · monto ${mm(r.reduce((s,x)=>s+x.c.monto,0))} · saldo ${mm(r.reduce((s,x)=>s+Math.max(x.c.saldo,0),0))}`;
+  const H=[['est','Estado',0],['id','ID licitación',1],['prov','Proveedor',1],['nom','Contrato',0],['monto','Monto $',1],['cons','Consumido $',1],['pct','Consumo',1],['saldo','Saldo $',1],['gasto','Gasto mensual $',1],['meses','Saldo (meses)',1],['ter','Término actual',0],['dias','Días',1]];
+  const col=x=>x.zero?'var(--crit)':x.pct>=.9?'var(--warn)':x.pct>=.7?'var(--accent)':'var(--good)';
+  t.innerHTML='<thead><tr>'+H.map(([k,l,s])=>`<th class="${s?'sortable':''}${['monto','cons','saldo','gasto','meses','dias'].includes(k)?' num':''}" ${s?`data-k="${k}"`:''}>${l}${CN.k===k?(CN.d<0?' ▼':' ▲'):''}</th>`).join('')+'</tr></thead><tbody>'+
+   (r.length?r.map(x=>{const c=x.c,p=x.zero?100:Math.min(99,Math.floor(x.pct*100));return `<tr class="${x.zero?'cn-zero':''}"><td>${x.zero?'<span class="chip crit">Sin saldo · ampliar</span>':x.pct>=.9?'<span class="chip warn">≥ 90% consumido</span>':x.pct>=.7?'<span class="chip neu">70–90%</span>':'<span class="chip good">Con saldo</span>'}</td><td style="white-space:nowrap"><b>${esc(c.id)}</b></td><td>${esc(c.prov)}</td><td title="${esc(c.nom||'')}" style="max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.nom||'')}</td><td class="num">${pesos(c.monto)}</td><td class="num">${pesos(x.cons)}</td><td><div style="display:flex;align-items:center"><div class="cn-bar" style="flex:1"><i style="width:${Math.min(p,100)}%;background:${col(x)}"></i></div><span class="cn-pct" style="color:${col(x)}">${p}%</span></div></td><td class="num"${x.zero?' style="color:var(--crit);font-weight:700"':''}>${pesos(c.saldo)}</td><td class="num">${c.gasto?pesos(c.gasto):'–'}</td><td class="num">${c.meses===Infinity?'sin consumo':nf(c.meses)}</td><td>${fd(c.ter)}</td><td class="num"><b>${c.dias}</b></td></tr>`}).join(''):'<tr><td colspan="12" class="empty">Sin contratos con este filtro</td></tr>')+'</tbody>';
+  t.querySelectorAll('th.sortable').forEach(th=>th.onclick=()=>{const k=th.dataset.k;if(CN.k===k)CN.d=-CN.d;else{CN.k=k;CN.d=['id','prov','dias','meses'].includes(k)?1:-1}renderCon()});
+}
+document.getElementById('cn-q').addEventListener('input',e=>{CN.q=e.target.value;renderCon()});
+document.getElementById('cn-f').addEventListener('change',e=>{CN.f=e.target.value;renderCon()});
 function renderVG(){
   const procs=ROWS.map(r=>({r,id:cId(r.lic),ms:mesesDoc(r.mesdoc,r.rec||r.firma||r.oc),noc:(r.noc||'').trim()})).filter(p=>p.id);
   const cur=HOY.getFullYear()*100+HOY.getMonth()+1;
