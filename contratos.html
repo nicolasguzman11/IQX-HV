@@ -182,21 +182,24 @@ header.top>div{flex:1 1 100%;min-width:0}
 .views.sec-views{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 12px;width:100%}
 @media (max-width:1100px){.views.sec-views{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:720px){.views.sec-views{grid-template-columns:1fr}}
-.cn-tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:6px 0 12px}
-@media (max-width:1100px){.cn-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:620px){.cn-tiles{grid-template-columns:1fr}}
+.cn-tiles{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin:6px 0 12px}
+@media (max-width:1250px){.cn-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}}@media (max-width:820px){.cn-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:620px){.cn-tiles{grid-template-columns:1fr}}
 .cn-tile{position:relative;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px 20px 16px;cursor:pointer;font:inherit;color:var(--ink);box-shadow:0 1px 3px rgba(10,20,40,.06);transition:transform .15s,box-shadow .15s,border-color .15s;overflow:hidden}
 .cn-tile::before{content:'';position:absolute;left:0;right:0;top:0;height:7px;background:var(--tc)}
 .cn-tile:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(10,20,40,.14)}
 .cn-tile[aria-pressed="true"]{border-color:var(--tc);box-shadow:0 0 0 2px var(--tc),0 10px 26px rgba(10,20,40,.16)}
 .cn-tile .t-l{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--tc)}
-.cn-tile .t-n{font-size:clamp(44px,5vw,64px);font-weight:800;line-height:1.05;margin:8px 0 2px;color:var(--tc)}
+.cn-tile .t-n{font-size:clamp(40px,4.2vw,60px);font-weight:800;line-height:1.05;margin:8px 0 2px;color:var(--tc)}
 .cn-tile .t-u{font-size:13px;color:var(--muted)}
 .cn-tile .t-f{margin-top:12px;font-size:13px;color:var(--ink-2);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .cn-tile .t-go{margin-top:10px;font-size:12.5px;font-weight:700;color:var(--tc)}
 .cn-tile.t-cero{background:var(--crit-bg)}
 .cn-total{margin:0 0 14px}.cn-total .cn-bar{height:16px}.cn-total small{display:flex;justify-content:space-between;color:var(--muted);font-size:12.5px;margin-top:5px;flex-wrap:wrap;gap:8px}
 .cn-bar{position:relative;height:12px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line);overflow:hidden}.cn-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:7px}
-.cn-open{margin-top:6px;border-top:6px solid var(--tc,var(--accent))}
+.cn-ov{position:fixed;inset:0;z-index:60;background:rgba(10,20,40,.55);display:flex;align-items:flex-start;justify-content:center;padding:4vh 16px;overflow:auto}.cn-ov[hidden]{display:none}
+.cn-open{width:min(1180px,100%);margin:0;border-top:8px solid var(--tc,var(--accent));background:#f6f8fb !important;backdrop-filter:none !important;box-shadow:0 24px 70px rgba(0,0,0,.35)}
+html[data-mode="dark"] .cn-open{background:#161f2c !important}
+.cn-tile{display:flex;flex-direction:column}.cn-tile .t-f{margin-top:auto;padding-top:12px}
 .cn-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.cn-head>div{flex:1;min-width:220px}.cn-head h3{margin:0;font-size:20px;color:var(--tc,var(--ink))}
 .cn-head input{font:500 13px var(--fb);padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
 .cn-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
@@ -553,11 +556,11 @@ tr.total td{font-weight:600;background:var(--surface-2)}
   <div class="sec-label">Consumo por monto</div>
   <div class="cn-tiles" id="cn-tiles"></div>
   <div class="cn-total" id="cn-total"></div>
-  <div class="card cn-open" id="cn-open" hidden>
+  <div class="cn-ov" id="cn-ov" hidden role="dialog" aria-modal="true" aria-label="Contratos por consumo"><div class="card cn-open" id="cn-open">
     <div class="cn-head"><div><h3 id="cn-title"></h3><div class="hint" id="cn-sub"></div></div><input type="search" id="cn-q" placeholder="Buscar ID, proveedor o contrato" aria-label="Buscar"><button type="button" class="btn" id="cn-close">Cerrar</button></div>
     <div class="cn-cards" id="cn-cards"></div>
     <div class="cn-more"><button type="button" class="btn" id="cn-more" hidden></button></div>
-  </div>
+  </div></div>
 </section>
 <section class="panel" id="p-ocm" hidden>
   <div class="sec-label">Órdenes por convenio y mes</div>
@@ -1347,31 +1350,33 @@ document.getElementById('gt-q').addEventListener('input',e=>{GT.q=e.target.value
 document.getElementById('gt-f').addEventListener('change',e=>{GT.f=e.target.value;renderCal()});
 
 // ===== Consumo por monto: tarjetas por nivel de consumo; al hacer clic se despliegan los contratos
-let CN={f:'cero',q:'',n:24};
-const CNT=[['cero','Sin saldo','crit','var(--crit)','Se necesita ampliación'],['90','Consumo ≥ 90%','warn','var(--warn)','Cerca de agotarse'],['70','Consumo 70–90%','neu','var(--accent)','En seguimiento'],['ok','Menos de 70%','good','var(--good)','Con holgura']];
+let CN={f:'',q:'',n:24};
+const CNT=[['cero','Sin saldo','crit','var(--crit)','Se necesita ampliación'],['90','Consumo ≥ 90%','warn','var(--warn)','Cerca de agotarse'],['70','Consumo 70–90%','neu','var(--accent)','En seguimiento'],['ok','Menos de 70%','good','var(--good)','Con holgura'],['nada','Sin consumo','neu','#7A5AA6','Aún no se usa']];
 function renderCon(){
-  const tiles=document.getElementById('cn-tiles'),open=document.getElementById('cn-open');
+  const tiles=document.getElementById('cn-tiles'),open=document.getElementById('cn-ov'),card=document.getElementById('cn-open');
   if(!CONTR){tiles.innerHTML='<p class="note">Los contratos se leen en vivo desde Google Drive. '+(CONTR_ERR?esc(CONTR_ERR)+'.':'')+'</p>';open.hidden=true;return}
-  const base=CONTR.filter(c=>!c.hist&&c.dias!=null&&c.monto>0).map(c=>{const cons=Math.max(c.monto-c.saldo,0),zero=c.saldo<=0,pct=zero?1:cons/c.monto;return {c,cons,pct,zero,cat:zero?'cero':pct>=.9?'90':pct>=.7?'70':'ok'}});
+  const base=CONTR.filter(c=>!c.hist&&c.dias!=null&&c.monto>0).map(c=>{const cons=Math.max(c.monto-c.saldo,0),zero=c.saldo<=0,pct=zero?1:cons/c.monto;return {c,cons,pct,zero,cat:zero?'cero':cons<=0?'nada':pct>=.9?'90':pct>=.7?'70':'ok'}});
   const G={};CNT.forEach(([k])=>G[k]=base.filter(x=>x.cat===k));
   tiles.innerHTML=CNT.map(([k,l,cl,col,sub])=>{const g=G[k],sal=g.reduce((s,x)=>s+Math.max(x.c.saldo,0),0),mon=g.reduce((s,x)=>s+x.c.monto,0);
-    return `<button type="button" class="cn-tile t-${k}" style="--tc:${col}" data-k="${k}" aria-pressed="${CN.f===k}"><div class="t-l">${l}</div><div class="t-n">${g.length}</div><div class="t-u">contratos · ${sub}</div><div class="t-f"><span>Monto ${mm(mon)}</span><span>Saldo ${mm(sal)}</span></div><div class="t-go">${CN.f===k?'▲ Ocultar contratos':'▼ Ver contratos'}</div></button>`}).join('');
-  tiles.querySelectorAll('.cn-tile').forEach(b=>b.onclick=()=>{CN.f=CN.f===b.dataset.k?'':b.dataset.k;CN.n=24;CN.q='';document.getElementById('cn-q').value='';renderCon();if(CN.f)open.scrollIntoView({behavior:'smooth',block:'nearest'})});
+    return `<button type="button" class="cn-tile t-${k}" style="--tc:${col}" data-k="${k}" aria-pressed="${CN.f===k}"><div class="t-l">${l}</div><div class="t-n">${g.length}</div><div class="t-u">contratos · ${sub}</div><div class="t-f"><span>Monto ${mm(mon)}</span><span>Saldo ${mm(sal)}</span></div><div class="t-go">Ver contratos →</div></button>`}).join('');
+  tiles.querySelectorAll('.cn-tile').forEach(b=>b.onclick=()=>{CN.f=b.dataset.k;CN.n=24;CN.q='';document.getElementById('cn-q').value='';renderCon()});
   const tm=base.reduce((s,x)=>s+x.c.monto,0),tc=base.reduce((s,x)=>s+x.cons,0),pc=tm?tc/tm:0;
   document.getElementById('cn-total').innerHTML=`<div class="cn-bar"><i style="width:${Math.min(pc*100,100)}%;background:var(--accent)"></i></div><small><span>Consumido ${mm(tc)} de ${mm(tm)} (${Math.round(pc*100)}%)</span><span>${base.length} contratos vigentes con monto</span></small>`;
-  if(!CN.f){open.hidden=true;return}
+  if(!CN.f){open.hidden=true;document.body.style.overflow='';return}
   const [k,l,cl,col,sub]=CNT.find(x=>x[0]===CN.f);const q=CN.q.toLowerCase();
-  const all=G[k].slice().sort((a,b)=>(b.pct-a.pct)||(a.c.saldo-b.c.saldo));
+  const all=G[k].slice().sort(k==='nada'?((a,b)=>a.c.dias-b.c.dias):((a,b)=>(b.pct-a.pct)||(a.c.saldo-b.c.saldo)));
   const r=all.filter(x=>!q||(x.c.id+' '+x.c.prov+' '+x.c.nom).toLowerCase().includes(q));
-  open.hidden=false;open.style.setProperty('--tc',col);
+  open.hidden=false;document.body.style.overflow='hidden';card.style.setProperty('--tc',col);
   document.getElementById('cn-title').textContent=`${l} · ${all.length} contratos`;
-  document.getElementById('cn-sub').textContent=sub+' · de mayor a menor consumo';
-  const col2=x=>x.zero?'var(--crit)':x.pct>=.9?'var(--warn)':x.pct>=.7?'var(--accent)':'var(--good)';
+  document.getElementById('cn-sub').textContent=sub+(k==='nada'?' · primero los que vencen antes':' · de mayor a menor consumo');
+  const col2=x=>x.cat==='nada'?'#7A5AA6':x.zero?'var(--crit)':x.pct>=.9?'var(--warn)':x.pct>=.7?'var(--accent)':'var(--good)';
   document.getElementById('cn-cards').innerHTML=r.slice(0,CN.n).map(x=>{const c=x.c,p=x.zero?100:Math.min(99,Math.floor(x.pct*100));
     return `<div class="cn-c" style="--cc:${col2(x)}"><div class="c-id">${esc(c.id)}</div><div class="c-prov">${esc(c.prov)}</div><div class="c-nom" title="${esc(c.nom||'')}">${esc(c.nom||'')}</div><div class="c-pct"><div class="cn-bar"><i style="width:${p}%;background:${col2(x)}"></i></div><b>${p}%</b></div><div class="c-g"><div><span>Monto</span><b>${mm(c.monto)}</b></div><div><span>Consumido</span><b>${mm(x.cons)}</b></div><div><span>Saldo</span><b style="color:${x.zero?'var(--crit)':'inherit'}">${pesos(Math.max(c.saldo,0))}</b></div></div><div class="c-f"><span>Gasto mensual ${c.gasto?mm(c.gasto):'–'}${c.meses!==Infinity&&c.gasto?' · '+nf(c.meses)+' meses de saldo':''}</span><span>Vence ${fd(c.ter)} · <b>${c.dias} días</b></span></div></div>`}).join('')||'<p class="note">Sin contratos con esta búsqueda</p>';
   const mb=document.getElementById('cn-more'),rest=r.length-CN.n;mb.hidden=rest<=0;mb.textContent=`Ver ${Math.min(rest,24)} más (${rest} restantes)`}
 document.getElementById('cn-more').addEventListener('click',()=>{CN.n+=24;renderCon()});
 document.getElementById('cn-close').addEventListener('click',()=>{CN.f='';renderCon()});
+document.getElementById('cn-ov').addEventListener('click',e=>{if(e.target.id==='cn-ov'){CN.f='';renderCon()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&CN.f){CN.f='';renderCon()}});
 document.getElementById('cn-q').addEventListener('input',e=>{CN.q=e.target.value;CN.n=24;renderCon()});
 function renderVG(){
   const procs=ROWS.map(r=>({r,id:cId(r.lic),ms:mesesDoc(r.mesdoc,r.rec||r.firma||r.oc),noc:(r.noc||'').trim()})).filter(p=>p.id);
