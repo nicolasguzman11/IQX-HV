@@ -821,9 +821,9 @@ function render(){
     const all=filtered('resp'),byR=RESPS.map(p=>[p,all.filter(r=>r.resp===p).length]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);const allN=all.length;
     const meter=byR.map(([p,n],i)=>`<i style="width:${100*n/Math.max(allN,1)}%;background:${css(SERIES(RESPS.indexOf(p)))}" title="${p}: ${n}"></i>`).join('');
     document.getElementById('kpi-base').innerHTML=
-      tile('1','Revisión de validación',nf(avg(v)),'días',`Mediana ${nf(med(v),0)} · N = ${v.length}`,'Fecha recepción validación → Fecha firma validación encargado')+
-      tile('2','Emisión de orden de compra',nf(avg(e)),'días',`Mediana ${nf(med(e),0)} · N = ${e.length}`,'Fecha creación OC → Fecha envío OC')+
-      tile('3','Tiempo total de proceso',nf(avg(t)),'días',`Mediana ${nf(med(t),0)} · N = ${t.length}`,'Fecha recepción validación → Fecha envío OC')+
+      tile('1','Revisión de validación',nf(avg(v)),'días',"",'Fecha recepción validación → Fecha firma validación encargado')+
+      tile('2','Emisión de orden de compra',nf(avg(e)),'días',"",'Fecha creación OC → Fecha envío OC')+
+      tile('3','Tiempo total de proceso',nf(avg(t)),'días',"",'Fecha recepción validación → Fecha envío OC')+
       tile('4','Devolución a referente por error',nf(N?100*dv/N:null),'%',`${dv} procesos`,'N° procesos devueltos al referente por error / N° total de procesos × 100')+
       tile('5','Cantidad total de procesos',N,'',`${mm(sum(rs,'monto'))} tramitados`,'N° de registros ingresados a validación');
     // tiempos por mes
