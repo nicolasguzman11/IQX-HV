@@ -72,5 +72,6 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 
 ## Contratos: hoja «Consumo por monto»
 - Cuarta vista del panel de Contratos (junto a Visión general, que mantiene la carta Gantt por fecha de vencimiento).
-- Lista los contratos vigentes con monto > 0: consumo = (Monto − Saldo $) ÷ Monto; saldo ≤ 0 = «Sin saldo · ampliar» (en rojo). Filtros: todos / sin saldo / ≥90% / ≥70% y buscador; columnas ordenables.
-- Usa las mismas columnas de BD CONTRATOS (Monto $, Saldo $, Gasto mensual $); no requiere cambios en el Worker.
+- Cuatro tarjetas por nivel de consumo: Sin saldo (ampliar), ≥ 90%, 70–90% y < 70%. Consumo = (Monto − Saldo $) ÷ Monto, solo contratos vigentes con monto > 0.
+- Al hacer clic en una tarjeta se despliegan los contratos de ese nivel como tarjetas (barra de consumo, monto, consumido, saldo, gasto mensual, días al término); buscador y «Ver más» de a 24.
+- Usa las columnas de BD CONTRATOS (Monto $, Saldo $, Gasto mensual $); no requiere cambios en el Worker.
