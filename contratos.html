@@ -443,9 +443,9 @@ tr.total td{font-weight:600;background:var(--surface-2)}
     <h1 class="ed-title">Panel Gestión de Contratos</h1>
     <div class="ed-desc">Resultados globales de Gestión de Contratos</div>
     <div class="views sec-views" role="tablist" aria-label="Área">
-      <button class="view" role="tab" data-s="vg" aria-selected="true"><span class="v-t">Visión general</span><span class="v-d">Carta Gantt de vencimientos</span></button>
+      <button class="view" role="tab" data-s="contr" aria-selected="true"><span class="v-t">Contratos</span><span class="v-d">Estado, vencimientos y avisos</span></button>
+      <button class="view" role="tab" data-s="vg" aria-selected="false"><span class="v-t">Visión general</span><span class="v-d">Carta Gantt de vencimientos</span></button>
       <button class="view" role="tab" data-s="con" aria-selected="false"><span class="v-t">Consumo por monto</span><span class="v-d">Consumos de contratos</span></button>
-      <button class="view" role="tab" data-s="contr" aria-selected="false"><span class="v-t">Contratos</span><span class="v-d">Estado, vencimientos y avisos</span></button>
       <button class="view" role="tab" data-s="val" aria-selected="false"><span class="v-t">Validación y órdenes de compra</span><span class="v-d">Tiempos, devoluciones, órdenes por convenio</span></button>
     </div>
     <div class="sub" id="sub-wrap"><span id="sub"></span></div>
@@ -718,7 +718,7 @@ document.getElementById('f-reset').addEventListener('click',()=>{F.resp=F.mes=F.
 // tabs
 const EDITION='unidad';let VIEW=EDITION;
 const curTab=()=>document.querySelector('.tab[aria-selected="true"]').dataset.p;
-let SECTION='vg';try{const s=localStorage.getItem('section2');if(s==='val'||s==='contr'||s==='vg'||s==='con')SECTION=s}catch(e){}
+let SECTION='contr';try{const s=localStorage.getItem('section2');if(s==='val'||s==='contr'||s==='vg'||s==='con')SECTION=s}catch(e){}
 const curPanel=()=>{if(SECTION==='contr')return 'contr';if(SECTION==='vg')return 'vg';if(SECTION==='con')return 'con';const t=curTab();if(t==='ocm')return 'ocm';if(t==='comp2')return VIEW==='interno'?'comp':'ucomp';return t==='ind'?(VIEW==='interno'?'comp':'base'):t};
 function showPanels(){const a=curPanel();document.documentElement.classList.toggle('vg-wide',a==='vg');document.querySelectorAll('section.panel').forEach(p=>p.hidden=p.id!=='p-'+a);
   document.querySelectorAll('.view[data-v]').forEach(v=>v.setAttribute('aria-selected',v.dataset.v===VIEW));
