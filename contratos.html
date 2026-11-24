@@ -237,6 +237,16 @@ html[data-mode="dark"] .cn-open{background:#161f2c !important}html[data-mode="da
 #det-table td{white-space:nowrap}#det-table td.obs{white-space:normal;min-width:240px;color:var(--ink-2)}#det-table td.prov{white-space:normal;min-width:200px}
 .devd{background:var(--warn-bg);color:var(--warn);border-radius:4px}
 .chart canvas{cursor:default}
+/* Indicadores base: tarjetas con acento de color */
+#kpi-base .kpi{--kc:#2F6FB5;min-height:160px;padding:20px 14px 16px;gap:8px;border:1px solid color-mix(in srgb,var(--kc) 22%,var(--line));border-top:6px solid var(--kc);border-radius:14px;background:linear-gradient(180deg,color-mix(in srgb,var(--kc) 9%,var(--surface)),var(--surface) 70%) !important;box-shadow:0 6px 18px -8px color-mix(in srgb,var(--kc) 45%,transparent);transition:transform .15s,box-shadow .15s}
+#kpi-base .kpi:hover{transform:translateY(-2px);box-shadow:0 12px 24px -10px color-mix(in srgb,var(--kc) 55%,transparent)}
+#kpi-base .kpi:nth-child(2){--kc:#0E8F7E}#kpi-base .kpi:nth-child(3){--kc:#6C4FB8}#kpi-base .kpi:nth-child(4){--kc:#D9822B}#kpi-base .kpi:nth-child(5){--kc:#C2417A}
+#kpi-base .k-name{font-size:13.5px;font-weight:700;min-height:2.6em}
+#kpi-base .k-id{top:12px;right:12px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--kc) 14%,transparent);color:var(--kc);font-size:11.5px;font-weight:700}
+#kpi-base .k-val{font-size:clamp(38px,3.6vw,54px);font-weight:800;color:var(--kc);letter-spacing:-.02em}
+#kpi-base .k-val small{font-size:16px;color:var(--ink-2)}
+#kpi-base .k-foot{font-size:12.5px;font-weight:600;color:var(--ink-2);background:color-mix(in srgb,var(--kc) 10%,transparent);padding:3px 10px;border-radius:99px}
+#kpi-base .k-foot:empty{display:none}
 .kpi-click{cursor:pointer;transition:border-color .15s}.kpi-click:hover{border-color:var(--accent)}.kpi-click:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .c-filters{display:flex;flex-wrap:wrap;gap:8px}.c-filters input{min-width:240px}
 tr.lic-sep td{border-top:2px solid var(--muted)}
