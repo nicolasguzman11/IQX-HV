@@ -76,3 +76,6 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 - Al hacer clic en una tarjeta se abre una ventana (se cierra con Esc, clic fuera o «Cerrar») con los contratos de ese nivel como tarjetas (barra de consumo, monto, consumido, saldo, gasto mensual, días al término); buscador y «Ver más» de a 24.
 - Usa las columnas de BD CONTRATOS (Monto $, Saldo $, Gasto mensual $); no requiere cambios en el Worker.
 - Visión general: carta Gantt más alta (alto mínimo 1150px, ~24 filas a la vez, la página baja para verlo completo; filas compactas, clase vg-wide en <html>). Se ven ~5 meses (nov-2026 a mar-2027) al abrir, pero el calendario llega a dic-2027 y se mueve con la barra de desplazamiento horizontal (--tw en .vg-wide .gt).
+
+## Contratos: Indicadores generales
+- Se eliminó la tabla «Mecanismo de compra × estado final». Las tarjetas G1–G3 y los dos gráficos de dona (Estado final, Mecanismo de compra) quedaron más grandes (números de ~96px, tarjetas con borde de color, donas de 300px).
