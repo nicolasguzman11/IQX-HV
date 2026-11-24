@@ -352,10 +352,9 @@ table.vg tr.nov .vg-id b::after{content:' · ' attr(data-etq);font-weight:500;co
 .gt-pres{margin-left:auto;font:600 13px var(--fb);padding:8px 16px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
 .gt-card:fullscreen{background:var(--bg,var(--surface));padding:22px;overflow:auto}
 /* Visión general: panel más grande para ver más contratos a la vez */
-.vg-wide .wrap{max-width:min(2000px,98vw)}
 .vg-wide .gt-card{padding:12px}
 .vg-wide .gt-wrap{height:calc(100vh - 100px);min-height:720px}
-.vg-wide .gt{--lw:430px;--tw:1500px}
+.vg-wide .gt{--lw:330px;--tw:860px}
 .vg-wide .gt-r{height:46px}.vg-wide .gt-bar{top:9px;height:28px;border-radius:14px}.vg-wide .gt-end{top:12px}
 .vg-wide .gt-h .gm{height:84px}
 .gt-card:fullscreen .gt-wrap{height:calc(100vh - 190px)}
@@ -1315,7 +1314,7 @@ function renderCal(){
   const gt=document.getElementById('gt');
   if(!CONTR){gt.innerHTML='<p class="note" style="padding:12px">Los contratos se leen en vivo desde Google Drive. '+(CONTR_ERR?esc(CONTR_ERR)+'.':'')+'</p>';return}
   const LV=licitaciones().filter(l=>l.vig.length),MN=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  const W0=new Date(HOY.getFullYear(),HOY.getMonth(),1),W1=new Date(2028,0,1),TOT=W1-W0,pc=d=>Math.max(0,Math.min(100,(d-W0)/TOT*100));
+  const W0=new Date(HOY.getFullYear(),HOY.getMonth(),1),W1=new Date(HOY.getFullYear(),HOY.getMonth()+5,1),TOT=W1-W0,pc=d=>Math.max(0,Math.min(100,(d-W0)/TOT*100));
   const inWin=c=>c.ter&&c.ter>=W0&&c.ter<W1,allV=LV.flatMap(l=>l.vig);
   const win=allV.filter(inWin),stats=a=>{const ids=new Set(a.map(c=>c.id));return{n:ids.size,c:a.length,sa:new Set(a.filter(c=>!c.ult).map(c=>c.id)).size}};
   const months=[];for(let d=new Date(W0);d<W1;d=new Date(d.getFullYear(),d.getMonth()+1,1))months.push(new Date(d));
@@ -1325,7 +1324,7 @@ function renderCal(){
   const S90=stats(v90),S27=stats(v27),SW=stats(w2);
   const q=normH(GT.q||''),rows=LV.filter(l=>l.near&&l.near.ter&&l.near.ter<W1&&(GT.f==='todas'||(GT.f==='sin'&&!l.aviso)||(GT.f==='crit'&&l.crit))&&(!q||normH(l.id+' '+l.vig.map(c=>c.prov+' '+c.nom).join(' ')).includes(q))).sort((a,b)=>a.near.ter-b.near.ter||String(a.id).localeCompare(String(b.id)));
   const after=LV.filter(l=>l.near&&l.near.ter&&l.near.ter>=W1).length;
-  document.getElementById('gt-n').textContent=`${rows.length} licitaciones en el calendario`+(after?` · ${after} vencen después de dic 2027`:'');
+  document.getElementById('gt-n').textContent=`${rows.length} licitaciones en el calendario`+(after?` · ${after} vencen después de ${MN[new Date(W1-1).getMonth()].toLowerCase()} ${new Date(W1-1).getFullYear()}`:'');
   const bands=months.map((m,i)=>{const l=pc(m),r=pc(new Date(m.getFullYear(),m.getMonth()+1,1));return `left:${l}%;width:${r-l}%`});
   const mx=Math.max(1,...months.map(m=>new Set(win.filter(c=>c.ter.getFullYear()===m.getFullYear()&&c.ter.getMonth()===m.getMonth()).map(c=>c.id)).size));
   const mh=months.map((m,i)=>{const a=win.filter(c=>c.ter.getFullYear()===m.getFullYear()&&c.ter.getMonth()===m.getMonth()),st=stats(a),k='m'+i;window.CALD[k]=[`Licitaciones que vencen — ${m.toLocaleDateString('es-CL',{month:'long',year:'numeric'})}`,a];

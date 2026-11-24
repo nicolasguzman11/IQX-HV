@@ -75,4 +75,4 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 - Cinco tarjetas por nivel de consumo: Sin saldo (ampliar), ≥ 90%, 70–90%, < 70% y Sin consumo (saldo ≥ monto: el contrato aún no se usa; se ordenan por vencimiento más próximo). Consumo = (Monto − Saldo $) ÷ Monto, solo contratos vigentes con monto > 0.
 - Al hacer clic en una tarjeta se abre una ventana (se cierra con Esc, clic fuera o «Cerrar») con los contratos de ese nivel como tarjetas (barra de consumo, monto, consumido, saldo, gasto mensual, días al término); buscador y «Ver más» de a 24.
 - Usa las columnas de BD CONTRATOS (Monto $, Saldo $, Gasto mensual $); no requiere cambios en el Worker.
-- Visión general más grande: clase vg-wide en <html> (ancho hasta 2000px, panel de casi toda la altura de pantalla, filas más compactas) para ver más contratos a la vez.
+- Visión general: carta Gantt más alta (casi toda la altura de pantalla, filas compactas, clase vg-wide en <html>) y ventana móvil de 5 meses (mes actual + 4, hoy nov-2026 a mar-2027, sin scroll horizontal); lo que vence después se resume en el texto «N vencen después de …».
