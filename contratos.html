@@ -20,8 +20,6 @@ html[data-mode="light"]:root{--s1:#6C93CF;--s2:#E5A767;--s3:#63BDB1;--s4:#B093CC
 #contr-lbl,#kpi-contr,#kpi-comp{display:none !important;}
 #p-contr #kpi-venc{margin-top:0;}
 .gen-pie{background:transparent !important;border:0 !important;box-shadow:none !important;}
-#p-contr .card:has(#c-cdona){display:flex;flex-direction:column;}
-#p-contr .card:has(#c-cdona) .gen-pie{flex:1;align-items:center;align-content:center;padding:6px 6px 14px;}
 .pie-lg button{background:rgba(255,255,255,.42) !important;border-color:rgba(255,255,255,.75) !important;box-shadow:none;transition:background .15s,transform .15s;}
 .pie-lg button:hover{background:rgba(255,255,255,.75) !important;transform:translateX(2px);}
 html[data-mode="dark"] .pie-lg button{background:rgba(255,255,255,.06) !important;border-color:rgba(255,255,255,.1) !important;}
@@ -613,25 +611,13 @@ tr.total td{font-weight:600;background:var(--surface-2)}
       <div class="legend" id="lg-ctr"></div>
       <div class="chart tall"><canvas id="c-ctr"></canvas></div>
     </div>
-    <div class="card">
+    <div class="card w12">
       <div class="card-head"><div><h3><button type="button" class="c-name" aria-expanded="false" aria-controls="sum-cest">Licitaciones vigentes por estado<svg class="k-i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></h3><div class="c-pop" id="sum-cest" role="note" hidden></div><div class="hint">Estado más grave entre sus proveedores (días al término y saldo) · clic en una barra para ver el detalle</div></div></div>
       <div class="chart tall"><canvas id="c-cest"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-head"><div><h3>Nivel de riesgo de las licitaciones vigentes</h3><div class="hint">Crítico, seguimiento y OK · clic en un sector para ver el detalle</div></div></div>
-      <div class="gen-pie"><div class="chart"><canvas id="c-cdona"></canvas></div><div class="pie-lg" id="lg-cdona"></div></div>
     </div>
     <div class="card w12" hidden data-reservado="etapa-renovacion">
       <div class="card-head"><div><h3><button type="button" class="c-name" aria-expanded="false" aria-controls="sum-cetapa">Etapa de renovación (vencen en ≤ 120 días)<svg class="k-i" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4M8 4.9v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></h3><div class="c-pop" id="sum-cetapa" role="note" hidden></div><div class="hint">Licitaciones según la última etapa registrada en INFO CONTRATOS · clic en una barra para ver el detalle</div></div></div>
       <div class="chart"><canvas id="c-cetapa"></canvas></div>
-    </div>
-    <div class="card w12">
-      <div class="card-head"><div><h3>Detalle por proveedor, agrupado por licitación</h3><div class="hint" id="h-contr"></div></div>
-        <div class="c-filters"><select id="cf-fin" aria-label="Grupo"><option value="VIG">Vigentes</option><option value="CRITICO">Vigentes críticos</option><option value="SEGUIMIENTO">Vigentes en seguimiento</option><option value="OK">Vigentes OK</option><option value="HIST">Historial: vencidos</option><option value="TODOS">Todos</option></select>
-        <select id="cf-av" aria-label="Aviso"><option value="">Con y sin aviso</option><option value="sin">Sin aviso</option><option value="con">Con aviso</option></select>
-        <input type="search" id="cf-q" placeholder="Buscar ID, proveedor, contrato o referente" aria-label="Buscar contrato"></div></div>
-      <div class="det-note" style="padding:0 0 8px">Orden: 1) críticos sin aviso · 2) críticos avisados · 3) seguimiento sin aviso · 4) seguimiento avisado · 5) sin urgencia; dentro de cada grupo, primero los que se quedan antes sin días o sin saldo. Los contratos vencidos quedan en «Historial». Un aviso cuenta si su fecha está desde la Fecha Inicio del contrato (BD CONTRATOS) en adelante.</div>
-      <div class="tbl-wrap" style="max-height:640px;overflow:auto"><table id="t-contr"></table></div>
     </div>
   </div>
   </div>
@@ -1482,12 +1468,6 @@ function renderContratos(){
   DRILL['c-cest']=i=>{openContrDetail(`Licitaciones en estado «${EST[i].charAt(0)+EST[i].slice(1).toLowerCase()}»`,rowsV(LV.filter(l=>l.estado===EST[i])));return null};
   mk('c-cest',{type:'bar',data:{labels:EST.map(e=>e.charAt(0)+e.slice(1).toLowerCase()),datasets:[{data:ec,backgroundColor:cc,...BAR,maxBarThickness:20}]},
     options:{indexAxis:'y',layout:{padding:{right:40}},scales:axes(T,{horizontal:true}),plugins:{labels:{on:true},tooltip:{callbacks:{label:c=>' '+c.raw+' licitaciones'}}}}});
-  // dona: nivel de riesgo (crítico / seguimiento / OK)
-  const NIV=[['Crítico',LV.filter(l=>estadoFinal(l.estado)==='CRITICO'),T.crit],['Seguimiento',LV.filter(l=>estadoFinal(l.estado)==='SEGUIMIENTO'),T.warn],['OK',LV.filter(l=>estadoFinal(l.estado)==='OK'),T.good]];
-  DRILL['c-cdona']=i=>{openContrDetail(`Licitaciones en nivel «${NIV[i][0]}»`,rowsV(NIV[i][1]));return null};
-  document.getElementById('lg-cdona').innerHTML=NIV.map((n,i)=>`<button type="button" data-i="${i}"><i style="background:${n[2]}"></i><span>${n[0]}</span><span class="pv">${n[1].length}</span><span class="pp">${LV.length?Math.round(n[1].length/LV.length*100):0}%</span></button>`).join('');
-  document.querySelectorAll('#lg-cdona button').forEach(b=>b.addEventListener('click',()=>DRILL['c-cdona'](+b.dataset.i)));
-  mk('c-cdona',{type:'doughnut',data:{labels:NIV.map(n=>n[0]),datasets:[{data:NIV.map(n=>n[1].length),backgroundColor:NIV.map(n=>n[2]),borderColor:T.surface,borderWidth:2,hoverOffset:6}]},options:{cutout:'62%',plugins:{tooltip:{callbacks:{label:c=>' '+c.raw+' licitaciones'}}}}});
   // etapas de renovación para las que vencen en ≤120 días
   const near=LV.filter(l=>l.dias<=120),ET=['Sin gestión','Aviso registrado',...ETAPAS.map(e=>e[2])];
   const en=ET.map(e=>near.filter(l=>l.etapa===e).length);
@@ -1499,18 +1479,7 @@ function renderContratos(){
   setSum('ctr',[...TRAMOS.map((t,i)=>`${t[2]}: ${TR[i].length} licitaciones, ${sa(TR[i])} sin aviso.`),top?`Primera en prioridad: ${top.id} · ${top.lead.prov} (${PRIO_LBL[top.prio].toLowerCase()}).`:''],'Cada licitación se ubica según su contrato más próximo a vencer. Clic en una barra para ver el detalle por proveedor.');
   setSum('cest',[`${crit.length} licitaciones críticas y ${seg.length} en seguimiento, de ${LV.length} vigentes.`,`${LV.filter(l=>l.estado==='CRITICO POR SALDO').length} están críticas por saldo: se acaba la plata antes que la vigencia.`,`${LV.filter(l=>l.estado==='SIN SALDO CON VIGENCIA DE DIAS').length} siguen vigentes pero su contrato más grave ya no tiene saldo.`],'Cada licitación toma el estado más grave entre sus proveedores.');
   setSum('cetapa',[`De ${near.length} licitaciones que vencen en 120 días o menos, ${en[0]} no tienen ninguna gestión registrada.`,`${en[ET.length-1]} ya tienen el término avisado.`],'Etapas según INFO CONTRATOS; se considera la última etapa con fecha del contrato más próximo a vencer.');
-  window.__LV=LV;renderEstados(LV);renderCTable();applyCTab()}
-function renderCTable(){
-  if(!CONTR)return;const q=CFILT.q.toLowerCase();
-  let r=CONTR.filter(c=>CFILT.fin==='HIST'?c.hist:CFILT.fin==='TODOS'?true:!c.hist&&(CFILT.fin==='VIG'?true:c.final===CFILT.fin))
-    .filter(c=>CFILT.av==='sin'?!c.ult:CFILT.av==='con'?!!c.ult:true)
-    .filter(c=>!q||(c.id+' '+c.prov+' '+c.nom+' '+c.ref).toLowerCase().includes(q));
-  const key=(c,k)=>k==='lr'?LRK(c):k==='prio'?c.prio*1e7+(c.cob===Infinity?1e6:c.cob):k==='ult'?(c.ult?(c.ult.fecha?c.ult.fecha.getTime():1):0):c[k];
-  r.sort((a,b)=>{const x=key(a,CSORT.k),y=key(b,CSORT.k);if(x==null&&y==null)return 0;if(x==null)return 1;if(y==null)return -1;return (x>y?1:x<y?-1:0)*CSORT.dir});
-  document.getElementById('h-contr').textContent=`${new Set(r.map(c=>c.id)).size} licitaciones · ${r.length} contratos por proveedor · saldo ${mm(sum(r,'saldo'))} · agrupado por licitación, en orden de prioridad`;
-  document.getElementById('t-contr').innerHTML=contrTableHTML(r,CSORT);
-  document.querySelectorAll('#t-contr th.sortable').forEach(th=>th.onclick=()=>{const k=th.dataset.k;CSORT=CSORT.k===k?{k,dir:-CSORT.dir}:{k,dir:['saldo','nAv','ult'].includes(k)?-1:1};renderCTable()});
-}
+  window.__LV=LV;renderEstados(LV);applyCTab()}
 const CCOLS=[['prio','Prioridad'],['id','ID licitación'],['mec','Mecanismo'],['prov','Proveedor'],['nom','Contrato'],['ter','Término actual'],['dias','Días'],['saldo','Saldo $'],['meses','Saldo (meses)'],['estado','Estado'],['etapa','Etapa renovación'],['ult','Último aviso'],['estLic','Estado licitación'],['ref','Referente']];
 function contrCell(c,k){return k==='prio'?`<span class="chip ${PRIO_CLS[c.prio]}">${PRIO_LBL[c.prio]}</span>`:k==='ter'?fd(c.ter):k==='saldo'?pesos(c.saldo):k==='gasto'?pesos(c.gasto):k==='meses'?(c.meses===Infinity?'sin consumo':nf(c.meses)):
   k==='dias'?`<b style="color:${c.dias!=null&&c.dias<=UMB.critDias?'var(--crit)':c.dias!=null&&c.dias<=UMB.segDias?'var(--warn)':'inherit'}">${c.dias??'–'}</b>`:
@@ -1589,9 +1558,6 @@ document.querySelector('.det-close').addEventListener('click',closeDetail);
 document.getElementById('detail').addEventListener('click',e=>{if(e.target.id==='detail')closeDetail()});
 document.getElementById('det-q').addEventListener('input',renderDetail);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('detail').hidden)closeDetail()});
-document.getElementById('cf-fin').addEventListener('change',e=>{CFILT.fin=e.target.value;renderCTable()});
-document.getElementById('cf-av').addEventListener('change',e=>{CFILT.av=e.target.value;renderCTable()});
-document.getElementById('cf-q').addEventListener('input',e=>{CFILT.q=e.target.value;renderCTable()});
 document.querySelectorAll('.sec-views .view').forEach(v=>v.addEventListener('click',()=>{SECTION=v.dataset.s;try{localStorage.setItem('section2',SECTION)}catch(e){};showPanels();render()}));
 // ---- fondo oscuro / claro
 (function(){const root=document.documentElement,btn=document.getElementById('f-mode');

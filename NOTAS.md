@@ -79,3 +79,6 @@ Aquí NO hay claves ni usuarios; esos viven solo en Cloudflare.
 
 ## Contratos: Indicadores generales
 - Se eliminó la tabla «Mecanismo de compra × estado final». Las tarjetas G1–G3 y los dos gráficos de dona (Estado final, Mecanismo de compra) quedaron más grandes (números de ~96px, tarjetas con borde de color, donas de 300px).
+
+## Contratos · Vencimientos y avisos (simplificada)
+- Se eliminaron «Detalle por proveedor, agrupado por licitación» y «Nivel de riesgo». «Licitaciones vigentes por estado» ocupa todo el ancho; al hacer clic en una barra se abre la ventana de detalle con los contratos de ese estado (openContrDetail).
