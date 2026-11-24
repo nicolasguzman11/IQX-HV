@@ -394,7 +394,7 @@ function menuPage() {
         <div class="go">Abrir panel ${arrow}</div>
       </a>
       <a class="tile" style="--c:#2E9E6B" href="/adquisiciones">
-        <span class="live">En vivo</span>
+        <span class="live lock">En desarrollo</span>
         <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L5 3H2"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg></div>
         <h2>Adquisiciones</h2>
         <p>Avance de las compras de fármacos y laboratorio, insumos médicos e insumos generales: estado de la compra, mecanismos y OC enviadas.</p>
