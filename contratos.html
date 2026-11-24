@@ -197,7 +197,7 @@ header.top>div{flex:1 1 100%;min-width:0}
 .cn-ov{position:fixed;inset:0;z-index:60;background:rgba(10,20,40,.55);display:flex;align-items:center;justify-content:center;padding:4vh 16px;overflow:hidden}.cn-ov[hidden]{display:none}
 .cn-open{width:min(1180px,100%);max-height:92vh;overflow-y:scroll;overflow-x:hidden;scrollbar-gutter:stable;margin:0;border-top:8px solid var(--tc,var(--accent));background:#f6f8fb !important;backdrop-filter:none !important;box-shadow:0 24px 70px rgba(0,0,0,.35)}
 html[data-mode="dark"] .cn-open{background:#161f2c !important}html[data-mode="dark"] .cn-head{background:#161f2c}
-.cn-tile{display:flex;flex-direction:column}.cn-tile .t-f{margin-top:auto;padding-top:12px}
+.cn-tile{display:flex;flex-direction:column}.cn-tile .t-go{margin-top:auto;padding-top:12px}
 .cn-open::-webkit-scrollbar{width:14px}.cn-open::-webkit-scrollbar-track{background:rgba(120,140,170,.18);border-radius:10px}.cn-open::-webkit-scrollbar-thumb{background:var(--tc,var(--accent));border-radius:10px;border:3px solid transparent;background-clip:content-box}
 .cn-open{scrollbar-width:auto;scrollbar-color:var(--tc,var(--accent)) rgba(120,140,170,.2)}
 .cn-head{position:sticky;top:-22px;z-index:2;background:#f6f8fb;margin:-22px -24px 12px;padding:18px 24px 12px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}.cn-head>div{flex:1;min-width:220px}.cn-head h3{margin:0;font-size:20px;color:var(--tc,var(--ink))}
@@ -1394,7 +1394,7 @@ function renderCon(){
   const base=CONTR.filter(c=>!c.hist&&c.dias!=null&&c.monto>0).map(c=>{const cons=Math.max(c.monto-c.saldo,0),zero=c.saldo<=0,pct=zero?1:cons/c.monto;return {c,cons,pct,zero,cat:zero?'cero':cons<=0?'nada':pct>=.9?'90':pct>=.7?'70':'ok'}});
   const G={};CNT.forEach(([k])=>G[k]=base.filter(x=>x.cat===k));
   tiles.innerHTML=CNT.map(([k,l,cl,col,sub])=>{const g=G[k],sal=g.reduce((s,x)=>s+Math.max(x.c.saldo,0),0),mon=g.reduce((s,x)=>s+x.c.monto,0);
-    return `<button type="button" class="cn-tile t-${k}" style="--tc:${col}" data-k="${k}" aria-pressed="${CN.f===k}"><div class="t-l">${l}</div><div class="t-n">${g.length}</div><div class="t-u">contratos · ${sub}</div><div class="t-f"><span>Monto ${mm(mon)}</span><span>Saldo ${mm(sal)}</span></div><div class="t-go">Ver contratos →</div></button>`}).join('');
+    return `<button type="button" class="cn-tile t-${k}" style="--tc:${col}" data-k="${k}" aria-pressed="${CN.f===k}"><div class="t-l">${l}</div><div class="t-n">${g.length}</div><div class="t-u">${sub}</div><div class="t-go">Ver contratos →</div></button>`}).join('');
   tiles.querySelectorAll('.cn-tile').forEach(b=>b.onclick=()=>{CN.f=b.dataset.k;CN.n=24;CN.q='';document.getElementById('cn-q').value='';renderCon()});
   const tm=base.reduce((s,x)=>s+x.c.monto,0),tc=base.reduce((s,x)=>s+x.cons,0),pc=tm?tc/tm:0;
   document.getElementById('cn-total').innerHTML=`<div class="cn-bar"><i style="width:${Math.min(pc*100,100)}%;background:var(--accent)"></i></div><small><span>Consumido ${mm(tc)} de ${mm(tm)} (${Math.round(pc*100)}%)</span><span>${base.length} contratos vigentes con monto</span></small>`;
