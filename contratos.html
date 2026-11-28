@@ -1216,7 +1216,7 @@ const ETAPAS=[['q','Solicitud informe a referente','Informe solicitado'],['r','E
 function parseInfo(rows){
   const hi=rows.findIndex(r=>{const j=normH(r.join(' | '));return j.includes('CONTRATO')&&j.includes('FECHA')});
   if(hi<0)return {avisos:[],info:new Map()};const H=rows[hi].map(normH),F=fn=>H.findIndex(fn);
-  const c={id:F(h=>h.includes('CONTRATO')&&!h.includes('FECHA')&&!h.includes('REFERENTE')),prov:F(h=>h.startsWith('PROVEEDOR')),est:F(h=>h.includes('ESTADO')),
+  const c={id:F(h=>h.includes('CONTRATO')&&!h.includes('FECHA')&&!h.includes('REFERENTE')),prov:F(h=>h.startsWith('PROVEEDOR')),est:(()=>{const i=F(h=>h.includes('ESTADO LICITACION'));return i>=0?i:F(h=>h.includes('ESTADO'))})(),
     q:F(h=>h.includes('SOLICITUD INFORME')),r:F(h=>h.includes('ENVIO PROPUESTA')),s:F(h=>h.includes('ENTREGA INFORME')),t:F(h=>h.includes('AVISO TERMINO')||h.includes('AVISO DE TERMINO')),
     resp:F(h=>h.startsWith('RESPONSABLE')),dec:F(h=>h.startsWith('DECISION')),obs:F(h=>h.startsWith('OBSERVACION'))};
   const g=(r,k)=>c[k]>=0?String(r[c[k]]??'').trim():'';
@@ -1386,13 +1386,16 @@ function renderCal(){
 }
 const GT={q:'',f:'todas'};
 
-// ===== Reporte quincenal (PDF): contratos que vencen en 60 días, con renovación disponible (columna Prorroga de BD CONTRATOS)
+// ===== Reporte quincenal (PDF): contratos que vencen en 60 días, renovación según INFO CONTRATOS · Estado licitación
 function reporteDatos(){
   const LV=licitaciones().filter(l=>l.vig.length),dias=60;
   const rows=LV.flatMap(l=>l.vig).filter(c=>c.dias!=null&&c.dias>=0&&c.dias<=dias).sort((a,b)=>a.dias-b.dias||String(a.id).localeCompare(String(b.id)));
   return {dias,rows,lic:new Set(rows.map(c=>c.id)).size,
-    con:rows.filter(c=>c.pror>0).length,sin:rows.filter(c=>!(c.pror>0)).length,sa:rows.filter(c=>!c.ult).length}}
-const repRenov=c=>c.pror>0?'Sí · '+c.pror+(c.pror===1?' mes':' meses'):'No';
+    con:rows.filter(c=>repCls(c)==='si').length,sin:rows.filter(c=>repCls(c)==='no').length,otr:rows.filter(c=>repCls(c)==='otro').length,sa:rows.filter(c=>!c.ult).length}}
+// Renovación según INFO CONTRATOS, columna ESTADO LICITACION (se muestra el texto tal cual)
+const repEst=c=>(c.estLic||'').trim();
+function repCls(c){const t=normH(repEst(c));if(!t)return 'otro';if(/^NO\b|NO PRORROG|NO RENOV|SIN RENOV/.test(t))return 'no';if(/RENOV|PRORROG/.test(t))return 'si';return 'otro'}
+const repRenov=c=>repEst(c)||'Sin registro';
 const repAviso=c=>c.ult?fd(c.ult.fecha):'Sin aviso';
 function descargarReporte(){
   if(!CONTR)return;const R=reporteDatos(),hoy=fd(HOY);
@@ -1402,31 +1405,31 @@ function descargarReporte(){
   doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(20,33,61);doc.text('Contratos por vencer en los próximos '+R.dias+' días',14,16);
   doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(90,103,120);
   doc.text('Hospital de Villarrica · Departamento Logística-Abastecimiento · Reporte al '+hoy,14,22);
-  const kp=[['Contratos',R.rows.length,[20,33,61]],['Licitaciones',R.lic,[20,33,61]],['Con renovación disponible',R.con,[46,158,107]],['Sin renovación',R.sin,[201,81,74]],['Sin aviso de término',R.sa,[217,130,43]]];
-  kp.forEach(([t,v,col],i)=>{const x=14+i*54;doc.setDrawColor(210,216,226);doc.setFillColor(246,248,251);doc.roundedRect(x,27,50,16,2,2,'FD');
+  const kp=[['Contratos',R.rows.length,[20,33,61]],['Licitaciones',R.lic,[20,33,61]],['Con renovación',R.con,[46,158,107]],['Sin renovación',R.sin,[201,81,74]],['Otro estado / sin registro',R.otr,[90,103,120]],['Sin aviso de término',R.sa,[217,130,43]]];
+  kp.forEach(([t,v,col],i)=>{const x=14+i*44;doc.setDrawColor(210,216,226);doc.setFillColor(246,248,251);doc.roundedRect(x,27,41,16,2,2,'FD');
     doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(col[0],col[1],col[2]);doc.text(String(v),x+4,36.5);
     doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(90,103,120);doc.text(t,x+4,41)});
   const body=R.rows.map(c=>[c.id,c.prov,c.nom||'',fd(c.ter),String(c.dias),pesos(c.saldo),repRenov(c),repAviso(c),c.ref||'']);
   if(!body.length)body.push(['Sin contratos que venzan en los próximos '+R.dias+' días','','','','','','','','']);
-  doc.autoTable({startY:48,head:[['ID licitación','Proveedor','Contrato','Término','Días','Saldo $','Renovación disponible','Último aviso','Referente']],body,
+  doc.autoTable({startY:48,head:[['ID licitación','Proveedor','Contrato','Término','Días','Saldo $','Estado licitación (renovación)','Último aviso','Referente']],body,
     theme:'grid',styles:{font:'helvetica',fontSize:8,cellPadding:1.8,textColor:[30,41,59],lineColor:[217,222,231],lineWidth:.1,overflow:'linebreak',valign:'middle'},
     headStyles:{fillColor:[20,33,61],textColor:255,fontStyle:'bold',fontSize:8},alternateRowStyles:{fillColor:[248,250,252]},
-    columnStyles:{0:{cellWidth:27},1:{cellWidth:44},2:{cellWidth:55},3:{cellWidth:20},4:{cellWidth:11,halign:'center'},5:{cellWidth:24,halign:'right'},6:{cellWidth:28,halign:'center',fontStyle:'bold'},7:{cellWidth:22,halign:'center'},8:{cellWidth:'auto'}},
+    columnStyles:{0:{cellWidth:27},1:{cellWidth:44},2:{cellWidth:55},3:{cellWidth:20},4:{cellWidth:11,halign:'center'},5:{cellWidth:24,halign:'right'},6:{cellWidth:34,halign:'center',fontStyle:'bold'},7:{cellWidth:22,halign:'center'},8:{cellWidth:'auto'}},
     didParseCell:h=>{if(h.section!=='body')return;const c=R.rows[h.row.index];if(!c)return;
-      if(h.column.index===6){h.cell.styles.textColor=c.pror>0?[22,120,76]:[185,56,48];h.cell.styles.fillColor=c.pror>0?[228,244,236]:[251,232,230]}
+      if(h.column.index===6){const k=repCls(c);h.cell.styles.textColor=k==='si'?[22,120,76]:k==='no'?[185,56,48]:[71,85,105];h.cell.styles.fillColor=k==='si'?[228,244,236]:k==='no'?[251,232,230]:[241,244,248]}
       if(h.column.index===7&&!c.ult){h.cell.styles.textColor=[185,100,20]}
       if(h.column.index===4&&c.dias<=30){h.cell.styles.textColor=[185,56,48];h.cell.styles.fontStyle='bold'}},
     margin:{left:14,right:14,bottom:14},
     didDrawPage:()=>{const n=doc.internal.getNumberOfPages(),h=doc.internal.pageSize.getHeight();doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);
-      doc.text('Renovación disponible: según la columna Prorroga de BD CONTRATOS (meses de prórroga que admite el contrato). Fuente: Registro Gestión de Contratos.',14,h-7);
+      doc.text('Renovación: según la columna Estado licitación de INFO CONTRATOS. Fuente: Registro Gestión de Contratos.',14,h-7);
       doc.text('Página '+doc.internal.getCurrentPageInfo().pageNumber,W-14,h-7,{align:'right'})}});
   const d=HOY,iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   doc.save('Reporte_contratos_por_vencer_'+R.dias+'d_'+iso+'.pdf')}
 // si la librería de PDF no cargó: versión imprimible (Guardar como PDF)
 function reporteImprimible(R,hoy){
   const w=window.open('','_blank');if(!w){alert('Permite las ventanas emergentes para descargar el reporte');return}
-  const tr=R.rows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(c.prov)}</td><td>${esc(c.nom||'')}</td><td>${fd(c.ter)}</td><td>${c.dias}</td><td style="text-align:right">${pesos(c.saldo)}</td><td style="font-weight:700;color:${c.pror>0?'#16784c':'#b93830'}">${repRenov(c)}</td><td>${esc(repAviso(c))}</td><td>${esc(c.ref||'')}</td></tr>`).join('');
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>Contratos por vencer en ${R.dias} días</title><style>@page{size:A4 landscape;margin:12mm}body{font:11px Arial,sans-serif;color:#1e293b}h1{font-size:18px;margin:0 0 4px}p{margin:0 0 8px;color:#5b6778}table{border-collapse:collapse;width:100%}th{background:#14213d;color:#fff;text-align:left}td,th{border:1px solid #d9dee7;padding:4px 6px}</style><h1>Contratos por vencer en los próximos ${R.dias} días</h1><p>Hospital de Villarrica · Departamento Logística-Abastecimiento · Reporte al ${hoy}<br>${R.rows.length} contratos · ${R.con} con renovación disponible · ${R.sin} sin renovación · ${R.sa} sin aviso de término</p><table><thead><tr><th>ID licitación</th><th>Proveedor</th><th>Contrato</th><th>Término</th><th>Días</th><th>Saldo $</th><th>Renovación disponible</th><th>Último aviso</th><th>Referente</th></tr></thead><tbody>${tr}</tbody></table><p style="margin-top:8px;font-size:9px">Renovación disponible: según la columna Prorroga de BD CONTRATOS. Fuente: Registro Gestión de Contratos.</p>`);
+  const tr=R.rows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(c.prov)}</td><td>${esc(c.nom||'')}</td><td>${fd(c.ter)}</td><td>${c.dias}</td><td style="text-align:right">${pesos(c.saldo)}</td><td style="font-weight:700;color:${repCls(c)==='si'?'#16784c':repCls(c)==='no'?'#b93830':'#475569'}">${esc(repRenov(c))}</td><td>${esc(repAviso(c))}</td><td>${esc(c.ref||'')}</td></tr>`).join('');
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Contratos por vencer en ${R.dias} días</title><style>@page{size:A4 landscape;margin:12mm}body{font:11px Arial,sans-serif;color:#1e293b}h1{font-size:18px;margin:0 0 4px}p{margin:0 0 8px;color:#5b6778}table{border-collapse:collapse;width:100%}th{background:#14213d;color:#fff;text-align:left}td,th{border:1px solid #d9dee7;padding:4px 6px}</style><h1>Contratos por vencer en los próximos ${R.dias} días</h1><p>Hospital de Villarrica · Departamento Logística-Abastecimiento · Reporte al ${hoy}<br>${R.rows.length} contratos · ${R.con} con renovación · ${R.sin} sin renovación · ${R.otr} otro estado o sin registro · ${R.sa} sin aviso de término</p><table><thead><tr><th>ID licitación</th><th>Proveedor</th><th>Contrato</th><th>Término</th><th>Días</th><th>Saldo $</th><th>Estado licitación (renovación)</th><th>Último aviso</th><th>Referente</th></tr></thead><tbody>${tr}</tbody></table><p style="margin-top:8px;font-size:9px">Renovación: según la columna Estado licitación de INFO CONTRATOS. Fuente: Registro Gestión de Contratos.</p>`);
   w.document.close();w.focus();setTimeout(()=>w.print(),400)}
 document.getElementById('gt-rep').addEventListener('click',descargarReporte);
 document.getElementById('gt-pres').addEventListener('click',()=>{const c=document.getElementById('gt-card');if(document.fullscreenElement)document.exitFullscreen();else if(c.requestFullscreen)c.requestFullscreen();});
