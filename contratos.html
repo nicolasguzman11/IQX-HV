@@ -798,13 +798,15 @@ function valReporte(){
     body:R.S.map(rowM).concat([['Total / promedio del período',String(R.all.n),mm(R.all.monto),nf(R.all.tVal),nf(R.all.tEm),nf(R.all.tTot),nf(R.all.pdv)+'% ('+R.all.dv+')',String(R.all.pend)]]),
     theme:'grid',styles:{fontSize:9,cellPadding:2.4,textColor:[30,41,59],lineColor:[217,222,231],lineWidth:.1,halign:'center'},headStyles:{fillColor:AZ,textColor:255},columnStyles:{0:{halign:'left',cellWidth:56}},margin:{left:14,right:14},
     didParseCell:h=>{if(h.section!=='body')return;if(h.row.index===R.S.length){h.cell.styles.fontStyle='bold';h.cell.styles.fillColor=[236,240,246]}else if(h.row.index===R.i){h.cell.styles.fontStyle='bold';h.cell.styles.fillColor=[222,235,250]}}});
+  // ---- gráficos que interpretan la tabla (debajo de ella; si no caben, en hoja aparte)
+  {let y=doc.lastAutoTable.finalY+8,h=H-14-y;if(h<62){doc.addPage();cab('Comparación entre meses · gráficos','Mes de recepción en validación · Mes destacado en azul · '+base);y=30;h=H-48}
+    const lect='Lectura: '+vlbl(R.sel)+' tuvo '+c.n+' procesos'+(pv&&pv.n?' ('+pct(c.n,pv.n)+' vs '+vlbl(pv.m).split(' ')[0]+')':'')+' y un tiempo total de '+nf(c.tTot)+' días hábiles'+(pv&&pv.tTot!=null?' ('+sg(c.tTot-pv.tTot)+' días vs '+vlbl(pv.m).split(' ')[0]+')':'')+'; el promedio del período es '+nf(R.all.tTot)+' días.';
+    doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(60,72,90);doc.text(doc.splitTextToSize(lect,W-28),14,y);y+=6;h-=6;
+    const gw=(W-28-16)/3;
+    valBarras(doc,14,y,gw,h,'Procesos por mes',R.S,'n',v=>String(v||0),R.sel,multi);
+    valBarras(doc,14+gw+8,y,gw,h,'Tiempo total (días hábiles)',R.S,'tTot',v=>nf(v),R.sel,multi);
+    valBarras(doc,14+2*(gw+8),y,gw,h,'Devolución a referente (%)',R.S,'pdv',v=>nf(v,0)+'%',R.sel,multi)}
   doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Tiempos en días hábiles, promedio por proceso. Mes según fecha de recepción en validación. Fuente: hoja VALIDACION Y OC del Registro Gestión de Contratos.',14,H-7);
-  // ---- Hoja 3: evolución
-  doc.addPage();cab('Evolución mensual','Mes de recepción en validación · Mes destacado en azul · '+base);
-  const gw=(W-28-12)/2;
-  valBarras(doc,14,34,gw,H-60,'Procesos por mes',R.S,'n',v=>String(v||0),R.sel,multi);
-  valBarras(doc,14+gw+12,34,gw,H-60,'Tiempo total promedio (días hábiles)',R.S,'tTot',v=>nf(v),R.sel,multi);
-  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Tiempos en días hábiles, promedio por proceso. Fuente: hoja VALIDACION Y OC del Registro Gestión de Contratos.',14,H-7);
   const tp=doc.internal.getNumberOfPages();for(let k=1;k<=tp;k++){doc.setPage(k);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Página '+k+' de '+tp,W-14,H-7,{align:'right'})}
   doc.save('Reporte_mensual_validacion_OC_'+Math.floor(R.sel/100)+'-'+String(R.sel%100).padStart(2,'0')+'.pdf')}
 function valReporteImprimible(R){
