@@ -487,7 +487,7 @@ tr.total td{font-weight:600;background:var(--surface-2)}
       <button class="view" role="tab" data-s="val" aria-selected="false"><span class="v-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6l1 2h3v15H5V6h3z"/><path d="M9 14l2.2 2.2L15.5 12"/></svg></span><span class="v-t">Validación y órdenes de compra</span><span class="v-d">Tiempos, devoluciones, órdenes por convenio</span></button>
     </div>
     <div class="sub" id="sub-wrap"><span id="sub"></span></div>
-    <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip neu" id="src"></span><button class="btn" id="f-reload" style="align-self:auto">Actualizar datos</button><button class="btn mode-btn" id="f-mode" style="align-self:auto" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Fondo oscuro</span></button></div>
+    <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip neu" id="src"></span><button class="btn" id="f-reload" style="align-self:auto">Actualizar datos</button><button class="btn mode-btn" id="f-mode" style="align-self:auto" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Fondo oscuro</span></button><button class="btn btn-rep" id="rep-val" style="align-self:auto" hidden>⬇ Descargar reporte mensual</button></div>
     
   </div>
 </header>
@@ -504,7 +504,6 @@ tr.total td{font-weight:600;background:var(--surface-2)}
     <label>Mes recepción<select id="f-mes"></select></label>
     <label>Estado OC<select id="f-est"></select></label>
     <button class="btn" id="f-reset">Limpiar</button>
-    <button class="btn btn-rep" id="rep-val">⬇ Descargar reporte mensual</button>
   </div>
 </div>
 
@@ -823,7 +822,7 @@ function showPanels(){const a=curPanel();document.documentElement.classList.togg
   document.querySelectorAll('.view[data-v]').forEach(v=>v.setAttribute('aria-selected',v.dataset.v===VIEW));
   document.getElementById('f-resp').closest('label').hidden=(VIEW==='unidad');
   document.querySelector('.filters').hidden=(a==='contr'||a==='def'||a==='vg'||a==='con'||a==='ocm');
-  document.querySelector('.bar').hidden=(SECTION!=='val');document.getElementById('sub-wrap').hidden=(SECTION!=='val');
+  document.querySelector('.bar').hidden=(SECTION!=='val');document.getElementById('rep-val').hidden=(SECTION!=='val');document.getElementById('sub-wrap').hidden=(SECTION!=='val');
   document.querySelectorAll('.sec-views .view').forEach(v=>v.setAttribute('aria-selected',v.dataset.s===SECTION));
   const c2=document.getElementById('tab-comp2');c2.hidden=(VIEW==='interno');
   if(VIEW==='interno'&&c2.getAttribute('aria-selected')==='true'){c2.setAttribute('aria-selected','false');document.getElementById('tab-ind').setAttribute('aria-selected','true');return showPanels()}
