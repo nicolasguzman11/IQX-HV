@@ -766,6 +766,23 @@ function valBarras(doc,x,y,w,h,titulo,S,key,fmt,sel,multi){
     doc.setFillColor(on?30:120,on?100:150,on?181:190);if(bhh>0)doc.rect(bx,top+bh-bhh,bw,bhh,'F');
     doc.setFont('helvetica',on?'bold':'normal');doc.setFontSize(8);doc.setTextColor(30,41,59);doc.text(fmt(r[key]),bx+bw/2,top+bh-bhh-1.5,{align:'center'});
     doc.setFontSize(7.5);doc.setTextColor(90,103,120);doc.text(vshort(r.m,multi),bx+bw/2,top+bh+5,{align:'center'})})}
+function valLineas(doc,x,y,w,h,titulo,S,series,sel,multi){
+  doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(20,33,61);doc.text(titulo,x,y);
+  // leyenda
+  let lx=x;doc.setFont('helvetica','normal');doc.setFontSize(8.5);
+  series.forEach(se=>{doc.setDrawColor(se.c[0],se.c[1],se.c[2]);doc.setLineWidth(.9);doc.line(lx,y+5.2,lx+6,y+5.2);doc.setFillColor(se.c[0],se.c[1],se.c[2]);doc.circle(lx+3,y+5.2,1.1,'F');doc.setTextColor(60,72,90);doc.text(se.l,lx+8,y+6.4);lx+=8+doc.getTextWidth(se.l)+7});
+  const px=x+9,py=y+12,pw=w-12,ph=h-12-10,n=S.length;
+  const raw=Math.max(1,...S.flatMap(r=>series.map(se=>r[se.k]||0))),step=raw<=8?2:raw<=20?5:10,max=Math.ceil(raw/step)*step;
+  doc.setLineWidth(.15);
+  for(let t=0;t<=max;t+=step){const gy=py+ph-ph*t/max;doc.setDrawColor(226,231,239);doc.line(px,gy,px+pw,gy);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text(String(t),px-2,gy+1,{align:'right'})}
+  const X=k=>n===1?px+pw/2:px+pw*(k+.5)/n,Y=v=>py+ph-ph*v/max;
+  S.forEach((r,k)=>{const on=r.m===sel;if(on){doc.setFillColor(222,235,250);doc.rect(X(k)-pw/n/2,py,pw/n,ph,'F')}
+    doc.setFont('helvetica',on?'bold':'normal');doc.setFontSize(7.5);doc.setTextColor(on?30:90,on?100:103,on?181:120);doc.text(vshort(r.m,multi),X(k),py+ph+5,{align:'center'})});
+  series.forEach(se=>{doc.setDrawColor(se.c[0],se.c[1],se.c[2]);doc.setFillColor(se.c[0],se.c[1],se.c[2]);doc.setLineWidth(.9);
+    S.forEach((r,k)=>{if(r[se.k]==null)return;const nx=S[k+1];if(nx&&nx[se.k]!=null)doc.line(X(k),Y(r[se.k]),X(k+1),Y(nx[se.k]))});
+    S.forEach((r,k)=>{if(r[se.k]==null)return;doc.circle(X(k),Y(r[se.k]),1.3,'F');
+      if(se.lab||r.m===sel){doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(se.c[0],se.c[1],se.c[2]);doc.text(nf(r[se.k]),X(k),Y(r[se.k])-2.4,{align:'center'})}})});
+  doc.setLineWidth(.2)}
 function valReporte(){
   if(!ROWS.length)return;const R=valRepDatos();if(!R.cur)return;
   const J=window.jspdf&&window.jspdf.jsPDF;if(!J){valReporteImprimible(R);return}
@@ -786,7 +803,7 @@ function valReporte(){
     pdfBarraApilada(doc,19,y0+11,gw-10,8,[{v:c.tVal||0,t:nf(c.tVal),l:'Revisión de validación',c:[47,111,181]},{v:c.tGap||0,t:nf(c.tGap),l:'Firma → creación OC',c:[142,91,194]},{v:c.tEm||0,t:nf(c.tEm),l:'Emisión OC',c:[224,123,46]}],tt||1);
     const ec={'ENVIADA A PROVEEDOR':[46,158,107],'EN FIRMAS':[47,111,181],'PROCESO VALIDACION':[224,123,46],'SIN ESTADO':[130,142,158]};
     pdfPanel(doc,14+gw+5,y0,gw,hh,'Estado de los procesos del mes');
-    pdfBarraApilada(doc,14+gw+10,y0+11,gw-10,8,ESTADOS.filter(e=>c.est[e]).map(e=>({v:c.est[e],l:EST_LBL[e],c:ec[e]})),c.n)}
+    pdfBarraApilada(doc,14+gw+10,y0+11,gw-10,8,ESTADOS.filter(e=>c.est[e]).map(e=>({v:c.est[e],l:EST_LBL[e],c:ec[e]})))}
   const fila=(n,k)=>[n,nf(c[k]),pv?nf(pv[k]):'–',pv?sg(c[k]-pv[k]):'–',nf(R.all[k])];
   doc.autoTable({startY:102,head:[['Tiempos de proceso (días hábiles, promedio)',vlbl(R.sel),pv?vlbl(pv.m):'Mes anterior','Variación','Promedio del período']],
     body:[fila('Revisión de validación (recepción → firma)','tVal'),fila('Emisión de orden de compra (creación → envío)','tEm'),fila('Tiempo total (recepción → envío)','tTot')],
@@ -802,10 +819,9 @@ function valReporte(){
   {let y=doc.lastAutoTable.finalY+8,h=H-14-y;if(h<62){doc.addPage();cab('Comparación entre meses · gráficos','Mes de recepción en validación · Mes destacado en azul · '+base);y=30;h=H-48}
     const lect='Lectura: '+vlbl(R.sel)+' tuvo '+c.n+' procesos'+(pv&&pv.n?' ('+pct(c.n,pv.n)+' vs '+vlbl(pv.m).split(' ')[0]+')':'')+' y un tiempo total de '+nf(c.tTot)+' días hábiles'+(pv&&pv.tTot!=null?' ('+sg(c.tTot-pv.tTot)+' días vs '+vlbl(pv.m).split(' ')[0]+')':'')+'; el promedio del período es '+nf(R.all.tTot)+' días.';
     doc.setFont('helvetica','italic');doc.setFontSize(9);doc.setTextColor(60,72,90);doc.text(doc.splitTextToSize(lect,W-28),14,y);y+=6;h-=6;
-    const gw=(W-28-16)/3;
-    valBarras(doc,14,y,gw,h,'Procesos por mes',R.S,'n',v=>String(v||0),R.sel,multi);
-    valBarras(doc,14+gw+8,y,gw,h,'Tiempo total (días hábiles)',R.S,'tTot',v=>nf(v),R.sel,multi);
-    valBarras(doc,14+2*(gw+8),y,gw,h,'Devolución a referente (%)',R.S,'pdv',v=>nf(v,0)+'%',R.sel,multi)}
+    const g1=(W-28-10)*.58,g2=(W-28-10)-g1;
+    valLineas(doc,14,y,g1,h,'Tendencia de los tiempos (días hábiles, promedio por proceso)',R.S,[{k:'tVal',l:'Revisión de validación',c:[47,111,181]},{k:'tEm',l:'Emisión de OC',c:[224,123,46]},{k:'tTot',l:'Tiempo total',c:[46,158,107],lab:true}],R.sel,multi);
+    valBarras(doc,14+g1+10,y,g2,h,'Procesos por mes',R.S,'n',v=>String(v||0),R.sel,multi)}
   doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Tiempos en días hábiles, promedio por proceso. Mes según fecha de recepción en validación. Fuente: hoja VALIDACION Y OC del Registro Gestión de Contratos.',14,H-7);
   const tp=doc.internal.getNumberOfPages();for(let k=1;k<=tp;k++){doc.setPage(k);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Página '+k+' de '+tp,W-14,H-7,{align:'right'})}
   doc.save('Reporte_mensual_validacion_OC_'+Math.floor(R.sel/100)+'-'+String(R.sel%100).padStart(2,'0')+'.pdf')}
