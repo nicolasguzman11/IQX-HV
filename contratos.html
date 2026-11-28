@@ -152,6 +152,7 @@ h1{font-family:var(--fd);font-size:clamp(24px,3.2vw,32px);font-weight:700;margin
 .filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
 .filters label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;flex-direction:column;gap:2px}
 select,input[type=search]{font:500 13px var(--fb);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
+.btn-rep{border:2px solid var(--accent);font-weight:700;padding:6px 12px}.btn-rep:hover{background:var(--accent);color:#fff}
 .btn{font:600 12px var(--fb);color:var(--accent);background:transparent;border:1px solid var(--line);border-radius:7px;padding:7px 10px;cursor:pointer;align-self:flex-end}
 .btn:hover{background:var(--accent-soft)}.btn:disabled{opacity:.6;cursor:progress}
 section.panel{padding-top:18px}
@@ -503,6 +504,7 @@ tr.total td{font-weight:600;background:var(--surface-2)}
     <label>Mes recepción<select id="f-mes"></select></label>
     <label>Estado OC<select id="f-est"></select></label>
     <button class="btn" id="f-reset">Limpiar</button>
+    <button class="btn btn-rep" id="rep-val">⬇ Descargar reporte mensual</button>
   </div>
 </div>
 
@@ -740,6 +742,77 @@ function fill(id,opts,all){const s=document.getElementById(id);s.innerHTML=`<opt
 
 const filtered=(ign)=>ROWS.filter(r=>(ign==='resp'||!F.resp||r.resp===F.resp)&&(!F.mes||r.mes==F.mes)&&(!F.est||r.est===F.est));
 ['resp','mes','est'].forEach(k=>document.getElementById('f-'+k).addEventListener('change',e=>{F[k]=e.target.value;render()}));
+
+// ===== Reporte mensual (PDF) · Validación y órdenes de compra. Mes = fecha de recepción en validación
+function valRepDatos(){
+  const rows=ROWS.filter(r=>r.mes),meses=[...new Set(rows.map(r=>r.mes))].sort();
+  const stat=m=>{const rs=rows.filter(r=>r.mes===m),dv=rs.filter(r=>r.dev).length;
+    return {m,n:rs.length,monto:sum(rs,'monto'),tVal:avg(vals(rs,'tVal')),tEm:avg(vals(rs,'tEm')),tTot:avg(vals(rs,'tTot')),dv,pdv:rs.length?100*dv/rs.length:null,pend:rs.filter(r=>r.pend).length,
+      est:Object.fromEntries(ESTADOS.map(e=>[e,rs.filter(r=>r.est===e).length]))}};
+  const S=meses.map(stat),all={n:rows.length,monto:sum(rows,'monto'),tVal:avg(vals(rows,'tVal')),tEm:avg(vals(rows,'tEm')),tTot:avg(vals(rows,'tTot')),dv:rows.filter(r=>r.dev).length,pend:rows.filter(r=>r.pend).length};
+  all.pdv=all.n?100*all.dv/all.n:null;
+  // mes del reporte: el elegido en el filtro «Mes recepción»; si no, el mes calendario anterior; si no hay datos, el último
+  const fm=Number(document.getElementById('f-mes').value)||0,prevCal=HOY.getMonth()===0?(HOY.getFullYear()-1)*100+12:HOY.getFullYear()*100+HOY.getMonth();
+  const sel=meses.includes(fm)?fm:meses.includes(prevCal)?prevCal:meses[meses.length-1];
+  const i=meses.indexOf(sel);
+  return {S,all,sel,i,cur:S[i]||null,prev:i>0?S[i-1]:null,enCurso:sel===HOY.getFullYear()*100+HOY.getMonth()+1}}
+const vlbl=m=>MESES[m%100]+' '+Math.floor(m/100);
+const vshort=(m,multi)=>MESES[m%100].slice(0,3)+(multi?' '+String(Math.floor(m/100)).slice(2):'');
+const sg=(x,d=1,u='')=>x==null||isNaN(x)?'–':(x>0?'+':'')+nf(x,d)+u;
+function valBarras(doc,x,y,w,h,titulo,S,key,fmt,sel,multi){
+  doc.setFont('helvetica','bold');doc.setFontSize(10.5);doc.setTextColor(20,33,61);doc.text(titulo,x,y);
+  const top=y+9,bh=h-22,max=Math.max(1,...S.map(r=>r[key]||0)),n=S.length,gw=w/n,bw=Math.min(14,gw*.6);
+  doc.setDrawColor(200,208,220);doc.line(x,top+bh,x+w,top+bh);
+  S.forEach((r,k)=>{const v=r[key]||0,bhh=bh*v/max,bx=x+k*gw+(gw-bw)/2,on=r.m===sel;
+    doc.setFillColor(on?30:120,on?100:150,on?181:190);if(bhh>0)doc.rect(bx,top+bh-bhh,bw,bhh,'F');
+    doc.setFont('helvetica',on?'bold':'normal');doc.setFontSize(8);doc.setTextColor(30,41,59);doc.text(fmt(r[key]),bx+bw/2,top+bh-bhh-1.5,{align:'center'});
+    doc.setFontSize(7.5);doc.setTextColor(90,103,120);doc.text(vshort(r.m,multi),bx+bw/2,top+bh+5,{align:'center'})})}
+function valReporte(){
+  if(!ROWS.length)return;const R=valRepDatos();if(!R.cur)return;
+  const J=window.jspdf&&window.jspdf.jsPDF;if(!J){valReporteImprimible(R);return}
+  const doc=new J({orientation:'landscape',unit:'mm',format:'a4'}),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),multi=new Set(R.S.map(r=>Math.floor(r.m/100))).size>1,c=R.cur,pv=R.prev;
+  const hoy=fd(HOY),AZ=[20,33,61];
+  const cab=(t,sub)=>{doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(AZ[0],AZ[1],AZ[2]);doc.text(t,14,16);doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(90,103,120);doc.text(sub,14,22)};
+  const base='Hospital de Villarrica · Departamento Logística-Abastecimiento · Generado el '+hoy;
+  // ---- Hoja 1: resumen del mes
+  cab('Reporte mensual · Validación y órdenes de compra','Mes de recepción en validación: '+vlbl(R.sel)+(R.enCurso?' (mes en curso, datos parciales)':'')+' · '+base);
+  const vs=pv?'vs '+vlbl(pv.m).split(' ')[0]:'';
+  const pct=(a,b)=>b?sg(100*(a-b)/b,0,'%'):'–';
+  const kp=[['Procesos del mes',String(c.n),pv?pct(c.n,pv.n)+' '+vs:'',AZ],['Monto tramitado',mm(c.monto),pv?pct(c.monto,pv.monto)+' '+vs:'',AZ],['Tiempo total (días hábiles)',nf(c.tTot),pv?sg(c.tTot-pv.tTot)+' días '+vs:'',[46,158,107]],['Devolución a referente',nf(c.pdv)+'%',c.dv+' procesos',[201,81,74]],['Sin enviar a proveedor',String(c.pend),'procesos pendientes',[217,130,43]]],kw=(W-28-4*5)/5;
+  kp.forEach(([t,v,sub,col],k)=>{const x=14+k*(kw+5),cx=x+kw/2;doc.setDrawColor(210,216,226);doc.setFillColor(246,248,251);doc.roundedRect(x,27,kw,28,2.5,2.5,'FD');doc.setFillColor(col[0],col[1],col[2]);doc.roundedRect(x,27,kw,1.6,.8,.8,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(col[0],col[1],col[2]);doc.text(v,cx,40,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(60,72,90);doc.text(t,cx,46,{align:'center'});doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text(sub,cx,51,{align:'center'})});
+  const fila=(n,k)=>[n,nf(c[k]),pv?nf(pv[k]):'–',pv?sg(c[k]-pv[k]):'–',nf(R.all[k])];
+  doc.autoTable({startY:62,head:[['Tiempos de proceso (días hábiles, promedio)',vlbl(R.sel),pv?vlbl(pv.m):'Mes anterior','Variación','Promedio del período']],
+    body:[fila('Revisión de validación (recepción → firma)','tVal'),fila('Emisión de orden de compra (creación → envío)','tEm'),fila('Tiempo total (recepción → envío)','tTot')],
+    theme:'grid',styles:{fontSize:9,cellPadding:2.2,textColor:[30,41,59],lineColor:[217,222,231],lineWidth:.1},headStyles:{fillColor:AZ,textColor:255},columnStyles:{0:{cellWidth:110},1:{halign:'center'},2:{halign:'center'},3:{halign:'center',fontStyle:'bold'},4:{halign:'center'}},margin:{left:14,right:14}});
+  const y2=doc.lastAutoTable.finalY+8;
+  doc.autoTable({startY:y2,head:[['Estado de los procesos del mes','Procesos','% del mes']],body:ESTADOS.filter(e=>c.est[e]).map(e=>[EST_LBL[e],String(c.est[e]),nf(100*c.est[e]/c.n)+'%']).concat([['Total',String(c.n),'100%']]),
+    theme:'grid',styles:{fontSize:9,cellPadding:2.2,textColor:[30,41,59],lineColor:[217,222,231],lineWidth:.1},headStyles:{fillColor:AZ,textColor:255},columnStyles:{0:{cellWidth:110},1:{halign:'center'},2:{halign:'center'}},tableWidth:180,margin:{left:14,right:14},
+    didParseCell:h=>{if(h.section==='body'&&h.row.index===h.table.body.length-1)h.cell.styles.fontStyle='bold'}});
+  // ---- Hoja 2: comparación con el resto de los meses
+  doc.addPage();cab('Comparación entre meses','Mes de recepción en validación · Destacado: '+vlbl(R.sel)+' · '+base);
+  const rowM=r=>[vlbl(r.m)+(r.m===HOY.getFullYear()*100+HOY.getMonth()+1?' (en curso)':''),String(r.n),mm(r.monto),nf(r.tVal),nf(r.tEm),nf(r.tTot),nf(r.pdv)+'% ('+r.dv+')',String(r.pend)];
+  doc.autoTable({startY:28,head:[['Mes','Procesos','Monto tramitado','Revisión validación (días)','Emisión OC (días)','Tiempo total (días)','Devoluciones','Sin enviar']],
+    body:R.S.map(rowM).concat([['Total / promedio del período',String(R.all.n),mm(R.all.monto),nf(R.all.tVal),nf(R.all.tEm),nf(R.all.tTot),nf(R.all.pdv)+'% ('+R.all.dv+')',String(R.all.pend)]]),
+    theme:'grid',styles:{fontSize:9,cellPadding:2.4,textColor:[30,41,59],lineColor:[217,222,231],lineWidth:.1,halign:'center'},headStyles:{fillColor:AZ,textColor:255},columnStyles:{0:{halign:'left',cellWidth:56}},margin:{left:14,right:14},
+    didParseCell:h=>{if(h.section!=='body')return;if(h.row.index===R.S.length){h.cell.styles.fontStyle='bold';h.cell.styles.fillColor=[236,240,246]}else if(h.row.index===R.i){h.cell.styles.fontStyle='bold';h.cell.styles.fillColor=[222,235,250]}}});
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Tiempos en días hábiles, promedio por proceso. Mes según fecha de recepción en validación. Fuente: hoja VALIDACION Y OC del Registro Gestión de Contratos.',14,H-7);
+  // ---- Hoja 3: evolución
+  doc.addPage();cab('Evolución mensual','Mes de recepción en validación · Mes destacado en azul · '+base);
+  const gw=(W-28-12)/2;
+  valBarras(doc,14,34,gw,H-60,'Procesos por mes',R.S,'n',v=>String(v||0),R.sel,multi);
+  valBarras(doc,14+gw+12,34,gw,H-60,'Tiempo total promedio (días hábiles)',R.S,'tTot',v=>nf(v),R.sel,multi);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Tiempos en días hábiles, promedio por proceso. Fuente: hoja VALIDACION Y OC del Registro Gestión de Contratos.',14,H-7);
+  const tp=doc.internal.getNumberOfPages();for(let k=1;k<=tp;k++){doc.setPage(k);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Página '+k+' de '+tp,W-14,H-7,{align:'right'})}
+  doc.save('Reporte_mensual_validacion_OC_'+Math.floor(R.sel/100)+'-'+String(R.sel%100).padStart(2,'0')+'.pdf')}
+function valReporteImprimible(R){
+  const w=window.open('','_blank');if(!w){alert('Permite las ventanas emergentes para descargar el reporte');return}
+  const tr=R.S.map(r=>`<tr${r.m===R.sel?' style="background:#deebfa;font-weight:700"':''}><td>${vlbl(r.m)}</td><td>${r.n}</td><td>${mm(r.monto)}</td><td>${nf(r.tVal)}</td><td>${nf(r.tEm)}</td><td>${nf(r.tTot)}</td><td>${nf(r.pdv)}% (${r.dv})</td><td>${r.pend}</td></tr>`).join('');
+  const c=R.cur;
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Reporte mensual · Validación y órdenes de compra</title><style>@page{size:A4 landscape;margin:12mm}body{font:12px Arial,sans-serif;color:#1e293b}h1{font-size:18px;margin:0 0 4px}p{color:#5b6778;margin:0 0 10px}table{border-collapse:collapse;width:100%}th{background:#14213d;color:#fff}td,th{border:1px solid #d9dee7;padding:5px 7px;text-align:center}td:first-child{text-align:left}</style><h1>Reporte mensual · Validación y órdenes de compra</h1><p>${vlbl(R.sel)} · ${c.n} procesos · ${mm(c.monto)} · tiempo total ${nf(c.tTot)} días hábiles · devolución ${nf(c.pdv)}% · ${c.pend} sin enviar a proveedor</p><table><thead><tr><th>Mes</th><th>Procesos</th><th>Monto tramitado</th><th>Revisión validación (días)</th><th>Emisión OC (días)</th><th>Tiempo total (días)</th><th>Devoluciones</th><th>Sin enviar</th></tr></thead><tbody>${tr}</tbody></table>`);
+  w.document.close();w.focus();setTimeout(()=>w.print(),400)}
+document.getElementById('rep-val').addEventListener('click',valReporte);
 document.getElementById('f-reset').addEventListener('click',()=>{F.resp=F.mes=F.est='';['resp','mes','est'].forEach(k=>document.getElementById('f-'+k).value='');render()});
 // tabs
 const EDITION='unidad';let VIEW=EDITION;
