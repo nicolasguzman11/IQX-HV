@@ -1496,6 +1496,9 @@ const repEst=c=>(c.estLic||'').trim();
 function repCls(c){const t=normH(repEst(c));if(!t)return 'otro';if(/^NO\b|NO PRORROG|NO RENOV|SIN RENOV/.test(t))return 'no';if(/RENOV|PRORROG/.test(t))return 'si';return 'otro'}
 const repRenov=c=>repEst(c)||'Sin registro';
 const repAviso=c=>c.ult?fd(c.ult.fecha):'Sin aviso';
+let LOGO=null;
+(function(){try{const im=new Image();im.onload=()=>{try{const c=document.createElement('canvas');c.width=c.height=300;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,300,300);x.drawImage(im,0,0,300,300);LOGO=c.toDataURL('image/jpeg',.92)}catch(e){}};im.src='/logo.png'}catch(e){}})();
+function pdfLogo(doc,W){if(!LOGO)return;try{doc.addImage(LOGO,'JPEG',W-14-22,3,22,22)}catch(e){console.error(e)}}
 function descargarReporteGeneral(){
   if(!CONTR)return;const R=reporteDatos(),hoy=fd(HOY);
   const J=window.jspdf&&window.jspdf.jsPDF;
@@ -1528,7 +1531,7 @@ function descargarReporteGeneral(){
     margin:{left:14,right:14,bottom:14,top:14}});
   // ---- Parte 2: reporte de validación y órdenes de compra (misma versión del reporte mensual)
   try{if(ROWS.length){const Rv=valRepDatos();if(Rv.cur)valBuild(doc,Rv,true)}}catch(e){console.error(e)}
-  const tp=doc.internal.getNumberOfPages();for(let k=1;k<=tp;k++){doc.setPage(k);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Página '+k+' de '+tp,W-14,H-7,{align:'right'})}
+  const tp=doc.internal.getNumberOfPages();for(let k=1;k<=tp;k++){doc.setPage(k);pdfLogo(doc,W);doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);doc.text('Página '+k+' de '+tp,W-14,H-7,{align:'right'})}
   const d=HOY,iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   doc.save('Reporte_general_gestion_de_contratos_'+iso+'.pdf')}
 // si la librería de PDF no cargó: versión imprimible (Guardar como PDF)
