@@ -1388,7 +1388,7 @@ const GT={q:'',f:'todas'};
 
 // ===== Reporte quincenal (PDF): contratos que vencen en 60 días, renovación según INFO CONTRATOS · Estado licitación
 function reporteDatos(){
-  const LV=licitaciones().filter(l=>l.vig.length),dias=60;
+  const LV=licitaciones().filter(l=>l.vig.length),dias=90;
   const rows=LV.flatMap(l=>l.vig).filter(c=>c.dias!=null&&c.dias>=0&&c.dias<=dias).sort((a,b)=>a.dias-b.dias||String(a.id).localeCompare(String(b.id)));
   return {dias,rows,lic:new Set(rows.map(c=>c.id)).size,
     con:rows.filter(c=>repCls(c)==='si').length,sin:rows.filter(c=>repCls(c)==='no').length,otr:rows.filter(c=>repCls(c)==='otro').length,sa:rows.filter(c=>!c.ult).length}}
@@ -1402,22 +1402,22 @@ function descargarReporte(){
   const J=window.jspdf&&window.jspdf.jsPDF;
   if(!J){reporteImprimible(R,hoy);return}
   const doc=new J({orientation:'landscape',unit:'mm',format:'a4'}),W=doc.internal.pageSize.getWidth();
-  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(20,33,61);doc.text('Contratos por vencer en los próximos '+R.dias+' días',14,16);
+  doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(20,33,61);doc.text('Reporte contratos por vencer ('+R.dias+' días)',14,16);
   doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(90,103,120);
   doc.text('Hospital de Villarrica · Departamento Logística-Abastecimiento · Reporte al '+hoy,14,22);
-  const kp=[['Contratos',R.rows.length,[20,33,61]],['Licitaciones',R.lic,[20,33,61]],['Con renovación',R.con,[46,158,107]],['Sin renovación',R.sin,[201,81,74]],['Otro estado / sin registro',R.otr,[90,103,120]],['Sin aviso de término',R.sa,[217,130,43]]];
-  kp.forEach(([t,v,col],i)=>{const x=14+i*44;doc.setDrawColor(210,216,226);doc.setFillColor(246,248,251);doc.roundedRect(x,27,41,16,2,2,'FD');
-    doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(col[0],col[1],col[2]);doc.text(String(v),x+4,36.5);
-    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(90,103,120);doc.text(t,x+4,41)});
-  const body=R.rows.map(c=>[c.id,c.prov,c.nom||'',fd(c.ter),String(c.dias),pesos(c.saldo),repRenov(c),repAviso(c),c.ref||'']);
-  if(!body.length)body.push(['Sin contratos que venzan en los próximos '+R.dias+' días','','','','','','','','']);
-  doc.autoTable({startY:48,head:[['ID licitación','Proveedor','Contrato','Término','Días','Saldo $','Estado licitación (renovación)','Último aviso','Referente']],body,
+  const kp=[['Contratos',R.rows.length,[20,33,61]],['Licitaciones',R.lic,[20,33,61]],['Con renovación',R.con,[46,158,107]],['Sin renovación',R.sin,[201,81,74]]],kw=(W-28-3*5)/4;
+  kp.forEach(([t,v,col],i)=>{const x=14+i*(kw+5),cx=x+kw/2;doc.setDrawColor(210,216,226);doc.setFillColor(246,248,251);doc.roundedRect(x,27,kw,23,2.5,2.5,'FD');
+    doc.setFillColor(col[0],col[1],col[2]);doc.roundedRect(x,27,kw,1.6,.8,.8,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(24);doc.setTextColor(col[0],col[1],col[2]);doc.text(String(v),cx,40,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(90,103,120);doc.text(t,cx,46.5,{align:'center'})});
+  const body=R.rows.map(c=>[c.id,c.prov,c.nom||'',fd(c.ter),String(c.dias),pesos(c.saldo),repRenov(c),c.ref||'']);
+  if(!body.length)body.push(['Sin contratos que venzan en los próximos '+R.dias+' días','','','','','','','']);
+  doc.autoTable({startY:55,head:[['ID licitación','Proveedor','Contrato','Término','Días','Saldo $','Estado licitación (renovación)','Referente']],body,
     theme:'grid',styles:{font:'helvetica',fontSize:8,cellPadding:1.8,textColor:[30,41,59],lineColor:[217,222,231],lineWidth:.1,overflow:'linebreak',valign:'middle'},
     headStyles:{fillColor:[20,33,61],textColor:255,fontStyle:'bold',fontSize:8},alternateRowStyles:{fillColor:[248,250,252]},
-    columnStyles:{0:{cellWidth:27},1:{cellWidth:44},2:{cellWidth:55},3:{cellWidth:20},4:{cellWidth:11,halign:'center'},5:{cellWidth:24,halign:'right'},6:{cellWidth:34,halign:'center',fontStyle:'bold'},7:{cellWidth:22,halign:'center'},8:{cellWidth:'auto'}},
+    columnStyles:{0:{cellWidth:27},1:{cellWidth:44},2:{cellWidth:55},3:{cellWidth:20},4:{cellWidth:11,halign:'center'},5:{cellWidth:24,halign:'right'},6:{cellWidth:44,halign:'center',fontStyle:'bold'},7:{cellWidth:'auto'}},
     didParseCell:h=>{if(h.section!=='body')return;const c=R.rows[h.row.index];if(!c)return;
       if(h.column.index===6){const k=repCls(c);h.cell.styles.textColor=k==='si'?[22,120,76]:k==='no'?[185,56,48]:[71,85,105];h.cell.styles.fillColor=k==='si'?[228,244,236]:k==='no'?[251,232,230]:[241,244,248]}
-      if(h.column.index===7&&!c.ult){h.cell.styles.textColor=[185,100,20]}
       if(h.column.index===4&&c.dias<=30){h.cell.styles.textColor=[185,56,48];h.cell.styles.fontStyle='bold'}},
     margin:{left:14,right:14,bottom:14},
     didDrawPage:()=>{const n=doc.internal.getNumberOfPages(),h=doc.internal.pageSize.getHeight();doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(120,130,145);
@@ -1428,8 +1428,8 @@ function descargarReporte(){
 // si la librería de PDF no cargó: versión imprimible (Guardar como PDF)
 function reporteImprimible(R,hoy){
   const w=window.open('','_blank');if(!w){alert('Permite las ventanas emergentes para descargar el reporte');return}
-  const tr=R.rows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(c.prov)}</td><td>${esc(c.nom||'')}</td><td>${fd(c.ter)}</td><td>${c.dias}</td><td style="text-align:right">${pesos(c.saldo)}</td><td style="font-weight:700;color:${repCls(c)==='si'?'#16784c':repCls(c)==='no'?'#b93830':'#475569'}">${esc(repRenov(c))}</td><td>${esc(repAviso(c))}</td><td>${esc(c.ref||'')}</td></tr>`).join('');
-  w.document.write(`<!doctype html><meta charset="utf-8"><title>Contratos por vencer en ${R.dias} días</title><style>@page{size:A4 landscape;margin:12mm}body{font:11px Arial,sans-serif;color:#1e293b}h1{font-size:18px;margin:0 0 4px}p{margin:0 0 8px;color:#5b6778}table{border-collapse:collapse;width:100%}th{background:#14213d;color:#fff;text-align:left}td,th{border:1px solid #d9dee7;padding:4px 6px}</style><h1>Contratos por vencer en los próximos ${R.dias} días</h1><p>Hospital de Villarrica · Departamento Logística-Abastecimiento · Reporte al ${hoy}<br>${R.rows.length} contratos · ${R.con} con renovación · ${R.sin} sin renovación · ${R.otr} otro estado o sin registro · ${R.sa} sin aviso de término</p><table><thead><tr><th>ID licitación</th><th>Proveedor</th><th>Contrato</th><th>Término</th><th>Días</th><th>Saldo $</th><th>Estado licitación (renovación)</th><th>Último aviso</th><th>Referente</th></tr></thead><tbody>${tr}</tbody></table><p style="margin-top:8px;font-size:9px">Renovación: según la columna Estado licitación de INFO CONTRATOS. Fuente: Registro Gestión de Contratos.</p>`);
+  const tr=R.rows.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(c.prov)}</td><td>${esc(c.nom||'')}</td><td>${fd(c.ter)}</td><td>${c.dias}</td><td style="text-align:right">${pesos(c.saldo)}</td><td style="font-weight:700;color:${repCls(c)==='si'?'#16784c':repCls(c)==='no'?'#b93830':'#475569'}">${esc(repRenov(c))}</td><td>${esc(c.ref||'')}</td></tr>`).join('');
+  w.document.write(`<!doctype html><meta charset="utf-8"><title>Reporte contratos por vencer (${R.dias} días)</title><style>@page{size:A4 landscape;margin:12mm}body{font:11px Arial,sans-serif;color:#1e293b}h1{font-size:18px;margin:0 0 4px}p{margin:0 0 8px;color:#5b6778}table{border-collapse:collapse;width:100%}th{background:#14213d;color:#fff;text-align:left}td,th{border:1px solid #d9dee7;padding:4px 6px}</style><h1>Reporte contratos por vencer (${R.dias} días)</h1><p>Hospital de Villarrica · Departamento Logística-Abastecimiento · Reporte al ${hoy}<br>${R.rows.length} contratos · ${R.con} con renovación · ${R.sin} sin renovación</p><table><thead><tr><th>ID licitación</th><th>Proveedor</th><th>Contrato</th><th>Término</th><th>Días</th><th>Saldo $</th><th>Estado licitación (renovación)</th><th>Referente</th></tr></thead><tbody>${tr}</tbody></table><p style="margin-top:8px;font-size:9px">Renovación: según la columna Estado licitación de INFO CONTRATOS. Fuente: Registro Gestión de Contratos.</p>`);
   w.document.close();w.focus();setTimeout(()=>w.print(),400)}
 document.getElementById('gt-rep').addEventListener('click',descargarReporte);
 document.getElementById('gt-pres').addEventListener('click',()=>{const c=document.getElementById('gt-card');if(document.fullscreenElement)document.exitFullscreen();else if(c.requestFullscreen)c.requestFullscreen();});
